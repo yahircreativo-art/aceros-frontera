@@ -5,8 +5,8 @@
     "tagline": "Ferretería industrial y mayoreo para tu obra",
     "description": "Distribución y venta mayorista y minorista de herramientas, tornillería, materiales de construcción y ferretería técnica con garantía industrial y despacho ágil.",
     "baseUrl": "https://www.ferremax.cl",
-    "language": "es-CL",
-    "locale": "es_CL",
+    "language": "es-MX",
+    "locale": "es_MX",
     "themeColor": "#0b3a23",
     "defaultImage": "/images/og-default",
     "twitterCard": "summary_large_image",
@@ -39,7 +39,7 @@
         "closes": "14:00"
       }
     ],
-    "areaServed": "Chile",
+    "areaServed": "Mexico",
     "socials": [
       { "name": "Instagram", "url": "https://www.instagram.com/acerosfrontera" },
       { "name": "Facebook", "url": "https://www.facebook.com/acerosfrontera" },
@@ -48,7 +48,7 @@
   },
   "pages": {
     "home": {
-      "title": "Ferremax | Ferretería industrial, herramientas y mayoreo",
+      "title": "Aceros Frontera | Ferretería industrial, herramientas y mayoreo",
       "description": "Herramientas eléctricas, maquinaria, fijaciones, pinturas y seguridad industrial. Venta directa y mayoreo con despacho a todo Chile. Cotiza en línea.",
       "path": "/",
       "keywords": [
