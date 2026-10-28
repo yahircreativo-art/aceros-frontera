@@ -1,5 +1,6 @@
 ---
 import { whatsappUrl } from '../lib/seo';
+import { assetUrl } from '../lib/asset-url';
 
 const stats = [
   { valor: '+12.000', etiqueta: 'SKU en bodega' },
@@ -9,10 +10,10 @@ const stats = [
 ---
 
 <section id="inicio" class="relative isolate overflow-hidden bg-brand-950">
-  {/* Imagen de fondo: cambia --hero-image en src/styles/global.css o reemplaza public/images/hero-bg.svg */}
+  {/* Imagen de fondo: reemplaza public/images/hero-bg.webp para cambiar la fotografía. */}
   <div
     class="absolute inset-0 -z-20 bg-cover bg-center"
-    style="background-image: var(--hero-image)"
+    style={`background-image: url('${assetUrl('/images/hero-bg.webp')}')`}
     aria-hidden="true"
   >
   </div>
@@ -47,7 +48,7 @@ const stats = [
         >
           Explorar catálogo
           <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-            <use href="/icons.svg#arrow-right"></use>
+            <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
           </svg>
         </a>
       </div>

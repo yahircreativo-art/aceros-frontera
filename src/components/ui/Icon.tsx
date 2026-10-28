@@ -1,3 +1,5 @@
+import { assetUrl } from '../../lib/asset-url';
+
 interface IconProps {
   name: string;
   className?: string;
@@ -6,7 +8,7 @@ interface IconProps {
 export default function Icon({ name, className = 'size-4' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true" focusable="false">
-      <use href={`/icons.svg#${name}`} />
+      <use href={`${assetUrl('/icons.svg')}#${name}`} />
     </svg>
   );
 }

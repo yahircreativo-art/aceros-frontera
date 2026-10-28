@@ -9,6 +9,7 @@ import Contact from '../components/Contact.astro';
 import Sponsors from '../components/Sponsors.astro';
 import Catalog from '../components/catalog/Catalog';
 import { siteSeo } from '../lib/seo';
+import { assetUrl } from '../lib/asset-url';
 import type { Producto } from '../lib/types';
 
 const entries = await getCollection('productos');
@@ -17,7 +18,7 @@ const productos: Producto[] = entries
   .map((entry) => ({
     slug: entry.id,
     ...entry.data,
-    imagen: entry.data.imagen.replace(/\.(?:png|jpe?g)$/i, '.webp'),
+    imagen: assetUrl(entry.data.imagen.replace(/\.(?:png|jpe?g)$/i, '.webp')),
   }))
   .sort(
     (a, b) =>

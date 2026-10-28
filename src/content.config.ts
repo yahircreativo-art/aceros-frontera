@@ -15,7 +15,10 @@ const productos = defineCollection({
     precioAnterior: z.number().positive().optional(),
     rating: z.number().min(0).max(5).default(4.5),
     reviews: z.number().int().nonnegative().default(0),
-    stock: z.number().int().nonnegative().optional(),
+    stock: z
+      .union([z.number().int().nonnegative(), z.boolean()])
+      .transform((stock) => (typeof stock === 'boolean' ? Number(stock) : stock))
+      .optional(),
     envioGratis: z.boolean().default(false),
     destacado: z.boolean().default(false),
     imagen: z.string(),

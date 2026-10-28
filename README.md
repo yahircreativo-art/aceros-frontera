@@ -24,6 +24,23 @@ npm run preview  # sirve el build
 npm run check    # Astro + TypeScript
 ```
 
+## Desplegar en GitHub Pages
+
+El workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) compila y publica el sitio al hacer push a `main` o `master`. Para activarlo:
+
+1. Sube el proyecto a un repositorio de GitHub.
+2. En **Settings → Pages**, selecciona **GitHub Actions** como fuente de despliegue.
+3. Haz push a `main` o `master`; el workflow construye `dist/` y lo publica.
+
+Para un repositorio normal, el sitio queda en `https://USUARIO.github.io/REPOSITORIO/`; el workflow calcula automáticamente el `base` de Astro y los assets usan ese prefijo. Para un sitio de usuario (`USUARIO.github.io`), el prefijo raíz `/` se detecta automáticamente.
+
+Para usar un dominio propio, configura el dominio en **Settings → Pages**, crea los registros DNS requeridos por GitHub y define estas variables en **Settings → Secrets and variables → Actions → Variables**:
+
+- `SITE_URL`: origen canónico, por ejemplo `https://acerosfrontera.com`.
+- `SITE_BASE_PATH`: `/` para un dominio propio.
+
+El conversor de imágenes WebP corre antes de cada build de Pages.
+
 ## Estructura
 
 ```

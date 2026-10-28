@@ -11,7 +11,8 @@ const seo = JSON.parse(
 );
 
 export default defineConfig({
-  site: seo.site.baseUrl,
+  site: process.env.SITE_URL ?? seo.site.baseUrl,
+  base: process.env.SITE_BASE_PATH ?? '/',
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

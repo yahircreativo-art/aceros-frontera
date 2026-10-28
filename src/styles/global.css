@@ -94,11 +94,6 @@
   --container-page: 78rem; /* 1248px */
 }
 
-/* Imagen del hero. Reemplaza el archivo o cambia esta variable por tu foto. */
-:root {
-  --hero-image: url("/images/hero-bg.webp");
-}
-
 /* ==========================================================================
    Base
    ========================================================================== */

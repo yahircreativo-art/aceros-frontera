@@ -3,6 +3,7 @@ import Logo from './Logo.astro';
 import { whatsappUrl } from '../lib/seo';
 import HeaderSearch from './catalog/HeaderSearch';
 import type { Producto } from '../lib/types';
+import { assetUrl } from '../lib/asset-url';
 
 interface Props {
   productos: Producto[];
@@ -28,7 +29,7 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
         rel="noopener noreferrer"
       >
         <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-          <use href="/icons.svg#whatsapp"></use>
+          <use href={`${assetUrl('/icons.svg')}#whatsapp`}></use>
         </svg>
         Cotizar
       </a>

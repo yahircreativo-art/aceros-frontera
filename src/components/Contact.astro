@@ -1,5 +1,6 @@
 ---
 import { siteSeo } from '../lib/seo';
+import { assetUrl } from '../lib/asset-url';
 
 const location = '32.4851102,-116.873457';
 const encodedLocation = encodeURIComponent(location);
@@ -64,7 +65,7 @@ const encodedLocation = encodeURIComponent(location);
         >
           Cómo llegar
           <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-            <use href="/icons.svg#arrow-right"></use>
+            <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
           </svg>
         </a>
       </div>

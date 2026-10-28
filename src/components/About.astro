@@ -1,3 +1,7 @@
+---
+import { assetUrl } from '../lib/asset-url';
+---
+
 <section id="nosotros" class="scroll-mt-44 lg:scroll-mt-28 border-t border-line bg-white py-16 lg:py-24">
   <div class="container-page grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
     <div class="max-w-xl">
@@ -22,13 +26,13 @@
       >
         Conoce nuestro local
         <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-          <use href="/icons.svg#arrow-right"></use>
+          <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
         </svg>
       </a>
     </div>
 
     <img
-      src="/images/hero-bg.webp"
+      src={assetUrl('/images/hero-bg.webp')}
       alt="Fachada del establecimiento Ferremax y su oferta de materiales de construcción"
       width="4096"
       height="3072"

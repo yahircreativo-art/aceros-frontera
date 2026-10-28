@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import { siteSeo, whatsappUrl } from '../lib/seo';
+import { assetUrl } from '../lib/asset-url';
 
 const anio = new Date().getFullYear();
 ---
@@ -15,7 +16,7 @@ const anio = new Date().getFullYear();
         </p>
         <span class="mt-5 inline-flex items-center gap-2 italic px-3 py-1.5 text-md font-semibold text-accent-400">
           <svg viewBox="0 0 24 24" class="size-3.5" aria-hidden="true">
-            <use href="/icons.svg#shield-check"></use>
+            <use href={`${assetUrl('/icons.svg')}#shield-check`}></use>
           </svg>
           Distribuidor autorizado
         </span>
@@ -28,7 +29,7 @@ const anio = new Date().getFullYear();
         <ul class="mt-4 space-y-3 text-sm text-white">
           <li class="flex gap-3">
             <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
-              <use href="/icons.svg#pin"></use>
+              <use href={`${assetUrl('/icons.svg')}#pin`}></use>
             </svg>
             <span>
               {siteSeo.address.street}
@@ -38,7 +39,7 @@ const anio = new Date().getFullYear();
           </li>
           <li class="flex gap-3">
             <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
-              <use href="/icons.svg#phone"></use>
+              <use href={`${assetUrl('/icons.svg')}#phone`}></use>
             </svg>
             <a class="transition-colors hover:text-accent-200" href={`tel:${siteSeo.phoneHref}`}>
               {siteSeo.phone}
@@ -46,7 +47,7 @@ const anio = new Date().getFullYear();
           </li>
           <li class="flex gap-3">
             <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
-              <use href="/icons.svg#mail"></use>
+              <use href={`${assetUrl('/icons.svg')}#mail`}></use>
             </svg>
             <a class="transition-colors hover:text-accent-200" href={`mailto:${siteSeo.email}`}>
               {siteSeo.email}
@@ -56,7 +57,7 @@ const anio = new Date().getFullYear();
             siteSeo.openingHours.map((horario) => (
               <li class="flex gap-3">
                 <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
-                  <use href="/icons.svg#clock"></use>
+                  <use href={`${assetUrl('/icons.svg')}#clock`}></use>
                 </svg>
                 <span>
                   {horario.label}: {horario.opens} – {horario.closes}
@@ -97,13 +98,13 @@ const anio = new Date().getFullYear();
       <div class="flex flex-wrap items-center gap-5">
         <span class="inline-flex items-center gap-1.5">
           <svg viewBox="0 0 24 24" class="size-3.5 text-accent-600" aria-hidden="true">
-            <use href="/icons.svg#lock"></use>
+            <use href={`${assetUrl('/icons.svg')}#lock`}></use>
           </svg>
           Sitio seguro SSL
         </span>
         <span class="inline-flex items-center gap-1.5">
           <svg viewBox="0 0 24 24" class="size-3.5 text-accent-600" aria-hidden="true">
-            <use href="/icons.svg#bolt"></use>
+            <use href={`${assetUrl('/icons.svg')}#bolt`}></use>
           </svg>
           Atención mayorista inmediata
         </span>
