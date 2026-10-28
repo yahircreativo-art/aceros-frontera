@@ -1,0 +1,69 @@
+{
+  "site": {
+    "name": "Ferremax",
+    "legalName": "Ferremax Ferretería Industrial & Mayorista SpA",
+    "tagline": "Ferretería industrial y mayoreo para tu obra",
+    "description": "Distribución y venta mayorista y minorista de herramientas, tornillería, materiales de construcción y ferretería técnica con garantía industrial y despacho ágil.",
+    "baseUrl": "https://www.ferremax.cl",
+    "language": "es-CL",
+    "locale": "es_CL",
+    "themeColor": "#0b3a23",
+    "defaultImage": "/images/og-default.svg",
+    "twitterCard": "summary_large_image",
+    "twitterSite": "@ferremax_cl",
+    "businessType": "HardwareStore",
+    "priceRange": "$$",
+    "phone": "+52 661 2779677",
+    "phoneHref": "+526612779677",
+    "whatsapp": "526612779677",
+    "whatsappMessage": "Hola Ferremax, necesito cotizar material para mi obra.",
+    "email": "yahir.creativo@gmail.com",
+    "address": {
+      "street": "Río Amacuzac 548A, Desarrollo Urbanoejido Matamoros, 22234",
+      "city": "Tijuana",
+      "region": "Baja California",
+      "country": "MX",
+      "countryName": "México"
+    },
+    "openingHours": [
+      {
+        "label": "Lunes a viernes",
+        "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "18:30"
+      },
+      {
+        "label": "Sábado",
+        "days": ["Saturday"],
+        "opens": "08:30",
+        "closes": "14:00"
+      }
+    ],
+    "areaServed": "Chile",
+    "socials": [
+      { "name": "Instagram", "url": "https://www.instagram.com/ferremaxcl" },
+      { "name": "Facebook", "url": "https://www.facebook.com/ferremaxcl" },
+      { "name": "LinkedIn", "url": "https://www.linkedin.com/company/ferremaxcl" }
+    ]
+  },
+  "pages": {
+    "home": {
+      "title": "Ferremax | Ferretería industrial, herramientas y mayoreo",
+      "description": "Herramientas eléctricas, maquinaria, fijaciones, pinturas y seguridad industrial. Venta directa y mayoreo con despacho a todo Chile. Cotiza en línea.",
+      "path": "/",
+      "keywords": [
+        "ferretería industrial",
+        "ferretería mayorista Chile",
+        "herramientas eléctricas",
+        "maquinaria para construcción",
+        "tornillería",
+        "pinturas",
+        "seguridad industrial",
+        "Ferremax"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "WebPage"
+    }
+  }
+}

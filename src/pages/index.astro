@@ -1,0 +1,103 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Footer from '../components/Footer.astro';
+import About from '../components/About.astro';
+import Contact from '../components/Contact.astro';
+import Sponsors from '../components/Sponsors.astro';
+import Catalog from '../components/catalog/Catalog';
+import { siteSeo } from '../lib/seo';
+import type { Producto } from '../lib/types';
+
+const entries = await getCollection('productos');
+
+const productos: Producto[] = entries
+  .map((entry) => ({
+    slug: entry.id,
+    ...entry.data,
+    imagen: entry.data.imagen.replace(/\.(?:png|jpe?g)$/i, '.webp'),
+  }))
+  .sort(
+    (a, b) =>
+      Number(b.destacado) - Number(a.destacado) || a.nombre.localeCompare(b.nombre, 'es'),
+  );
+
+const categorias = [...new Set(productos.map((producto) => producto.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'es'),
+);
+
+---
+
+<Base page="home">
+  <Header productos={productos} />
+
+  <main id="contenido">
+    <Hero />
+    <Sponsors />
+    <section id="catalogo" class="scroll-mt-44 lg:scroll-mt-28 pt-6 pb-16 lg:pt-8 lg:pb-20">
+      <div class="container-page">
+        <div id="catalogo-intro" class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">
+              Catálogo destacado &amp; venta directa
+            </p>
+            <h2 class="mt-2 text-3xl font-bold text-ink-900 sm:text-4xl">
+              Herramientas &amp; equipos de alto rendimiento
+            </h2>
+          </div>
+          <p class="text-sm text-ink-500">Precios actualizados al instante</p>
+        </div>
+
+        <Catalog client:load productos={productos} categorias={categorias} whatsapp={siteSeo.whatsapp} />
+      </div>
+    </section>
+    <About />
+    <Contact />
+  </main>
+
+  <Footer />
+
+  <script>
+    const hero = document.getElementById('inicio');
+    const catalogo = document.getElementById('catalogo');
+    const introduccionCatalogo = document.getElementById('catalogo-intro');
+    const marcas = document.getElementById('marcas');
+    const nosotros = document.getElementById('nosotros');
+    const contacto = document.getElementById('contacto');
+
+    const mostrarDetalle = () => {
+      hero?.classList.add('hidden');
+      catalogo?.classList.remove('pt-6', 'pb-16', 'lg:pt-8', 'lg:pb-20');
+      catalogo?.classList.add('py-0');
+      introduccionCatalogo?.classList.add('hidden');
+      marcas?.classList.add('hidden');
+      nosotros?.classList.add('hidden');
+      contacto?.classList.add('hidden');
+    };
+
+    const mostrarPaginaCompleta = () => {
+      hero?.classList.remove('hidden');
+      catalogo?.classList.remove('py-0');
+      catalogo?.classList.add('pt-6', 'pb-16', 'lg:pt-8', 'lg:pb-20');
+      introduccionCatalogo?.classList.remove('hidden');
+      marcas?.classList.remove('hidden');
+      nosotros?.classList.remove('hidden');
+      contacto?.classList.remove('hidden');
+    };
+
+    window.addEventListener('catalog-product-detail', mostrarDetalle);
+    window.addEventListener('catalog-product-close', mostrarPaginaCompleta);
+    window.addEventListener('catalog-reset', mostrarPaginaCompleta);
+
+    if (new URL(window.location.href).searchParams.has('producto')) {
+      mostrarDetalle();
+    }
+
+    window.addEventListener('popstate', () => {
+      if (new URL(window.location.href).searchParams.has('producto')) mostrarDetalle();
+      else mostrarPaginaCompleta();
+    });
+  </script>
+</Base>

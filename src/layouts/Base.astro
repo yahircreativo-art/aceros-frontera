@@ -1,0 +1,66 @@
+---
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import { siteSeo, type PageId, whatsappUrl } from '../lib/seo';
+
+interface Props {
+  page?: PageId;
+}
+
+const { page = 'home' } = Astro.props;
+---
+
+<!doctype html>
+<html lang={siteSeo.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <Seo page={page} />
+  </head>
+
+  <body class="bg-canvas text-ink-900 antialiased">
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-field focus:bg-brand-700 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      Saltar al contenido
+    </a>
+    <slot />
+    <nav
+      aria-label="Contacto rápido"
+      class="fixed bottom-5 right-4 z-40 flex flex-col gap-3 md:hidden"
+    >
+      <a
+        href={whatsappUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Contactar por WhatsApp"
+        title="Contactar por WhatsApp"
+        class="flex size-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-offset-4"
+      >
+        <svg viewBox="0 0 24 24" class="size-6" aria-hidden="true">
+          <use href="/icons.svg#whatsapp"></use>
+        </svg>
+      </a>
+      <a
+        href={`mailto:${siteSeo.email}`}
+        aria-label={`Enviar correo a ${siteSeo.email}`}
+        title="Enviar correo"
+        class="flex size-12 items-center justify-center rounded-full bg-brand-700 text-white shadow-lift transition-transform hover:scale-105 focus-visible:outline-offset-4"
+      >
+        <svg viewBox="0 0 24 24" class="size-6" aria-hidden="true">
+          <use href="/icons.svg#mail"></use>
+        </svg>
+      </a>
+    </nav>
+  </body>
+</html>

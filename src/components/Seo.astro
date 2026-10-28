@@ -1,0 +1,99 @@
+---
+import seo from '../data/seo.json';
+import type { PageId } from '../lib/seo';
+
+interface Props {
+  page: PageId;
+}
+
+const { page } = Astro.props;
+const site = seo.site;
+const data = seo.pages[page];
+
+const canonical = new URL(data.path, site.baseUrl).toString();
+const image = new URL(site.defaultImage, site.baseUrl).toString();
+const organizationId = `${site.baseUrl}/#organization`;
+const websiteId = `${site.baseUrl}/#website`;
+
+const organization = {
+  '@type': site.businessType,
+  '@id': organizationId,
+  name: site.name,
+  legalName: site.legalName,
+  description: site.description,
+  url: site.baseUrl,
+  telephone: site.phoneHref,
+  email: site.email,
+  image,
+  priceRange: site.priceRange,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    addressRegion: site.address.region,
+    addressCountry: site.address.country,
+  },
+  areaServed: {
+    '@type': 'Country',
+    name: site.areaServed,
+  },
+  openingHoursSpecification: site.openingHours.map((horario) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: horario.days,
+    opens: horario.opens,
+    closes: horario.closes,
+  })),
+  sameAs: site.socials.map((red) => red.url),
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': websiteId,
+  url: site.baseUrl,
+  name: site.name,
+  inLanguage: site.language,
+  publisher: { '@id': organizationId },
+};
+
+const webpage = {
+  '@type': data.schemaType,
+  '@id': `${canonical}#webpage`,
+  url: canonical,
+  name: data.title,
+  description: data.description,
+  inLanguage: site.language,
+  isPartOf: { '@id': websiteId },
+  about: { '@id': organizationId },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [organization, website, webpage],
+};
+---
+
+<title>{data.title}</title>
+<meta name="description" content={data.description} />
+<meta name="keywords" content={data.keywords.join(', ')} />
+<meta name="robots" content={data.robots} />
+<meta name="author" content={site.name} />
+<meta name="theme-color" content={site.themeColor} />
+
+<link rel="canonical" href={canonical} />
+<link rel="alternate" hreflang="es-cl" href={canonical} />
+
+<meta property="og:site_name" content={site.name} />
+<meta property="og:locale" content={site.locale} />
+<meta property="og:type" content={data.ogType} />
+<meta property="og:title" content={data.title} />
+<meta property="og:description" content={data.description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+
+<meta name="twitter:card" content={site.twitterCard} />
+<meta name="twitter:site" content={site.twitterSite} />
+<meta name="twitter:title" content={data.title} />
+<meta name="twitter:description" content={data.description} />
+<meta name="twitter:image" content={image} />
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

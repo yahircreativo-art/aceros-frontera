@@ -1,0 +1,113 @@
+---
+import Logo from './Logo.astro';
+import { siteSeo, whatsappUrl } from '../lib/seo';
+
+const anio = new Date().getFullYear();
+---
+
+<footer id="pie" class="border-t bg-black">
+  <div class="container-page py-14">
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.6fr_1.2fr_0.9fr]">
+      <div>
+        <Logo />
+        <p class="mt-5 max-w-sm text-sm leading-relaxed text-white">
+          {siteSeo.description}
+        </p>
+        <span class="mt-5 inline-flex items-center gap-2 italic px-3 py-1.5 text-md font-semibold text-accent-400">
+          <svg viewBox="0 0 24 24" class="size-3.5" aria-hidden="true">
+            <use href="/icons.svg#shield-check"></use>
+          </svg>
+          Distribuidor autorizado
+        </span>
+      </div>
+
+      <div>
+        <h2 class="font-display text-sm font-bold uppercase tracking-[0.12em] text-brand-500">
+          Atención y sucursales
+        </h2>
+        <ul class="mt-4 space-y-3 text-sm text-white">
+          <li class="flex gap-3">
+            <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
+              <use href="/icons.svg#pin"></use>
+            </svg>
+            <span>
+              {siteSeo.address.street}
+              <br />
+              {siteSeo.address.city}, {siteSeo.address.region}
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
+              <use href="/icons.svg#phone"></use>
+            </svg>
+            <a class="transition-colors hover:text-accent-200" href={`tel:${siteSeo.phoneHref}`}>
+              {siteSeo.phone}
+            </a>
+          </li>
+          <li class="flex gap-3">
+            <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
+              <use href="/icons.svg#mail"></use>
+            </svg>
+            <a class="transition-colors hover:text-accent-200" href={`mailto:${siteSeo.email}`}>
+              {siteSeo.email}
+            </a>
+          </li>
+          {
+            siteSeo.openingHours.map((horario) => (
+              <li class="flex gap-3">
+                <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-accent-600" aria-hidden="true">
+                  <use href="/icons.svg#clock"></use>
+                </svg>
+                <span>
+                  {horario.label}: {horario.opens} – {horario.closes}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="font-display text-sm font-bold uppercase tracking-[0.12em] text-brand-500">
+          Catálogo
+        </h2>
+        <ul class="mt-4 space-y-3 text-sm text-white">
+          <li>
+            <a class="transition-colors hover:text-accent-200" href="#catalogo">Todos los productos</a>
+          </li>
+          <li>
+            <a class="transition-colors hover:text-accent-200" href="#marcas">Marcas que distribuimos</a>
+          </li>
+          <li>
+            <a
+              class="transition-colors hover:text-accent-200"
+              href={whatsappUrl('Hola Ferremax, necesito una cotización mayorista para mi empresa.')}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Cotización mayorista
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-col gap-3 border-t pt-6 text-xs text-white sm:flex-row sm:items-center sm:justify-between">
+      <p>© {anio} {siteSeo.legalName}. Todos los derechos reservados.</p>
+      <div class="flex flex-wrap items-center gap-5">
+        <span class="inline-flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" class="size-3.5 text-accent-600" aria-hidden="true">
+            <use href="/icons.svg#lock"></use>
+          </svg>
+          Sitio seguro SSL
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" class="size-3.5 text-accent-600" aria-hidden="true">
+            <use href="/icons.svg#bolt"></use>
+          </svg>
+          Atención mayorista inmediata
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>

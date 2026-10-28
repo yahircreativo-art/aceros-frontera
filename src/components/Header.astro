@@ -1,0 +1,75 @@
+---
+import Logo from './Logo.astro';
+import { whatsappUrl } from '../lib/seo';
+import HeaderSearch from './catalog/HeaderSearch';
+import type { Producto } from '../lib/types';
+
+interface Props {
+  productos: Producto[];
+}
+
+const { productos } = Astro.props;
+const categorias = [...new Set(productos.map((producto) => producto.categoria))].sort((a, b) =>
+  a.localeCompare(b, 'es'),
+);
+---
+
+<header class="sticky top-0 z-40 bg-black shadow-header">
+  <div class="container-page flex min-h-16 flex-wrap items-center justify-between gap-3 py-3 md:h-[4.25rem] md:flex-nowrap md:py-0">
+    <Logo />
+
+    <HeaderSearch productos={productos} client:load />
+
+    <div class="hidden items-center gap-2 md:flex">
+      <a
+        class="inline-flex items-center rounded-lg gap-2 bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+        href={whatsappUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
+          <use href="/icons.svg#whatsapp"></use>
+        </svg>
+        Cotizar
+      </a>
+    </div>
+  </div>
+
+  <div class="border-t border-line bg-white text-ink-900">
+    <nav
+      aria-label="Navegación secundaria"
+      class="container-page flex h-11 items-center gap-5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#catalogo">
+        Catálogo
+      </a>
+      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#nosotros">
+        Nosotros
+      </a>
+      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#contacto">
+        Contacto
+      </a>
+
+      <span class="h-5 w-px shrink-0 bg-line" aria-hidden="true"></span>
+
+      {categorias.map((categoria) => (
+        <button
+          type="button"
+          data-catalog-category={categoria}
+          class="shrink-0 cursor-pointer px-2 py-1 text-sm font-medium text-ink-700 transition-colors hover:text-accent-500"
+        >
+          {categoria}
+        </button>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-catalog-category]').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('catalog-category', { detail: boton.dataset.catalogCategory }));
+      document.getElementById('catalogo')?.scrollIntoView();
+    });
+  });
+</script>
