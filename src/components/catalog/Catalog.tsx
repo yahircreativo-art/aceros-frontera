@@ -153,10 +153,10 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
   };
 
   const mensajeCotizar = productoActivo
-    ? `Hola Ferremax, quiero cotizar: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}${productoActivo.precio ? ` por ${formatCLP(productoActivo.precio)}` : ''}.`
+    ? `Hola, quiero cotizar: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}${productoActivo.precio ? ` por ${formatCLP(productoActivo.precio)}` : ''}.`
     : '';
   const mensajeMayorista = productoActivo
-    ? `Hola Ferremax, necesito precio por mayoreo de: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}.`
+    ? `Hola, necesito precio por mayoreo de: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}.`
     : '';
 
   return (

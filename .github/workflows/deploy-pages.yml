@@ -19,9 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
-      SITE_BASE_PATH: ${{ vars.SITE_BASE_PATH || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/' || format('/{0}/', github.event.repository.name)) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,9 +33,13 @@ jobs:
         run: npm ci
 
       - name: Configure GitHub Pages
+        id: pages
         uses: actions/configure-pages@v5
 
       - name: Build site
+        env:
+          SITE_URL: ${{ vars.SITE_URL || steps.pages.outputs.origin }}
+          SITE_BASE_PATH: ${{ vars.SITE_BASE_PATH || steps.pages.outputs.base_path || '/' }}
         run: npm run build
 
       - name: Upload Pages artifact

@@ -14,8 +14,8 @@ export default function ProductCard({ producto, whatsapp, onView }: ProductCardP
   const disponible = (producto.stock ?? 0) > 0;
 
   const referencia = producto.sku ? ` (SKU ${producto.sku})` : '';
-  const mensajeCotizar = `Hola Ferremax, quiero cotizar: ${producto.nombre}${referencia}${producto.precio ? ` por ${formatCLP(producto.precio)}` : ''}.`;
-  const mensajeMayor = `Hola Ferremax, necesito precio mayorista de: ${producto.nombre}${referencia}.`;
+  const mensajeCotizar = `Hola, quiero cotizar: ${producto.nombre}${referencia}${producto.precio ? ` por ${formatCLP(producto.precio)}` : ''}.`;
+  const mensajeMayor = `Hola, necesito precio mayorista de: ${producto.nombre}${referencia}.`;
 
   const urlCotizar = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeCotizar)}`;
   const urlMayor = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeMayor)}`;

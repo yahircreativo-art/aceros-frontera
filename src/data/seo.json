@@ -8,7 +8,7 @@
     "language": "es-CL",
     "locale": "es_CL",
     "themeColor": "#0b3a23",
-    "defaultImage": "/images/og-default.svg",
+    "defaultImage": "/images/og-default",
     "twitterCard": "summary_large_image",
     "twitterSite": "@ferremax_cl",
     "businessType": "HardwareStore",
@@ -16,7 +16,7 @@
     "phone": "+52 661 2779677",
     "phoneHref": "+526612779677",
     "whatsapp": "526612779677",
-    "whatsappMessage": "Hola Ferremax, necesito cotizar material para mi obra.",
+    "whatsappMessage": "Hola, necesito cotizar material para mi obra.",
     "email": "yahir.creativo@gmail.com",
     "address": {
       "street": "Río Amacuzac 548A, Desarrollo Urbanoejido Matamoros, 22234",
@@ -41,9 +41,9 @@
     ],
     "areaServed": "Chile",
     "socials": [
-      { "name": "Instagram", "url": "https://www.instagram.com/ferremaxcl" },
-      { "name": "Facebook", "url": "https://www.facebook.com/ferremaxcl" },
-      { "name": "LinkedIn", "url": "https://www.linkedin.com/company/ferremaxcl" }
+      { "name": "Instagram", "url": "https://www.instagram.com/acerosfrontera" },
+      { "name": "Facebook", "url": "https://www.facebook.com/acerosfrontera" },
+      { "name": "LinkedIn", "url": "https://www.linkedin.com/company/acerosfrontera" }
     ]
   },
   "pages": {
