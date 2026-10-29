@@ -111,23 +111,64 @@ const encodedLocation = encodeURIComponent(location);
         </div>
         <div>
           <label for="cotizacion-material" class="mb-1.5 block text-sm font-semibold text-ink-800">Material o pieza</label>
+          <div class="relative">
+            <select
+              id="cotizacion-material"
+              name="material"
+              required
+              class="h-12 w-full appearance-none border border-line bg-white py-3 pl-3 pr-12 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            >
+              <option value="" disabled selected>Selecciona un material</option>
+              <option>Perfil tubular cuadrado</option>
+              <option>Perfil ángulo</option>
+              <option>Tubo redondo</option>
+              <option>Alambrón</option>
+              <option>Malla electrosoldada</option>
+              <option>Placa o lámina</option>
+              <option value="otro">Otro material</option>
+            </select>
+            <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-ink-500" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
           <input
-            id="cotizacion-material"
-            name="material"
+            id="cotizacion-material-otro"
+            name="material_otro"
             type="text"
-            required
-            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-            placeholder="Perfil, tubo, alambrón, malla..."
+            hidden
+            class="mt-3 h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Especifica el material o pieza"
           />
         </div>
         <div>
           <label for="cotizacion-medidas" class="mb-1.5 block text-sm font-semibold text-ink-800">Medidas o especificaciones</label>
+          <div class="relative">
+            <select
+              id="cotizacion-medidas"
+              name="medidas"
+              class="h-12 w-full appearance-none border border-line bg-white py-3 pl-3 pr-12 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            >
+              <option value="" selected>Selecciona una especificación</option>
+              <option>Calibre o espesor</option>
+              <option>Diámetro</option>
+              <option>Largo</option>
+              <option>Ancho</option>
+              <option>Medida de sección</option>
+              <option>Grado o acabado</option>
+              <option>Presentación o peso</option>
+              <option value="otro">Otra especificación</option>
+            </select>
+            <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-ink-500" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
           <input
-            id="cotizacion-medidas"
-            name="medidas"
+            id="cotizacion-medidas-otro"
+            name="medidas_otro"
             type="text"
-            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-            placeholder="Calibre, largo, espesor..."
+            hidden
+            class="mt-3 h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Especifica las medidas o características"
           />
         </div>
         <div>
@@ -169,17 +210,42 @@ const encodedLocation = encodeURIComponent(location);
 
   const form = document.querySelector<HTMLFormElement>('#formulario-whatsapp');
 
+  const enlazarOpcionOtro = (selectId: string, inputId: string) => {
+    const select = document.querySelector<HTMLSelectElement>(`#${selectId}`);
+    const input = document.querySelector<HTMLInputElement>(`#${inputId}`);
+    if (!select || !input) return;
+
+    const actualizarCampoOtro = () => {
+      const mostrar = select.value === 'otro';
+      input.hidden = !mostrar;
+      input.required = mostrar;
+      if (!mostrar) input.value = '';
+    };
+
+    select.addEventListener('change', actualizarCampoOtro);
+    actualizarCampoOtro();
+  };
+
+  enlazarOpcionOtro('cotizacion-material', 'cotizacion-material-otro');
+  enlazarOpcionOtro('cotizacion-medidas', 'cotizacion-medidas-otro');
+
   form?.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
 
     const data = new FormData(form);
+    const material = data.get('material') === 'otro'
+      ? data.get('material_otro')
+      : data.get('material');
+    const medidas = data.get('medidas') === 'otro'
+      ? data.get('medidas_otro')
+      : data.get('medidas');
     const mensaje = [
       'Hola, quiero solicitar una cotización.',
       `Nombre: ${data.get('nombre')}`,
       `Teléfono: ${data.get('telefono')}`,
-      `Material o pieza: ${data.get('material')}`,
-      data.get('medidas') ? `Medidas o especificaciones: ${data.get('medidas')}` : '',
+      `Material o pieza: ${material}`,
+      medidas ? `Medidas o especificaciones: ${medidas}` : '',
       data.get('cantidad') ? `Cantidad aproximada: ${data.get('cantidad')}` : '',
       data.get('notas') ? `Detalles: ${data.get('notas')}` : '',
     ].filter(Boolean).join('\n');
