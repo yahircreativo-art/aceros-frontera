@@ -36,7 +36,6 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
 
   <main id="contenido">
     <Hero />
-    <Sponsors />
     <section id="catalogo" class="scroll-mt-44 lg:scroll-mt-28 pt-6 pb-16 lg:pt-8 lg:pb-20">
       <div class="container-page">
         <div id="catalogo-intro" class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -48,7 +47,7 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
               Perfiles, tubos y piezas de acero
             </h2>
           </div>
-          <p class="text-sm text-ink-500">Consulta medidas y disponibilidad</p>
+          
         </div>
 
         <Catalog client:load productos={productos} categorias={categorias} whatsapp={siteSeo.whatsapp} />

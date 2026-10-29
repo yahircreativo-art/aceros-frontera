@@ -130,6 +130,21 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
     });
   }, [productos, consulta, filtro]);
 
+  // Productos de la misma categoría, completados con destacados si hay pocos relacionados.
+  const productosRelacionados = useMemo(() => {
+    if (!productoActivo) return [];
+
+    const disponibles = productos.filter((producto) => producto.slug !== productoActivo.slug);
+    const mismaCategoria = disponibles.filter(
+      (producto) => producto.categoria === productoActivo.categoria,
+    );
+    const complementarios = disponibles.filter(
+      (producto) => producto.categoria !== productoActivo.categoria && producto.destacado,
+    );
+
+    return [...mismaCategoria, ...complementarios].slice(0, 4);
+  }, [productos, productoActivo]);
+
   const hayFiltros = consulta.trim() !== '' || filtro !== 'todos';
 
   // Acciones de catálogo y navegación a la ficha exclusiva de un producto.
@@ -223,7 +238,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
 
       {/* Vista exclusiva del producto con precio, disponibilidad, especificaciones y cotización. */}
       {productoActivo ? (
-        <section aria-labelledby="detalle-producto-titulo" className="grid min-h-[calc(100vh-4rem)] bg-white lg:grid-cols-2">
+        <section aria-labelledby="detalle-producto-titulo" className="grid bg-white md:grid-cols-2">
             <div className="flex min-h-64 items-center justify-center bg-white p-6 sm:min-h-[60vh] sm:p-10 lg:min-h-0">
               <img
                 src={productoActivo.imagen}
@@ -272,7 +287,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
                   ))}
                 </dl>
               ) : null}
-              <div className="mt-7 flex flex-col gap-3 md:flex-row">
+              <div className="mt-7 flex flex-col gap-3 xl:flex-row">
                 <a
                   href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeCotizar)}`}
                   target="_blank"
@@ -293,7 +308,32 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
                 </a>
               </div>
             </div>
+            {productosRelacionados.length > 0 ? (
+              <div className="border-t border-line py-8 sm:px-8 md:col-span-2 lg:px-12 lg:py-10 xl:px-16">
+                <div className="mb-5 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-2xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                      También puede interesarte
+                    </p>
+                    <h3 className="mt-1 font-display text-xl font-bold text-ink-900">
+                      Productos relacionados
+                    </h3>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                  {productosRelacionados.map((producto) => (
+                    <ProductCard
+                      key={producto.slug}
+                      producto={producto}
+                      whatsapp={whatsapp}
+                      onView={verDetalle}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
         </section>
+
       ) : (
       <>
       {/* Resultados como lista al buscar y como tarjetas en la vista general. */}

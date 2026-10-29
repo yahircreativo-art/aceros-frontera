@@ -15,7 +15,7 @@ export default function ProductCard({ producto, whatsapp, onView }: ProductCardP
 
   const referencia = producto.sku ? ` (SKU ${producto.sku})` : '';
   const mensajeCotizar = `Hola, quiero cotizar: ${producto.nombre}${referencia}${producto.precio ? ` por ${formatCLP(producto.precio)}` : ''}.`;
-  const mensajeMayor = `Hola, necesito precio por volumen de: ${producto.nombre}${referencia}.`;
+  const mensajeMayor = `Hola, necesito precio mayorista de: ${producto.nombre}${referencia}.`;
 
   const urlCotizar = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeCotizar)}`;
   const urlMayor = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeMayor)}`;
@@ -30,7 +30,7 @@ export default function ProductCard({ producto, whatsapp, onView }: ProductCardP
         className="absolute inset-0 z-10 cursor-pointer rounded-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
       />
       {/* Imagen del producto e indicadores de stock, oferta y despacho. */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-white">
+      <div className="relative pt-2 aspect-[4/3] overflow-hidden bg-white">
         <img
           src={producto.imagen}
           alt={producto.nombre}
@@ -109,11 +109,11 @@ export default function ProductCard({ producto, whatsapp, onView }: ProductCardP
             href={urlMayor}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Pedir precio por volumen de ${producto.nombre}`}
+            aria-label={`Pedir precio mayorista de ${producto.nombre}`}
             className="pointer-events-auto inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-field border border-line bg-white px-2 py-2.5 text-xs font-semibold text-ink-700 transition-colors hover:border-ink-300 hover:bg-ink-50 md:flex-1"
           >
             <Icon name="building" className="size-3.5" />
-            Por volumen
+            Por mayor
           </a>
         </div>
       </div>
