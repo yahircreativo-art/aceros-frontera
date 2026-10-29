@@ -156,7 +156,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
     ? `Hola, quiero cotizar: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}${productoActivo.precio ? ` por ${formatCLP(productoActivo.precio)}` : ''}.`
     : '';
   const mensajeMayorista = productoActivo
-    ? `Hola, necesito precio por mayoreo de: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}.`
+    ? `Hola, necesito precio por volumen de: ${productoActivo.nombre}${productoActivo.sku ? ` (SKU ${productoActivo.sku})` : ''}.`
     : '';
 
   return (
@@ -289,7 +289,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-field border border-line bg-white px-4 py-3 text-sm font-semibold text-ink-800 transition-colors hover:border-ink-300 hover:bg-ink-50 md:flex-1"
                 >
                   <Icon name="building" className="size-5" />
-                  Por mayoreo
+                  Precio por volumen
                 </a>
               </div>
             </div>

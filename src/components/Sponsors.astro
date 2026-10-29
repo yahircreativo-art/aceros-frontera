@@ -1,14 +1,14 @@
 ---
-const marcas = ['DEWALT', 'BOSCH', 'STANLEY', 'MAKITA', 'TRUPER', '3M INDUSTRIAL'];
+const materiales = ['Perfiles de acero', 'Tubo redondo', 'Alambrón', 'Malla electrosoldada', 'Perfiles ángulo'];
 ---
 
 <section id="marcas" class="mt-14 scroll-mt-44 lg:scroll-mt-28 border-t border-line pt-8">
   <div class="container-page">
     <p class="text-2xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-      Marcas que distribuimos
+      Materiales que manejamos
     </p>
     <ul class="mt-5 flex flex-wrap items-center justify-between gap-x-10 gap-y-4 font-display text-lg font-bold tracking-tight text-ink-300">
-      {marcas.map((marca) => <li>{marca}</li>)}
+      {materiales.map((material) => <li>{material}</li>)}
     </ul>
   </div>
 </section>

@@ -8,9 +8,9 @@ export function formatCLP(valor: number): string {
   return formateadorCLP.format(valor);
 }
 
-/** Precio neto para la nota "Contado: $X + IVA" (IVA Chile 19%). */
+/** Precio antes de IVA mexicano (16%) para la nota "Contado: $X + IVA". */
 export function precioNeto(precio: number): number {
-  return Math.round(precio / 1.19);
+  return Math.round(precio / 1.16);
 }
 
 export function calcularDescuento(precio: number, precioAnterior?: number): number | null {

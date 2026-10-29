@@ -42,13 +42,13 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
         <div id="catalogo-intro" class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">
-              Catálogo destacado &amp; venta directa
+              Acero y materiales para construcción y fabricación
             </p>
             <h2 class="mt-2 text-3xl font-bold text-ink-900 sm:text-4xl">
-              Herramientas &amp; equipos de alto rendimiento
+              Perfiles, tubos y piezas de acero
             </h2>
           </div>
-          <p class="text-sm text-ink-500">Precios actualizados al instante</p>
+          <p class="text-sm text-ink-500">Consulta medidas y disponibilidad</p>
         </div>
 
         <Catalog client:load productos={productos} categorias={categorias} whatsapp={siteSeo.whatsapp} />
