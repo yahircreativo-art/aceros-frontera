@@ -47,4 +47,25 @@ async function convertDirectory(directory) {
 }
 
 await convertDirectory(imageRoot);
+
+const socialImageSource = path.join(imageRoot, 'og-default.webp');
+const socialImageOutput = path.join(imageRoot, 'og-default.jpg');
+const socialSourceInfo = await stat(socialImageSource);
+let regenerateSocialImage = true;
+
+try {
+  const socialOutputInfo = await stat(socialImageOutput);
+  regenerateSocialImage = socialOutputInfo.mtimeMs < socialSourceInfo.mtimeMs;
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
+
+if (regenerateSocialImage) {
+  await sharp(socialImageSource)
+    .resize(1200, 630, { fit: 'contain', background: '#000000' })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toFile(socialImageOutput);
+  console.log('Generated images/og-default.jpg');
+}
+
 console.log(`WebP images: ${converted} generated, ${upToDate} already up to date.`);
