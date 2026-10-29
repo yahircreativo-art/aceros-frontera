@@ -70,5 +70,120 @@ const encodedLocation = encodeURIComponent(location);
         </a>
       </div>
     </div>
-  </div>
+    </div>
+
+    <div id="formulario-cotizacion" class="mt-14 scroll-mt-44 border-t border-line pt-10 lg:mt-16 lg:scroll-mt-28">
+      <div class="mx-auto w-full max-w-5xl">
+        <div class="mx-auto max-w-2xl text-center">
+          <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">Cotización</p>
+          <h2 class="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
+            Cuéntanos qué material necesitas
+          </h2>
+          <p class="mt-3 text-sm leading-relaxed text-ink-600">
+            Completa los datos y continuaremos tu solicitud por WhatsApp.
+          </p>
+        </div>
+
+      <form id="formulario-whatsapp" class="mx-auto mt-7 grid w-full gap-5 sm:grid-cols-2">
+        <div>
+          <label for="cotizacion-nombre" class="mb-1.5 block text-sm font-semibold text-ink-800">Nombre</label>
+          <input
+            id="cotizacion-nombre"
+            name="nombre"
+            type="text"
+            autocomplete="name"
+            required
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Tu nombre"
+          />
+        </div>
+        <div>
+          <label for="cotizacion-telefono" class="mb-1.5 block text-sm font-semibold text-ink-800">Teléfono</label>
+          <input
+            id="cotizacion-telefono"
+            name="telefono"
+            type="tel"
+            autocomplete="tel"
+            required
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="664 000 0000"
+          />
+        </div>
+        <div>
+          <label for="cotizacion-material" class="mb-1.5 block text-sm font-semibold text-ink-800">Material o pieza</label>
+          <input
+            id="cotizacion-material"
+            name="material"
+            type="text"
+            required
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Perfil, tubo, alambrón, malla..."
+          />
+        </div>
+        <div>
+          <label for="cotizacion-medidas" class="mb-1.5 block text-sm font-semibold text-ink-800">Medidas o especificaciones</label>
+          <input
+            id="cotizacion-medidas"
+            name="medidas"
+            type="text"
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Calibre, largo, espesor..."
+          />
+        </div>
+        <div>
+          <label for="cotizacion-cantidad" class="mb-1.5 block text-sm font-semibold text-ink-800">Cantidad aproximada</label>
+          <input
+            id="cotizacion-cantidad"
+            name="cantidad"
+            type="text"
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Piezas, metros, toneladas..."
+          />
+        </div>
+        <div>
+          <label for="cotizacion-notas" class="mb-1.5 block text-sm font-semibold text-ink-800">Detalles adicionales</label>
+          <input
+            id="cotizacion-notas"
+            name="notas"
+            type="text"
+            class="h-12 w-full border border-line bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+            placeholder="Cuéntanos sobre tu proyecto"
+          />
+        </div>
+        <button
+          type="submit"
+          class="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-brand-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-800 sm:col-span-2 sm:w-fit sm:justify-self-center"
+        >
+          Enviar por WhatsApp
+          <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
+            <use href={`${assetUrl('/icons.svg')}#whatsapp`}></use>
+          </svg>
+        </button>
+      </form>
+      </div>
+    </div>
 </section>
+
+<script>
+  import { siteSeo } from '../lib/seo';
+
+  const form = document.querySelector<HTMLFormElement>('#formulario-whatsapp');
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    const mensaje = [
+      'Hola, quiero solicitar una cotización.',
+      `Nombre: ${data.get('nombre')}`,
+      `Teléfono: ${data.get('telefono')}`,
+      `Material o pieza: ${data.get('material')}`,
+      data.get('medidas') ? `Medidas o especificaciones: ${data.get('medidas')}` : '',
+      data.get('cantidad') ? `Cantidad aproximada: ${data.get('cantidad')}` : '',
+      data.get('notas') ? `Detalles: ${data.get('notas')}` : '',
+    ].filter(Boolean).join('\n');
+
+    window.location.href = `https://wa.me/${siteSeo.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+  });
+</script>

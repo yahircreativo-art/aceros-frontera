@@ -23,7 +23,7 @@ import { assetUrl } from '../lib/asset-url';
         class="mt-6 text-display text-white"
         style="text-shadow: 0 2px 4px rgb(0 0 0 / 95%), 0 6px 16px rgb(0 0 0 / 85%)"
       >
-        HACEMOS POSIBLE TU PROYECTO
+        EL ACERO QUE TU PROYECTO NECESITA
       </h1>
 
       <p
@@ -35,6 +35,15 @@ import { assetUrl } from '../lib/asset-url';
       </p>
 
       <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href="#formulario-cotizacion"
+          class="inline-flex items-center gap-2 cursor-pointer rounded-field bg-accent-400 px-5 py-3 text-sm font-bold text-ink-950 shadow-lg shadow-black/10 transition-colors hover:bg-accent-500"
+        >
+          Solicitar cotización
+          <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
+            <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
+          </svg>
+        </a>
         <a
           href="#catalogo"
           class="inline-flex items-center gap-2  cursor-pointer rounded-field bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition-colors hover:bg-brand-700"
