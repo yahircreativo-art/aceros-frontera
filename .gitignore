@@ -6,3 +6,10 @@ dist
 .env
 .env.*
 !.env.example
+
+# Strapi (backend/)
+backend/.tmp
+backend/.cache
+backend/build
+backend/logs
+backend/public/uploads

@@ -1,0 +1,75 @@
+{
+  "kind": "collectionType",
+  "collectionName": "productos",
+  "info": {
+    "singularName": "producto",
+    "pluralName": "productos",
+    "displayName": "Producto",
+    "description": "Productos del catálogo público"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombre"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "marca": {
+      "type": "string"
+    },
+    "categoria": {
+      "type": "string",
+      "required": true
+    },
+    "precio": {
+      "type": "integer"
+    },
+    "precioAnterior": {
+      "type": "integer"
+    },
+    "rating": {
+      "type": "decimal",
+      "default": 4.5,
+      "min": 0,
+      "max": 5
+    },
+    "reviews": {
+      "type": "integer",
+      "default": 0
+    },
+    "stock": {
+      "type": "integer",
+      "default": 0
+    },
+    "envioGratis": {
+      "type": "boolean",
+      "default": false
+    },
+    "destacado": {
+      "type": "boolean",
+      "default": false
+    },
+    "imagen": {
+      "type": "string",
+      "required": true
+    },
+    "etiquetas": {
+      "type": "json"
+    },
+    "resumen": {
+      "type": "text",
+      "required": true
+    },
+    "especificaciones": {
+      "type": "json"
+    }
+  }
+}
