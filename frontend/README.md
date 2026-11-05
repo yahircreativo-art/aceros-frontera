@@ -1,8 +1,8 @@
 # Ferremax · Plantilla de ferretería industrial
 
 Plantilla de una página (one-page) para ferretería industrial y mayoreo, construida con
-**Astro 7 + React 19 + Tailwind CSS 4**. El catálogo vive en archivos Markdown, el SEO en un
-único JSON y todo el sistema visual en tokens de `global.css`.
+**Astro 7 + React 19 + Tailwind CSS 4**. El catálogo puede obtenerse de Supabase o de archivos
+Markdown locales, el SEO vive en un único JSON y el sistema visual en tokens de `global.css`.
 
 ## Stack
 
@@ -26,9 +26,11 @@ pnpm check    # Astro + TypeScript
 
 Variables de entorno (archivo `.env`, plantilla en `.env.example`):
 
-- `STRAPI_URL`: origen del backend Strapi (`http://127.0.0.1:1337`). Si no está definido o el
-  backend no responde, el catálogo se construye desde los `.md`, así el build nunca se rompe.
-- `STRAPI_TOKEN`: opcional, solo si cierras la API pública en Strapi.
+- `SUPABASE_URL`: URL del proyecto Supabase.
+- `SUPABASE_ANON_KEY`: clave `anon`/publishable con permiso de lectura vía RLS. No uses la clave
+  `service_role`.
+- `SUPABASE_PRODUCTS_TABLE`: nombre de la tabla de productos en `public` (por defecto `productos`).
+  Si no se configuran las credenciales o Supabase no responde, el catálogo usa los `.md` locales.
 
 ## Desplegar en GitHub Pages
 
@@ -148,14 +150,28 @@ El tipo `PageId` se deriva del JSON: si escribes un id inexistente, `npm run che
 > Nota: el sitio es estático, así que los meta tags ya vienen en el HTML inicial (no dependen de
 > JavaScript). El sitemap se genera en `npm run build`.
 
-## 3. Catálogo: Strapi con respaldo en Markdown
+## 3. Catálogo: Supabase con respaldo en Markdown
 
-**Fuente de datos:** [`src/lib/productos.ts`](src/lib/productos.ts) pide los productos a la API
-REST de Strapi (`GET /api/productos`) cuando `STRAPI_URL` está configurado; si falla o no está
-seteado, usa los `.md` locales. En ambos casos se ordenan igual (destacados primero, luego A-Z).
+**Fuente de datos:** [`src/lib/productos.ts`](src/lib/productos.ts) consulta la tabla configurada
+de Supabase mediante su API REST cuando `SUPABASE_URL` y `SUPABASE_ANON_KEY` están definidos; si
+falla o no está configurado, usa los `.md` locales. En ambos casos se ordenan igual (destacados
+primero, luego A-Z).
 
-Mientras tanto, cada producto sigue siendo un archivo Markdown en [`src/content/catalogo/`](src/content/catalogo/). El nombre del
-archivo es el slug. El frontmatter se valida contra el esquema de
+La tabla debe tener estas columnas: `id` (texto, clave primaria), `slug` (texto), `sku` (texto),
+`nombre` (texto), `marca` (texto), `categoría` (texto, con tilde), `precio` (numeric),
+`precioAnterior` (numeric), `stock` (boolean), `imagen` (texto), `etiquetas` (texto) y `resumen`
+(texto). El valor de `etiquetas` puede contener varias etiquetas separadas por comas. El frontend
+traduce `categoría` a `categoria`, convierte `stock` a disponible/no disponible y divide las
+etiquetas para conservar el formato usado por los componentes. Los campos que no están en esta
+tabla (`rating`, `reviews`, `envioGratis`, `destacado`, `especificaciones`) usan valores por defecto.
+Habilita una política RLS de lectura para los productos que quieres publicar.
+
+El sitio es estático: la consulta se ejecuta durante el build y para reflejar cambios en Supabase
+hay que volver a desplegar el sitio.
+
+El respaldo local sigue disponible: cada producto es un archivo Markdown en
+[`src/content/catalogo/`](src/content/catalogo/). El nombre del archivo es el slug. El frontmatter
+se valida contra el esquema de
 [`src/content.config.ts`](src/content.config.ts) en desarrollo y en build.
 
 ```md

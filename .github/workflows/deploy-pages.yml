@@ -49,6 +49,9 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL || steps.pages.outputs.origin }}
           SITE_BASE_PATH: ${{ vars.SITE_BASE_PATH || steps.pages.outputs.base_path || '/' }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PRODUCTS_TABLE: ${{ vars.SUPABASE_PRODUCTS_TABLE || 'productos' }}
         run: pnpm build
 
       - name: Upload Pages artifact

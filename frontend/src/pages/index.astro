@@ -9,7 +9,7 @@ import Catalog from '../components/catalog/Catalog';
 import { siteSeo } from '../lib/seo';
 import { obtenerProductos } from '../lib/productos';
 
-// Catálogo desde Strapi si está configurado; si no, desde los .md locales.
+// Catálogo desde Supabase si está configurado; si no, desde los .md locales.
 const productos = await obtenerProductos();
 
 const categorias = [...new Set(productos.map((producto) => producto.categoria))].sort((a, b) =>
