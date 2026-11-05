@@ -48,7 +48,6 @@ async function desdeSupabase(): Promise<Producto[] | null> {
     const respuesta = await fetch(url, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
       signal: AbortSignal.timeout(5000),
     });
