@@ -11,7 +11,7 @@ interface ProductCardProps {
 export default function ProductCard({ producto, whatsapp, onView }: ProductCardProps) {
   // Disponibilidad, descuento y enlaces de cotización para este producto.
   const descuento = producto.precio ? calcularDescuento(producto.precio, producto.precioAnterior) : null;
-  const disponible = (producto.stock ?? 0) > 0;
+  const disponible = typeof producto.stock === 'boolean' ? producto.stock : (producto.stock ?? 0) > 0;
 
   const referencia = producto.sku ? ` (SKU ${producto.sku})` : '';
   const mensajeCotizar = `Hola, quiero cotizar: ${producto.nombre}${referencia}${producto.precio ? ` por ${formatCLP(producto.precio)}` : ''}.`;
@@ -47,7 +47,7 @@ export default function ProductCard({ producto, whatsapp, onView }: ProductCardP
               disponible ? 'bg-brand-600' : 'bg-ink-500'
             }`}
           >
-            {disponible ? 'En stock' : producto.stock === 0 ? 'Sobre pedido' : 'Consultar disponibilidad'}
+            {disponible ? 'En stock' : producto.stock === 0 || producto.stock === false ? 'Sobre pedido' : 'Consultar disponibilidad'}
           </span>
 
           <div className="flex flex-col items-start gap-1.5 md:items-end">

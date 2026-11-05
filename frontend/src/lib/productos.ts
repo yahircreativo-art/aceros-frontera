@@ -10,22 +10,15 @@ const SUPABASE_PRODUCTS_TABLE =
   (import.meta.env.SUPABASE_PRODUCTS_TABLE as string | undefined) ?? 'productos';
 
 interface ProductoSupabase {
-  id?: string;
-  slug?: string;
+  id?: number;
   sku?: string;
   nombre: string;
   marca?: string;
   categoria: string;
   precio?: number | null;
-  precioAnterior?: number | null;
   stock?: boolean | null;
   imagen: string;
-  etiquetas?: string | null;
   resumen: string;
-}
-
-function normalizarEtiquetas(etiquetas?: string | null): string[] {
-  return etiquetas?.split(',').map((etiqueta) => etiqueta.trim()).filter(Boolean) ?? [];
 }
 
 function normalizarImagen(imagen: string): string {
@@ -48,10 +41,7 @@ async function desdeSupabase(): Promise<Producto[] | null> {
 
   try {
     const url = new URL(`${SUPABASE_URL}/rest/v1/${SUPABASE_PRODUCTS_TABLE}`);
-    url.searchParams.set(
-      'select',
-      'id,slug,sku,nombre,marca,categoria:categoría,precio,precioAnterior,stock,imagen,etiquetas,resumen',
-    );
+    url.searchParams.set('select', 'id,sku,nombre,marca,categoria,precio,stock,imagen,resumen');
     url.searchParams.set('order', 'nombre.asc');
     url.searchParams.set('limit', '200');
 
@@ -75,22 +65,20 @@ async function desdeSupabase(): Promise<Producto[] | null> {
     }
 
     return data.map((item) => ({
-      slug: item.slug ?? String(item.id ?? item.sku ?? item.nombre),
+      slug: String(item.id ?? item.sku ?? item.nombre),
       sku: item.sku,
       nombre: item.nombre,
       marca: item.marca,
       categoria: item.categoria,
       precio: item.precio ?? undefined,
-      precioAnterior: item.precioAnterior ?? undefined,
       rating: 4.5,
       reviews: 0,
-      stock: Number(item.stock ?? false),
+      stock: item.stock ?? undefined,
       envioGratis: false,
       destacado: false,
       imagen: normalizarImagen(item.imagen),
-      etiquetas: normalizarEtiquetas(item.etiquetas),
+      etiquetas: [],
       resumen: item.resumen,
-      especificaciones: undefined,
     }));
   } catch (error) {
     console.warn('[catálogo] Supabase no disponible; se usa el catálogo Markdown.', error);

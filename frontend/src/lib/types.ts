@@ -8,7 +8,7 @@ export interface Producto {
   precioAnterior?: number;
   rating: number;
   reviews: number;
-  stock?: number;
+  stock?: number | boolean;
   envioGratis: boolean;
   destacado: boolean;
   imagen: string;

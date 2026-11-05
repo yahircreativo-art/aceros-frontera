@@ -32,8 +32,8 @@ export default function ProductRow({ producto, onView }: ProductRowProps) {
         <p className="font-display text-base font-extrabold leading-tight text-ink-900">
           {producto.precio ? formatCLP(producto.precio) : 'Consultar precio'}
         </p>
-        <p className={`mt-0.5 text-2xs font-semibold ${producto.stock && producto.stock > 0 ? 'text-brand-700' : 'text-ink-500'}`}>
-          {producto.stock ? 'En stock' : producto.stock === 0 ? 'Sobre pedido' : 'Consultar disponibilidad'}
+        <p className={`mt-0.5 text-2xs font-semibold ${producto.stock === true || (typeof producto.stock === 'number' && producto.stock > 0) ? 'text-brand-700' : 'text-ink-500'}`}>
+          {producto.stock === true || (typeof producto.stock === 'number' && producto.stock > 0) ? 'En stock' : producto.stock === 0 || producto.stock === false ? 'Sobre pedido' : 'Consultar disponibilidad'}
         </p>
       </div>
       <button

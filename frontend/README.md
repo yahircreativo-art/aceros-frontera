@@ -157,13 +157,11 @@ de Supabase mediante su API REST cuando `SUPABASE_URL` y `SUPABASE_ANON_KEY` est
 falla o no está configurado, usa los `.md` locales. En ambos casos se ordenan igual (destacados
 primero, luego A-Z).
 
-La tabla debe tener estas columnas: `id` (texto, clave primaria), `slug` (texto), `sku` (texto),
-`nombre` (texto), `marca` (texto), `categoría` (texto, con tilde), `precio` (numeric),
-`precioAnterior` (numeric), `stock` (boolean), `imagen` (texto), `etiquetas` (texto) y `resumen`
-(texto). El valor de `etiquetas` puede contener varias etiquetas separadas por comas. El frontend
-traduce `categoría` a `categoria`, convierte `stock` a disponible/no disponible y divide las
-etiquetas para conservar el formato usado por los componentes. Los campos que no están en esta
-tabla (`rating`, `reviews`, `envioGratis`, `destacado`, `especificaciones`) usan valores por defecto.
+La consulta espera exactamente las columnas de tu tabla: `id` (int8, clave primaria), `sku`
+(texto), `nombre` (texto), `marca` (texto), `categoria` (texto), `precio` (numeric), `stock`
+(boolean), `imagen` (texto) y `resumen` (texto). `stock` controla si aparece “En stock” o “Sobre
+pedido”. Los campos que no están en esta tabla (`rating`, `reviews`, `envioGratis`, `destacado`,
+`etiquetas`, `especificaciones`) usan valores por defecto.
 Habilita una política RLS de lectura para los productos que quieres publicar.
 
 El sitio es estático: la consulta se ejecuta durante el build y para reflejar cambios en Supabase

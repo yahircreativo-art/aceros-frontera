@@ -273,8 +273,8 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
                     {formatCLP(productoActivo.precioAnterior)}
                   </span>
                 ) : null}
-                <span className={`text-sm font-semibold ${productoActivo.stock && productoActivo.stock > 0 ? 'text-brand-700' : 'text-ink-500'}`}>
-                  {productoActivo.stock ? `${productoActivo.stock} en stock` : productoActivo.stock === 0 ? 'Sobre pedido' : 'Consultar disponibilidad'}
+                <span className={`text-sm font-semibold ${productoActivo.stock === true || (typeof productoActivo.stock === 'number' && productoActivo.stock > 0) ? 'text-brand-700' : 'text-ink-500'}`}>
+                  {typeof productoActivo.stock === 'boolean' ? (productoActivo.stock ? 'En stock' : 'Sobre pedido') : productoActivo.stock ? `${productoActivo.stock} en stock` : productoActivo.stock === 0 ? 'Sobre pedido' : 'Consultar disponibilidad'}
                 </span>
               </div>
               {productoActivo.especificaciones && Object.keys(productoActivo.especificaciones).length > 0 ? (
