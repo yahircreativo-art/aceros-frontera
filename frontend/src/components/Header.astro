@@ -67,10 +67,31 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
 </header>
 
 <script>
-  document.querySelectorAll<HTMLButtonElement>('[data-catalog-category]').forEach((boton) => {
-    boton.addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('catalog-category', { detail: boton.dataset.catalogCategory }));
-      document.getElementById('catalogo')?.scrollIntoView();
+  const nav = document.querySelector<HTMLElement>('nav[aria-label="Navegación secundaria"]');
+
+  nav?.addEventListener('click', (evento) => {
+    const boton = (evento.target as Element).closest<HTMLButtonElement>('[data-catalog-category]');
+    if (!boton) return;
+
+    window.dispatchEvent(new CustomEvent('catalog-category', { detail: boton.dataset.catalogCategory }));
+    document.getElementById('catalogo')?.scrollIntoView();
+  });
+
+  window.addEventListener('catalog-products-updated', (evento) => {
+    if (!nav) return;
+
+    nav.querySelectorAll('[data-catalog-category]').forEach((boton) => boton.remove());
+    const productos = (evento as CustomEvent<{ categoria: string }[]>).detail;
+    const categoriasActualizadas = [...new Set(productos.map((producto) => producto.categoria))]
+      .sort((a, b) => a.localeCompare(b, 'es'));
+
+    categoriasActualizadas.forEach((categoria) => {
+      const boton = document.createElement('button');
+      boton.type = 'button';
+      boton.dataset.catalogCategory = categoria;
+      boton.className = 'shrink-0 cursor-pointer px-2 py-1 text-sm font-medium text-ink-700 transition-colors hover:text-accent-500';
+      boton.textContent = categoria;
+      nav.append(boton);
     });
   });
 </script>

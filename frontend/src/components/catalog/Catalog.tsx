@@ -3,12 +3,15 @@ import ProductCard from './ProductCard';
 import ProductRow from './ProductRow';
 import Icon from '../ui/Icon';
 import { formatCLP, normalizar } from '../../lib/format';
+import { obtenerProductosSupabase } from '../../lib/supabase-productos';
 import type { Producto } from '../../lib/types';
 
 interface CatalogProps {
   productos: Producto[];
-  categorias: string[];
   whatsapp: string;
+  supabaseUrl?: string;
+  supabaseKey?: string;
+  supabaseTable?: string;
 }
 
 // Filtros generales que se muestran antes de las categorías del catálogo.
@@ -20,7 +23,47 @@ const FILTROS_FIJOS = [
 
 const FILTROS_ESPECIALES = FILTROS_FIJOS.map((filtro) => filtro.id);
 
-export default function Catalog({ productos, categorias, whatsapp }: CatalogProps) {
+export default function Catalog({
+  productos,
+  whatsapp,
+  supabaseUrl,
+  supabaseKey,
+  supabaseTable,
+}: CatalogProps) {
+  const [productosActuales, setProductosActuales] = useState(productos);
+  const categoriasActuales = useMemo(
+    () => [...new Set(productosActuales.map((producto) => producto.categoria))].sort((a, b) =>
+      a.localeCompare(b, 'es'),
+    ),
+    [productosActuales],
+  );
+
+  useEffect(() => {
+    if (!supabaseUrl || !supabaseKey || !supabaseTable) return;
+
+    let cancelado = false;
+    obtenerProductosSupabase({
+      url: supabaseUrl,
+      clavePublica: supabaseKey,
+      tabla: supabaseTable,
+    })
+      .then((productosNuevos) => {
+        if (cancelado) return;
+        const ordenados = productosNuevos.sort(
+          (a, b) => Number(b.destacado) - Number(a.destacado) || a.nombre.localeCompare(b.nombre, 'es'),
+        );
+        setProductosActuales(ordenados);
+        window.dispatchEvent(new CustomEvent('catalog-products-updated', { detail: ordenados }));
+      })
+      .catch((error: unknown) => {
+        if (!cancelado) console.error('[catálogo] No se pudieron actualizar los productos desde Supabase.', error);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [supabaseUrl, supabaseKey, supabaseTable]);
+
   // Estado compartido por la búsqueda, los filtros y la ficha seleccionada.
   const [consulta, setConsulta] = useState('');
   const [filtro, setFiltro] = useState('todos');
@@ -55,7 +98,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
 
     const mostrarDetalle = (evento: Event) => {
       const slug = (evento as CustomEvent<string>).detail;
-      const producto = productos.find((item) => item.slug === slug) ?? null;
+      const producto = productosActuales.find((item) => item.slug === slug) ?? null;
       setProductoActivo(producto);
       if (producto && new URL(window.location.href).searchParams.get('producto') !== slug) {
         actualizarUrlProducto(slug);
@@ -64,7 +107,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
 
     const restaurarDesdeUrl = () => {
       const slug = new URL(window.location.href).searchParams.get('producto');
-      const producto = productos.find((item) => item.slug === slug) ?? null;
+      const producto = productosActuales.find((item) => item.slug === slug) ?? null;
       setProductoActivo(producto);
       if (producto) {
         window.dispatchEvent(new CustomEvent('catalog-search', { detail: producto.nombre }));
@@ -82,7 +125,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
 
     const slugInicial = new URL(window.location.href).searchParams.get('producto');
     if (slugInicial) {
-      const productoInicial = productos.find((producto) => producto.slug === slugInicial);
+      const productoInicial = productosActuales.find((producto) => producto.slug === slugInicial);
       if (productoInicial) {
         setProductoActivo(productoInicial);
         window.dispatchEvent(new CustomEvent('catalog-search', { detail: productoInicial.nombre }));
@@ -97,19 +140,19 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
       window.removeEventListener('catalog-product-detail', mostrarDetalle);
       window.removeEventListener('popstate', restaurarDesdeUrl);
     };
-  }, [productos]);
+  }, [productosActuales]);
 
   // Combina filtros fijos con las categorías disponibles.
   const tabs = useMemo(
-    () => [...FILTROS_FIJOS, ...categorias.map((categoria) => ({ id: categoria, label: categoria }))],
-    [categorias],
+    () => [...FILTROS_FIJOS, ...categoriasActuales.map((categoria) => ({ id: categoria, label: categoria }))],
+    [categoriasActuales],
   );
 
   // Filtra por estado/categoría y busca términos en nombre, marca, SKU y etiquetas.
   const resultados = useMemo(() => {
     const terminos = normalizar(consulta).split(/\s+/).filter(Boolean);
 
-    return productos.filter((producto) => {
+    return productosActuales.filter((producto) => {
       if (filtro === 'destacados' && !producto.destacado) return false;
       if (filtro === 'ofertas' && !producto.precioAnterior) return false;
       if (!FILTROS_ESPECIALES.includes(filtro) && producto.categoria !== filtro) return false;
@@ -128,7 +171,7 @@ export default function Catalog({ productos, categorias, whatsapp }: CatalogProp
 
       return terminos.every((termino) => texto.includes(termino));
     });
-  }, [productos, consulta, filtro]);
+  }, [productosActuales, consulta, filtro]);
 
   // Productos de la misma categoría, completados con destacados si hay pocos relacionados.
   const productosRelacionados = useMemo(() => {

@@ -8,6 +8,7 @@ interface HeaderSearchProps {
 }
 
 export default function HeaderSearch({ productos }: HeaderSearchProps) {
+  const [productosActuales, setProductosActuales] = useState(productos);
   const [consulta, setConsulta] = useState('');
   const [enfocado, setEnfocado] = useState(false);
 
@@ -21,6 +22,10 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
       setEnfocado(false);
     };
 
+    const actualizarProductos = (evento: Event) => {
+      setProductosActuales((evento as CustomEvent<Producto[]>).detail);
+    };
+
     const detectarRegreso = (evento: MouseEvent) => {
       if ((evento.target as Element).closest('a[href="#inicio"]')) {
         window.dispatchEvent(new Event('catalog-reset'));
@@ -30,11 +35,13 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     const reiniciarAlRegresar = () => window.dispatchEvent(new Event('catalog-reset'));
 
     window.addEventListener('catalog-search', sincronizarBusqueda);
+    window.addEventListener('catalog-products-updated', actualizarProductos);
     window.addEventListener('catalog-reset', reiniciarBusqueda);
     document.addEventListener('click', detectarRegreso);
     window.addEventListener('popstate', reiniciarAlRegresar);
     return () => {
       window.removeEventListener('catalog-search', sincronizarBusqueda);
+      window.removeEventListener('catalog-products-updated', actualizarProductos);
       window.removeEventListener('catalog-reset', reiniciarBusqueda);
       document.removeEventListener('click', detectarRegreso);
       window.removeEventListener('popstate', reiniciarAlRegresar);
@@ -45,7 +52,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     const terminos = normalizar(consulta).split(/\s+/).filter(Boolean);
     if (terminos.length === 0) return [];
 
-    return productos
+    return productosActuales
       .filter((producto) => {
         const texto = normalizar(
           [producto.nombre, producto.marca, producto.sku, producto.categoria, producto.etiquetas.join(' ')].filter(Boolean).join(' '),
@@ -53,7 +60,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
         return terminos.every((termino) => texto.includes(termino));
       })
       .slice(0, 6);
-  }, [consulta, productos]);
+  }, [consulta, productosActuales]);
 
   const publicarBusqueda = (valor: string, desplazar = false) => {
     window.dispatchEvent(new CustomEvent('catalog-search', { detail: valor }));

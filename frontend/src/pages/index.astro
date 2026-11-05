@@ -12,9 +12,9 @@ import { obtenerProductos } from '../lib/productos';
 // Catálogo desde Supabase si está configurado; si no, desde los .md locales.
 const productos = await obtenerProductos();
 
-const categorias = [...new Set(productos.map((producto) => producto.categoria))].sort((a, b) =>
-  a.localeCompare(b, 'es'),
-);
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
 
 ---
 
@@ -37,7 +37,14 @@ const categorias = [...new Set(productos.map((producto) => producto.categoria))]
           
         </div>
 
-        <Catalog client:load productos={productos} categorias={categorias} whatsapp={siteSeo.whatsapp} />
+        <Catalog
+          client:load
+          productos={productos}
+          whatsapp={siteSeo.whatsapp}
+          supabaseUrl={supabaseUrl}
+          supabaseKey={supabaseKey}
+          supabaseTable={supabaseTable}
+        />
       </div>
     </section>
     <About />

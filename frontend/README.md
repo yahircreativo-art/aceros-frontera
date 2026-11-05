@@ -152,10 +152,11 @@ El tipo `PageId` se deriva del JSON: si escribes un id inexistente, `npm run che
 
 ## 3. Catálogo: Supabase con respaldo en Markdown
 
-**Fuente de datos:** [`src/lib/productos.ts`](src/lib/productos.ts) consulta la tabla configurada
-de Supabase mediante su API REST cuando `SUPABASE_URL` y `SUPABASE_ANON_KEY` están definidos; si
-falla o no está configurado, usa los `.md` locales. En ambos casos se ordenan igual (destacados
-primero, luego A-Z).
+**Fuente de datos:** el sitio incluye el catálogo disponible al compilar y, al abrirse en el
+navegador, vuelve a consultar Supabase mediante su API REST. Así los cambios aparecen al recargar la
+página, sin volver a desplegar. Si Supabase falla, permanece visible el último catálogo incluido en
+el build (o los `.md` locales). La clave publishable se entrega al navegador y es pública por
+diseño; protege los datos mediante RLS y no uses una clave `secret` o `service_role`.
 
 La consulta espera exactamente las columnas de tu tabla: `id` (int8, clave primaria), `sku`
 (texto), `nombre` (texto), `marca` (texto), `categoria` (texto), `precio` (numeric), `stock`
@@ -164,8 +165,8 @@ pedido”. Los campos que no están en esta tabla (`rating`, `reviews`, `envioGr
 `etiquetas`, `especificaciones`) usan valores por defecto.
 Habilita una política RLS de lectura para los productos que quieres publicar.
 
-El sitio es estático: la consulta se ejecuta durante el build y para reflejar cambios en Supabase
-hay que volver a desplegar el sitio.
+También se consulta durante el build para tener productos disponibles desde la primera respuesta;
+la consulta del navegador los actualiza al recargar la página.
 
 El respaldo local sigue disponible: cada producto es un archivo Markdown en
 [`src/content/catalogo/`](src/content/catalogo/). El nombre del archivo es el slug. El frontmatter
