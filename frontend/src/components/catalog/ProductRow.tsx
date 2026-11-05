@@ -33,7 +33,7 @@ export default function ProductRow({ producto, onView }: ProductRowProps) {
           {producto.precio ? formatCLP(producto.precio) : 'Consultar precio'}
         </p>
         <p className={`mt-0.5 text-2xs font-semibold ${producto.stock === true || (typeof producto.stock === 'number' && producto.stock > 0) ? 'text-brand-700' : 'text-ink-500'}`}>
-          {producto.stock === true || (typeof producto.stock === 'number' && producto.stock > 0) ? 'En stock' : producto.stock === 0 || producto.stock === false ? 'Sobre pedido' : 'Consultar disponibilidad'}
+          {producto.stock === true || (typeof producto.stock === 'number' && producto.stock > 0) ? 'En stock' : producto.stock === 0 || producto.stock === false ? 'Sin stock' : 'Consultar disponibilidad'}
         </p>
       </div>
       <button
