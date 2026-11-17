@@ -18,8 +18,8 @@ const promocionesGrid = promociones.filter((promocion) => !esBanner(promocion));
 const categorias = [...new Set(productos.map((producto) => producto.Categoria).filter(Boolean))]
   .map(String);
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+const supabaseUrl = (import.meta.env.SUPABASE_URL ?? '').trim();
+const supabaseKey = (import.meta.env.SUPABASE_ANON_KEY ?? '').trim();
 const supabaseDestacadosTable =
   import.meta.env.SUPABASE_DESTACADOS_TABLE ?? "Promociones";
 const supabaseProductsTable = "MASTER_PRODUCTOS";

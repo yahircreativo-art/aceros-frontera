@@ -57,8 +57,9 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL || steps.pages.outputs.origin }}
           SITE_BASE_PATH: ${{ vars.SITE_BASE_PATH || steps.pages.outputs.base_path || '/' }}
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Se aceptan como Variable o como Secret.
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY }}
           SUPABASE_PRODUCTS_TABLE: ${{ vars.SUPABASE_PRODUCTS_TABLE || 'MASTER_PRODUCTOS' }}
           SUPABASE_DESTACADOS_TABLE: ${{ vars.SUPABASE_DESTACADOS_TABLE || 'Promociones' }}
           SUPABASE_PROMOS_BUCKET: ${{ vars.SUPABASE_PROMOS_BUCKET || 'Productos-imagenes' }}
