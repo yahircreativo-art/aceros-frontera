@@ -87,7 +87,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
       : -1;
 
   return (
-    <div className="relative order-3 w-full md:order-none md:min-w-0 md:flex-1">
+    <div className="relative w-full">
       <form
         role="search"
         onSubmit={(evento) => {
@@ -95,9 +95,9 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
           evento.preventDefault();
           setEnfocado(false);
         }}
-        className="group/search flex h-12 overflow-hidden"
+        className="group/search flex h-10 overflow-hidden"
       >
-        <div className="flex min-w-0 flex-1 items-center gap-3  bg-surface-primary px-4 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus">
+        <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-primary px-3 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus">
           <label className="sr-only" htmlFor="buscar-navbar">Buscar productos</label>
           <input
             id="buscar-navbar"
@@ -142,7 +142,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
             aria-activedescendant={
               sugerenciaActiva >= 0 ? `sugerencia-producto-${sugerenciaActiva}` : undefined
             }
-            className="h-full min-w-0 flex-1 bg-transparent type-body-m text-text-primary outline-none placeholder:text-text-muted focus-visible:outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent type-body-s text-text-primary outline-none placeholder:text-text-muted focus-visible:outline-none"
           />
           {consulta ? (
             <Button
@@ -164,9 +164,9 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
           variant="unstyled"
           size="none"
           icon="search"
-          iconClass="size-5"
+          iconClass="size-4"
           aria-label="Buscar en el catálogo"
-          className="h-full w-12 shrink-0 bg-accent-primary text-text-on-accent hover:bg-accent-hover active:bg-accent-active"
+          className="h-full w-10 shrink-0 bg-accent-primary text-text-on-accent hover:bg-accent-hover active:bg-accent-active"
         />
       </form>
 
@@ -175,7 +175,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
           id="sugerencias-productos"
           role="listbox"
           aria-label="Productos sugeridos"
-          className="absolute inset-x-0 top-full z-50 mt-1 max-h-80 overflow-y-auto border border-border-default bg-surface-elevated py-2 text-text-primary shadow-menu"
+          className="absolute inset-x-0 top-full z-50 mt-1 max-h-80 lg:left-auto lg:w-[26rem] overflow-y-auto border border-border-default bg-surface-elevated py-2 text-text-primary shadow-menu"
         >
           {sugerencias.length ? (
             sugerencias.map((producto, indice) => (

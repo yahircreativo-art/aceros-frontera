@@ -1,16 +1,16 @@
 ---
 /**
- * Figma: Navbar [Type=Tienda]
- * Top Bar (surface/inverse) → Logo · Search Bar[Header] · Button[Secondary, M]
- * Brand Stripe[S] (6 px amarillo)
- * Category Bar (blanco) → enlaces Body/Label · separador · categorías Body/Body-S
+ * Navbar en una sola barra oscura:
+ * Logo · secciones principales (Catálogo ▾ abre el mega menú) · buscador
+ * compacto · botón Cotizar. Debajo, la franja amarilla de marca.
+ * En pantallas chicas las secciones pasan a un menú desplegable (☰) y el
+ * buscador ocupa su propia fila.
  */
 import Logo from './Logo.astro';
 import Button from './ui/Button.astro';
 import MegaMenu from './MegaMenu.astro';
 import HeaderSearch from './catalog/HeaderSearch';
 import { whatsappUrl } from '../lib/seo';
-import { rutaCategoria } from '../lib/categorias';
 import { rutaInterna } from '../lib/asset-url';
 import type { Producto } from '../lib/types';
 
@@ -24,32 +24,37 @@ const categorias = [...new Set(productos.map((producto) => producto.Categoria).f
   .filter(Boolean)
   .sort((a, b) => a.localeCompare(b, 'es'));
 
-/* Categorías con más productos primero, como accesos rápidos de la barra. */
-const conteo = new Map<string, number>();
-for (const producto of productos) {
-  const categoria = String(producto.Categoria ?? '').trim();
-  if (categoria) conteo.set(categoria, (conteo.get(categoria) ?? 0) + 1);
-}
-const categoriasRapidas = [...conteo.entries()]
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 7)
-  .map(([categoria]) => categoria);
-
 const enlaces = [
   { href: '/nosotros', label: 'Nosotros' },
   { href: '/#servicios', label: 'Servicios' },
   { href: '/sucursales', label: 'Sucursales' },
   { href: '/contacto', label: 'Contacto' },
 ];
+const enlace = 'shrink-0 type-label text-text-inverse transition-colors hover:text-text-accent';
 ---
 
-<header class="sticky top-0 z-40 bg-surface-primary shadow-header">
-  <div class="brand-stripe bg-surface-inverse">
-    <div class="container-page flex flex-wrap items-center justify-between gap-x-8 gap-y-3 py-4 md:flex-nowrap">
-      <Logo />
+<header class="sticky top-0 z-40 brand-stripe bg-surface-inverse shadow-header">
+  <div class="container-page flex flex-wrap items-center gap-x-8 gap-y-3 py-3 lg:flex-nowrap">
+    <Logo />
 
-      <HeaderSearch productos={productos} client:load />
+    <!-- Secciones principales (escritorio) -->
+    <nav aria-label="Navegación principal" class="hidden items-center gap-6 lg:flex xl:gap-8">
+      <button
+        type="button"
+        data-mega-trigger
+        aria-expanded="false"
+        aria-controls="mega-menu"
+        class={`group inline-flex cursor-pointer items-center gap-1.5 ${enlace} aria-expanded:text-text-accent`}
+      >
+        Catálogo
+        <svg viewBox="0 0 10 6" class="h-1.5 w-2.5 transition-transform group-aria-expanded:rotate-180" fill="none" aria-hidden="true">
+          <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      {enlaces.map((e) => <a class={enlace} href={rutaInterna(e.href)}>{e.label}</a>)}
+    </nav>
 
+    <div class="ml-auto flex items-center gap-3 lg:order-last lg:ml-0">
       <div class="hidden shrink-0 md:block">
         <Button
           href={whatsappUrl()}
@@ -61,51 +66,81 @@ const enlaces = [
           label="Cotizar"
         />
       </div>
+
+      <!-- Menú (celular y tableta) -->
+      <button
+        type="button"
+        data-menu-movil-boton
+        aria-expanded="false"
+        aria-controls="menu-movil"
+        aria-label="Abrir menú"
+        class="grid size-11 cursor-pointer place-items-center text-text-inverse hover:text-text-accent lg:hidden"
+      >
+        <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path data-icono-abrir d="M4 7h16M4 12h16M4 17h16" />
+          <path data-icono-cerrar d="M6 6l12 12M18 6L6 18" class="hidden" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Buscador: fila propia en celular, compacto en escritorio -->
+    <div class="order-last w-full lg:order-none lg:ml-auto lg:w-64 lg:shrink-0 xl:w-72">
+      <HeaderSearch productos={productos} client:load />
     </div>
   </div>
 
   <nav
-    aria-label="Navegación secundaria"
-    class="container-page flex h-[2.875rem] items-center gap-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    id="menu-movil"
+    data-menu-movil
+    aria-label="Navegación principal"
+    hidden
+    class="absolute inset-x-0 top-[calc(100%+6px)] z-50 max-h-[calc(100svh-8rem)] overflow-y-auto bg-surface-inverse shadow-modal lg:hidden"
   >
-    <button
-      type="button"
-      data-mega-trigger
-      aria-expanded="false"
-      aria-controls="mega-menu"
-      class="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 type-label text-text-primary transition-colors hover:text-text-brand aria-expanded:text-text-brand"
-    >
-      Catálogo
-      <svg viewBox="0 0 10 6" class="h-1.5 w-2.5 transition-transform group-aria-expanded:rotate-180" fill="none" aria-hidden="true">
-        <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </button>
-    {
-      enlaces.map((enlace) => (
-        <a
-          class="shrink-0 type-label text-text-primary transition-colors hover:text-text-brand"
-          href={rutaInterna(enlace.href)}
-        >
-          {enlace.label}
-        </a>
-      ))
-    }
-    {
-      categoriasRapidas.length > 0 && (
-        <>
-          <span aria-hidden="true" class="h-5 w-px shrink-0 bg-border-default" />
-          {categoriasRapidas.map((categoria) => (
+    <ul class="container-page flex flex-col py-2">
+      {
+        [{ href: '/catalogo', label: 'Catálogo' }, ...enlaces].map((e) => (
+          <li class="border-b border-white/10 last:border-0">
             <a
-              class="shrink-0 type-body-s text-text-secondary transition-colors hover:text-text-brand"
-              href={rutaInterna(rutaCategoria(categoria, categorias))}
+              href={rutaInterna(e.href)}
+              class="flex items-center justify-between py-4 type-h4 text-text-inverse hover:text-text-accent"
             >
-              {categoria}
+              {e.label}
+              <span aria-hidden="true" class="text-text-accent">›</span>
             </a>
-          ))}
-        </>
-      )
-    }
+          </li>
+        ))
+      }
+    </ul>
   </nav>
 
   <MegaMenu categorias={categorias} />
 </header>
+
+<script>
+  const boton = document.querySelector<HTMLButtonElement>('[data-menu-movil-boton]');
+  const menu = document.querySelector<HTMLElement>('[data-menu-movil]');
+
+  if (boton && menu) {
+    const alternar = (abrir: boolean) => {
+      menu.hidden = !abrir;
+      boton.setAttribute('aria-expanded', String(abrir));
+      boton.setAttribute('aria-label', abrir ? 'Cerrar menú' : 'Abrir menú');
+      boton.querySelector('[data-icono-abrir]')?.classList.toggle('hidden', abrir);
+      boton.querySelector('[data-icono-cerrar]')?.classList.toggle('hidden', !abrir);
+    };
+
+    boton.addEventListener('click', () => alternar(menu.hidden));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        alternar(false);
+        boton.focus();
+      }
+    });
+    document.addEventListener('mousedown', (e) => {
+      const objetivo = e.target as Node;
+      if (!menu.hidden && !menu.contains(objetivo) && !boton.contains(objetivo)) alternar(false);
+    });
+    /* Al pasar a escritorio el menú móvil deja de tener sentido. */
+    window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => e.matches && alternar(false));
+  }
+</script>
