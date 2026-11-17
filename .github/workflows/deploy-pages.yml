@@ -1,24 +1,37 @@
+# Publica el sitio Astro de frontend/ en GitHub Pages.
+# URL de preview: https://<usuario>.github.io/<repositorio>/
+#
+# Configuración única en GitHub (Settings del repositorio):
+#   1. Settings → Pages → Build and deployment → Source: "GitHub Actions".
+#   2. Settings → Secrets and variables → Actions:
+#        Secrets:   SUPABASE_ANON_KEY
+#        Variables: SUPABASE_URL
+#                   (opcionales) SUPABASE_PRODUCTS_TABLE, SUPABASE_DESTACADOS_TABLE,
+#                   SUPABASE_PROMOS_BUCKET, SITE_URL, SITE_BASE_PATH
+#   Con dominio propio (p. ej. acerosfrontera.com) define SITE_URL con ese dominio
+#   y SITE_BASE_PATH="/"; sin ellas se usa la URL y la subcarpeta de Pages.
+
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
-      - master
   workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
+# Una sola publicación a la vez; no se cancela la que está en curso.
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     defaults:
       run:
         working-directory: frontend
@@ -26,20 +39,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Configure GitHub Pages
         id: pages
@@ -52,7 +60,9 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SUPABASE_PRODUCTS_TABLE: ${{ vars.SUPABASE_PRODUCTS_TABLE || 'productos' }}
-        run: pnpm build
+          SUPABASE_DESTACADOS_TABLE: ${{ vars.SUPABASE_DESTACADOS_TABLE || 'Promociones' }}
+          SUPABASE_PROMOS_BUCKET: ${{ vars.SUPABASE_PROMOS_BUCKET || 'Productos-imagenes' }}
+        run: npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -60,14 +70,11 @@ jobs:
           path: frontend/dist
 
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      pages: write
-      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

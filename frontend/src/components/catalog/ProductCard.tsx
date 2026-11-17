@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from '../ui/Button';
 import { whatsappUrl } from '../../lib/seo';
+import { rutaInterna } from '../../lib/asset-url';
 import type { Producto } from '../../lib/types';
 
 interface ProductCardProps {
@@ -38,7 +39,7 @@ export default function ProductCard({ producto, onView, href }: ProductCardProps
         />
       ) : (
         <a
-          href={href ?? '/catalogo'}
+          href={rutaInterna(href ?? '/catalogo')}
           aria-label={`Ver detalles de ${nombre || 'producto'}`}
           className="absolute inset-0 z-10"
         />

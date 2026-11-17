@@ -11,6 +11,7 @@ import HeaderCatalogoDropdown from './HeaderCatalogoDropdown.tsx';
 import HeaderSearch from './catalog/HeaderSearch';
 import { whatsappUrl } from '../lib/seo';
 import { rutaCategoria } from '../lib/categorias';
+import { rutaInterna } from '../lib/asset-url';
 import type { Producto } from '../lib/types';
 
 interface Props {
@@ -72,7 +73,7 @@ const enlaces = [
       enlaces.map((enlace) => (
         <a
           class="shrink-0 type-label text-text-primary transition-colors hover:text-text-brand"
-          href={enlace.href}
+          href={rutaInterna(enlace.href)}
         >
           {enlace.label}
         </a>
@@ -85,7 +86,7 @@ const enlaces = [
           {categoriasRapidas.map((categoria) => (
             <a
               class="shrink-0 type-body-s text-text-secondary transition-colors hover:text-text-brand"
-              href={rutaCategoria(categoria, categorias)}
+              href={rutaInterna(rutaCategoria(categoria, categorias))}
             >
               {categoria}
             </a>

@@ -1,5 +1,5 @@
 ---
-import { assetUrl } from '../../lib/asset-url';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
 import {
   buttonClasses,
   iconSizeFor,
@@ -58,7 +58,7 @@ const relFinal = rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined
 
 <Tag
   class={clases}
-  href={href}
+  href={rutaInterna(href)}
   target={target}
   rel={relFinal}
   type={href ? undefined : type}

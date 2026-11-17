@@ -1,5 +1,6 @@
 import { readdirSync, statSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
+import { assetUrl } from './asset-url';
 
 const EXTENSIONES = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif', '.svg']);
 
@@ -34,6 +35,6 @@ export function obtenerEmpresasAliadas(): EmpresaAliada[] {
     .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
     .map((archivo) => ({
       nombre: basename(archivo, extname(archivo)).replace(/[-_]+/g, ' ').trim(),
-      imagen: `${import.meta.env.BASE_URL}images/empresas/${encodeURIComponent(archivo)}`,
+      imagen: assetUrl(`/images/empresas/${encodeURIComponent(archivo)}`),
     }));
 }

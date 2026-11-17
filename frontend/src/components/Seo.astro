@@ -1,6 +1,7 @@
 ---
 import seo from '../data/seo.json';
 import type { PageId } from '../lib/seo';
+import { assetUrl } from '../lib/asset-url';
 
 interface Props {
   page: PageId;
@@ -19,9 +20,9 @@ const data = {
 };
 
 const baseUrl = Astro.site?.toString() ?? site.baseUrl;
-const siteRoot = new URL(import.meta.env.BASE_URL, baseUrl).toString();
+const siteRoot = new URL(assetUrl('/'), baseUrl).toString();
 const canonical = new URL(data.path.replace(/^\/+/, ''), siteRoot).toString();
-const image = new URL(`${import.meta.env.BASE_URL}${site.defaultImage.replace(/^\/+/, '')}`, baseUrl).toString();
+const image = new URL(assetUrl(site.defaultImage), baseUrl).toString();
 const organizationId = `${siteRoot}#organization`;
 const websiteId = `${siteRoot}#website`;
 

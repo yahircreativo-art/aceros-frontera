@@ -8,7 +8,7 @@
  */
 import Logo from './Logo.astro';
 import { siteSeo, whatsappUrl } from '../lib/seo';
-import { assetUrl } from '../lib/asset-url';
+import { assetUrl, rutaInterna } from '../lib/asset-url';
 
 const anio = new Date().getFullYear();
 
@@ -93,7 +93,7 @@ const columnas = [
                   <li>
                     <a
                       class="transition-colors hover:text-text-inverse"
-                      href={enlace.href}
+                      href={rutaInterna(enlace.href)}
                       target={enlace.externo ? '_blank' : undefined}
                       rel={enlace.externo ? 'noopener noreferrer' : undefined}
                     >

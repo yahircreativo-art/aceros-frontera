@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { rutaCategoria } from '../lib/categorias';
+import { rutaInterna } from '../lib/asset-url';
 
 interface HeaderCatalogoDropdownProps {
   categorias: ReadonlyArray<string>;
@@ -173,7 +174,7 @@ export default function HeaderCatalogoDropdown({ categorias }: HeaderCatalogoDro
           <ul className="py-2" role="list">
             <li>
               <a
-                href="/catalogo"
+                href={rutaInterna('/catalogo')}
                 onClick={() => setAbierto(false)}
                 className="block w-full border-b border-border-subtle px-4 py-2.5 text-left type-label text-text-brand transition-colors hover:bg-surface-secondary"
               >
@@ -184,7 +185,7 @@ export default function HeaderCatalogoDropdown({ categorias }: HeaderCatalogoDro
               categoriasOrdenadas.map((categoria) => (
                 <li key={categoria}>
                   <a
-                    href={rutaCategoria(categoria, categorias)}
+                    href={rutaInterna(rutaCategoria(categoria, categorias))}
                     onClick={() => setAbierto(false)}
                     className="block px-4 py-2 text-left type-body-s text-text-secondary transition-colors hover:bg-surface-secondary hover:text-text-primary"
                   >
@@ -199,7 +200,7 @@ export default function HeaderCatalogoDropdown({ categorias }: HeaderCatalogoDro
 
           <div className="border-t border-border-subtle px-4 py-2.5 type-caption text-text-muted">
             <a
-              href="/catalogo"
+              href={rutaInterna('/catalogo')}
               onClick={() => setAbierto(false)}
               className="block text-text-brand underline hover:text-brand-hover"
             >

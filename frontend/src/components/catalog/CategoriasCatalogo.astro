@@ -1,6 +1,7 @@
 ---
 import type { Producto } from "../../lib/types";
 import { obtenerCategoriasSupabase } from "../../lib/supabase-productos";
+import { rutaInterna } from "../../lib/asset-url";
 import { rutaCategoria } from "../../lib/categorias";
 
 interface Props {
@@ -39,7 +40,7 @@ const listaCategoriasOrdenadas = [...categorias].sort((a, b) => a.localeCompare(
             {listaCategoriasOrdenadas.map((categoria) => (
               <li class="w-auto shrink-0">
                 <a
-                  href={`${rutaCategoria(categoria, categorias)}#catalogo`}
+                  href={rutaInterna(`${rutaCategoria(categoria, categorias)}#catalogo`)}
                   data-categoria-card={categoria}
                   class="categoria-card flex h-full w-auto items-center justify-center px-4 py-3 text-center whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-400"
                 >

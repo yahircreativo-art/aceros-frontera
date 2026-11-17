@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import { badgeClasses } from '../ui/badge-styles';
 import { normalizar } from '../../lib/format';
 import { rutaCategoria } from '../../lib/categorias';
+import { rutaActualSinBase, rutaInterna } from '../../lib/asset-url';
 import type { Producto } from '../../lib/types';
 
 interface CatalogProps {
@@ -106,7 +107,7 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
 
   /* El filtro activo se refleja en la URL. */
   useEffect(() => {
-    if (window.location.pathname.replace(/\/$/, '') !== '/catalogo') return;
+    if (rutaActualSinBase(window.location.pathname) !== '/catalogo') return;
 
     const url = new URL(window.location.href);
     if (filtro === 'todos') url.searchParams.delete('categoria');
@@ -268,8 +269,8 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
   };
 
   const limpiar = () => {
-    if (window.location.pathname.replace(/\/$/, '') !== '/catalogo') {
-      window.location.href = '/catalogo';
+    if (rutaActualSinBase(window.location.pathname) !== '/catalogo') {
+      window.location.href = rutaInterna('/catalogo');
       return;
     }
 
@@ -461,7 +462,7 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
               {categoriaInicial ? (
                 <div className="mt-6">
                   <a
-                    href="/catalogo"
+                    href={rutaInterna('/catalogo')}
                     className="type-label text-text-brand hover:text-brand-hover"
                   >
                     Catálogo

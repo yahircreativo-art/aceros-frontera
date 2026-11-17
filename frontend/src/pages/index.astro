@@ -16,6 +16,7 @@ import Sucursales from "../components/home/Sucursales.astro";
 import BolsaTrabajo from "../components/home/BolsaTrabajo.astro";
 import CtaFinal from "../components/home/CtaFinal.astro";
 import { obtenerProductos } from "../lib/productos";
+import { assetUrl } from "../lib/asset-url";
 
 // Catálogo desde Supabase si está configurado; si no, desde los .md locales.
 const productos = await obtenerProductos();
@@ -25,7 +26,7 @@ const productos = await obtenerProductos();
   <link
     slot="head"
     rel="preload"
-    href="/images/hero-bg.webp"
+    href={assetUrl("/images/hero-bg.webp")}
     as="image"
     type="image/webp"
     fetchpriority="high"

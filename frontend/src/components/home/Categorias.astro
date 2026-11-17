@@ -5,7 +5,7 @@
  * amarilla con chaflán; último mosaico amarillo de cotización.
  * Numeración grande al estilo de la referencia ("Catálogo central").
  */
-import { assetUrl } from '../../lib/asset-url';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
 import { normalizar } from '../../lib/format';
 import { rutaCategoria } from '../../lib/categorias';
 import { whatsappUrl } from '../../lib/seo';
@@ -73,7 +73,7 @@ const check = `${assetUrl('/icons.svg')}#check`;
         tiles.map((tile, indice) => (
           <li class="reveal" style={`--reveal-delay: ${indice * 60}ms`}>
             <a
-              href={enlace(tile.buscar)}
+              href={rutaInterna(enlace(tile.buscar))}
               class="group pattern-placa relative flex h-full min-h-[22rem] flex-col overflow-hidden bg-surface-inverse p-6 text-text-inverse transition-colors duration-300 "
             >
               <span

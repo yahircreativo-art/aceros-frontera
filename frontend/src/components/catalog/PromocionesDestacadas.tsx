@@ -5,6 +5,7 @@ import {
   proximaFechaCambio,
   type Promocion,
 } from '../../lib/destacados';
+import { rutaInterna } from '../../lib/asset-url';
 import { rutaCategoria } from '../../lib/categorias';
 import { obtenerDestacadosSupabase } from '../../lib/supabase-destacados';
 
@@ -177,9 +178,11 @@ export default function PromocionesDestacadas({
                 />
 
                 <a
-                  href={promocion.categoria
-                    ? `${rutaCategoria(promocion.categoria, categorias)}#catalogo`
-                    : '/catalogo#catalogo'}
+                  href={rutaInterna(
+                    promocion.categoria
+                      ? `${rutaCategoria(promocion.categoria, categorias)}#catalogo`
+                      : '/catalogo#catalogo',
+                  )}
                   aria-label={
                     promocion.categoria
                       ? `Ver productos de la categoría ${promocion.categoria}`

@@ -1,5 +1,5 @@
 ---
-import { assetUrl } from '../lib/asset-url';
+import { assetUrl, rutaInterna } from '../lib/asset-url';
 
 interface Props {
   compact?: boolean;
@@ -12,7 +12,7 @@ const logoSrc = assetUrl('/images/LOGO.webp');
 const alto = compact ? 'h-8' : large ? 'h-14' : 'h-11';
 ---
 
-<a href="/" class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera — ir al inicio">
+<a href={rutaInterna('/')} class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera — ir al inicio">
   <img
     src={logoSrc}
     alt=""

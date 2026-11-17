@@ -1,5 +1,6 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import Icon from './Icon';
+import { rutaInterna } from '../../lib/asset-url';
 import {
   buttonClasses,
   iconSizeFor,
@@ -68,7 +69,7 @@ export default function Button(props: ButtonProps) {
   if (href !== undefined) {
     return (
       <a
-        href={href}
+        href={rutaInterna(href)}
         target={target}
         rel={rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
         className={clases}
