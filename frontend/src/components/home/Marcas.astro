@@ -1,28 +1,38 @@
 ---
 /**
  * Figma: "Section/Patrocinadores — Carrusel" + "Section/Marcas"
- * Una sola cinta de logos a color, sin fondo, que se detiene al pasar el cursor.
+ * Fondo negro y una sola cinta de logos en blanco (filtro sobre los PNG/WebP
+ * transparentes) que se detiene al pasar el cursor.
  */
 import { obtenerEmpresasAliadas } from '../../lib/empresas';
 import SectionHeading from '../ui/SectionHeading.astro';
 
 const empresas = obtenerEmpresasAliadas();
+
+/* Los logos se ven en blanco (silueta) sobre el negro. Los que son una
+   figura rellena con el texto dentro (DeWalt, Yale…) quedarían como un
+   bloque blanco sin texto; esos van en gris de alto contraste para que el
+   texto siga leyéndose. Para un logo nuevo de ese tipo, agrega aquí una
+   palabra de su nombre de archivo. */
+const LOGOS_BLOQUE = ['dewalt', 'elite', 'gram bel', 'lincolnelectric', 'prolamsa', 'sweiss', 'ujueta', 'yale'];
+const esBloque = (nombre: string) => LOGOS_BLOQUE.some((clave) => nombre.toLowerCase().includes(clave));
 ---
 
 {
   empresas.length > 0 && (
     <section
       id="marcas"
-      class="scroll-mt-44 overflow-hidden bg-surface-neutraal-0 py-20 lg:scroll-mt-28 lg:py-28"
+      class="scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
     >
       <div class="container-page flex flex-wrap items-end justify-between gap-6">
         <SectionHeading
+          tone="dark"
           eyebrow="Alianzas"
           title="Marcas que"
           accent="manejamos"
           description="Distribuidores y centro de servicio autorizado de las marcas líderes en acero, herramienta y ferretería."
         />
-        <p class="reveal type-overline text-text-muted">{empresas.length} marcas aliadas</p>
+        <p class="reveal type-overline text-text-inverse-muted">{empresas.length} marcas aliadas</p>
       </div>
 
       <div class="mt-12 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
@@ -40,7 +50,10 @@ const empresas = obtenerEmpresasAliadas();
                 alt={i < empresas.length ? empresa.nombre : ''}
                 loading="lazy"
                 decoding="async"
-                class="max-h-32 w-full object-contain transition-transform duration-300 hover:scale-110"
+                class:list={[
+                  'max-h-32 w-full object-contain opacity-80 transition duration-300 hover:scale-110 hover:opacity-100',
+                  esBloque(empresa.nombre) ? 'grayscale brightness-160 contrast-140' : 'brightness-0 invert',
+                ]}
               />
             </li>
           ))}

@@ -1,10 +1,10 @@
 ---
 /**
  * Figma: "Mega Menu" — se despliega desde "Catálogo" en la barra del header.
- * Panel blanco (padding 40/64/48/64, sombra) con las familias de producto
- * (pictograma verde, título Heading/H4, enlaces Body/Body-S), enlace
- * "Ver catálogo completo" y mosaico amarillo "¿No encuentras lo que buscas?".
- * Debajo, las categorías reales del catálogo en línea.
+ * Panel negro (hasta 1200 px, centrado) con las familias de producto
+ * (pictograma amarillo, título blanco, enlaces gris claro) y el enlace
+ * "Ver catálogo completo". Debajo, las categorías reales del catálogo.
+ * Se despliega con animación (ver <style> al final).
  *
  * Uso: <MegaMenu> va dentro del <header> (que es el contenedor posicionado)
  * y su botón disparador se pinta con el slot "trigger" en la barra de enlaces.
@@ -21,37 +21,30 @@ interface Props {
 const { categorias } = Astro.props;
 ---
 
-<!--
-  El contenedor exterior solo posiciona el menú bajo la franja amarilla y es
-  transparente a los clics; el panel visible no pasa del ancho máximo de la
-  navbar (container-page) y lleva padding interno.
--->
 <div
   id="mega-menu"
   data-mega-menu
   hidden
-  class="pointer-events-none absolute inset-x-0 top-[calc(100%+6px)] z-50"
+  class="absolute inset-x-0 top-[calc(100%+4px)] max-w-[1200px] mx-auto z-50 max-h-[calc(100svh-8rem)] overflow-y-auto bg-surface-inverse shadow-modal ring-1 ring-white/10"
 >
-  <div class="container-page">
-    <div
-      class="mega-panel pointer-events-auto max-h-[calc(100svh-8rem)] overflow-y-auto bg-surface-inverse px-6 py-6 shadow-modal ring-1 ring-white/10 sm:px-8 lg:px-10 lg:py-8"
-    >
-      <ul class="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
+  <div class="container-page flex flex-col gap-10 pb-12 pt-10 lg:flex-row lg:gap-12">
+    <div class="min-w-0 flex-1">
+      <ul class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
         {
           familias.map((familia, indice) => {
             const href = rutaInterna(rutaFamilia(familia, categorias));
             return (
               <li class="mega-item flex flex-col gap-2" style={`--i: ${indice}`}>
-                <a href={href} class="group flex items-center gap-2">
-                  <Pictogram name={familia.icono} class="size-6 shrink-0 text-accent-400" />
-                  <span class="type-label text-text-inverse transition-colors group-hover:text-accent-400">
+                <a href={href} class="group flex flex-col gap-2">
+                  <Pictogram name={familia.icono} class="size-8 text-accent-primary transition-transform group-hover:-translate-y-0.5" />
+                  <span class="type-h4 text-text-inverse transition-colors group-hover:text-accent-primary">
                     {familia.titulo}
                   </span>
                 </a>
-                <ul class="flex flex-col gap-1.5 pl-8">
+                <ul class="flex flex-col gap-2">
                   {familia.items.map((item) => (
                     <li>
-                      <a href={href} class="type-body-s text-text-inverse-muted transition-colors hover:text-accent-400">
+                      <a href={href} class="type-body-s text-text-inverse-muted transition-colors hover:text-text-inverse">
                         {item}
                       </a>
                     </li>
@@ -61,12 +54,12 @@ const { categorias } = Astro.props;
             );
           })
         }
-        <li class="mega-item flex items-start" style={`--i: ${familias.length}`}>
+        <li class="mega-item flex items-start pt-2" style={`--i: ${familias.length}`}>
           <a
             href={rutaInterna('/catalogo')}
-            class="inline-flex items-center gap-2 type-button-s text-accent-400 transition-colors hover:text-accent-hover"
+            class="inline-flex items-center gap-2 type-button-m text-accent-primary transition-colors hover:text-accent-hover"
           >
-            <svg viewBox="0 0 12 12" class="size-2.5" aria-hidden="true"><path d="M3 2l6 4-6 4z" fill="currentColor" /></svg>
+            <svg viewBox="0 0 12 12" class="size-3" aria-hidden="true"><path d="M3 2l6 4-6 4z" fill="currentColor" /></svg>
             Ver catálogo completo
           </a>
         </li>
@@ -74,14 +67,14 @@ const { categorias } = Astro.props;
 
       {
         categorias.length > 0 && (
-          <div class="mt-6 border-t border-white/10 pt-5">
+          <div class="mega-item mt-10 border-t border-white/10 pt-6" style={`--i: ${familias.length + 1}`}>
             <p class="type-overline text-text-inverse-muted">Catálogo en línea</p>
-            <ul class="mt-3 flex flex-wrap gap-1.5">
+            <ul class="mt-3 flex flex-wrap gap-2">
               {categorias.map((categoria) => (
                 <li>
                   <a
                     href={rutaInterna(rutaCategoria(categoria, categorias))}
-                    class="inline-flex rounded-xs bg-white/10 px-2.5 py-1 type-caption text-text-inverse transition-colors hover:bg-accent-primary hover:text-text-on-accent"
+                    class="inline-flex bg-white/5 px-3 py-1.5 type-label text-text-inverse ring-1 ring-white/10 transition-colors ring-inset hover:bg-accent-primary hover:text-text-on-accent hover:ring-accent-primary"
                   >
                     {categoria}
                   </a>
@@ -96,27 +89,22 @@ const { categorias } = Astro.props;
 </div>
 
 <script>
-  /* Abre con clic, con el cursor (en pantallas con puntero) y con teclado;
-     cierra con Escape, clic fuera o al salir del menú. */
+  /* Abre y cierra solo con clic (o teclado) en "Catálogo"; también cierra
+     con Escape, con clic fuera del menú o al salir de él con el tabulador. */
   const menu = document.querySelector<HTMLElement>('[data-mega-menu]');
   const trigger = document.querySelector<HTMLButtonElement>('[data-mega-trigger]');
 
   if (menu && trigger) {
-    let cierre: number | undefined;
-    const conPuntero = window.matchMedia('(hover: hover) and (pointer: fine)');
-
     let ocultar: number | undefined;
     const DURACION_CIERRE = 180; // igual que la animación mega-cerrar
 
     const abrir = () => {
-      window.clearTimeout(cierre);
       window.clearTimeout(ocultar);
       menu.classList.remove('cerrando');
       menu.hidden = false;
       trigger.setAttribute('aria-expanded', 'true');
     };
     const cerrar = () => {
-      window.clearTimeout(cierre);
       if (menu.hidden) return;
       trigger.setAttribute('aria-expanded', 'false');
       /* Deja correr la animación de salida antes de ocultarlo. */
@@ -127,18 +115,9 @@ const { categorias } = Astro.props;
         menu.classList.remove('cerrando');
       }, DURACION_CIERRE);
     };
-    const programarCierre = () => {
-      window.clearTimeout(cierre);
-      cierre = window.setTimeout(cerrar, 200);
-    };
-
     trigger.addEventListener('click', () =>
       menu.hidden || menu.classList.contains('cerrando') ? abrir() : cerrar(),
     );
-    for (const el of [trigger, menu]) {
-      el.addEventListener('mouseenter', () => conPuntero.matches && abrir());
-      el.addEventListener('mouseleave', () => conPuntero.matches && programarCierre());
-    }
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !menu.hidden) {
         cerrar();
@@ -158,8 +137,8 @@ const { categorias } = Astro.props;
 
 <style>
   /* Apertura: el panel se despliega hacia abajo desde la franja amarilla y
-     las familias aparecen escalonadas. */
-  [data-mega-menu]:not([hidden]) .mega-panel {
+     sus bloques aparecen escalonados. */
+  [data-mega-menu]:not([hidden]) {
     animation: mega-abrir 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
   [data-mega-menu]:not([hidden]) .mega-item {
@@ -168,7 +147,7 @@ const { categorias } = Astro.props;
   }
 
   /* Cierre: se recoge rápido hacia arriba. */
-  [data-mega-menu].cerrando .mega-panel {
+  [data-mega-menu].cerrando {
     animation: mega-cerrar 180ms ease-in both;
   }
   [data-mega-menu].cerrando .mega-item {
@@ -210,7 +189,7 @@ const { categorias } = Astro.props;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-mega-menu] .mega-panel,
+    [data-mega-menu],
     [data-mega-menu] .mega-item {
       animation: none !important;
     }

@@ -94,6 +94,43 @@ const { page = 'home', title, description, canonicalPath } = Astro.props;
           else observador.observe(el);
         });
       }
+
+      /* Parallax del patrón de fondo (.pattern-placa): el patrón se desplaza
+         más lento que el contenido. Solo se calcula para las secciones que
+         están en pantalla. */
+      const VELOCIDAD_PATRON = 0.3; // 0 = fijo con el contenido, 1 = fijo en la pantalla
+      const patrones = document.querySelectorAll<HTMLElement>('.pattern-placa');
+      const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      if (patrones.length && !sinMovimiento.matches) {
+        const visibles = new Set<HTMLElement>();
+        let pendiente = false;
+
+        const mover = () => {
+          pendiente = false;
+          for (const el of visibles) {
+            const desplazamiento = el.getBoundingClientRect().top * -VELOCIDAD_PATRON;
+            el.style.setProperty('--patron-y', `${desplazamiento.toFixed(1)}px`);
+          }
+        };
+        const programar = () => {
+          if (pendiente) return;
+          pendiente = true;
+          requestAnimationFrame(mover);
+        };
+
+        const vigilante = new IntersectionObserver((entradas) => {
+          for (const entrada of entradas) {
+            const el = entrada.target as HTMLElement;
+            if (entrada.isIntersecting) visibles.add(el);
+            else visibles.delete(el);
+          }
+          programar();
+        });
+        patrones.forEach((el) => vigilante.observe(el));
+        window.addEventListener('scroll', programar, { passive: true });
+        window.addEventListener('resize', programar);
+      }
     </script>
   </body>
 </html>

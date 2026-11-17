@@ -132,7 +132,7 @@
 
   /* --- 02. Semantic Tokens (modo Light) ---------------------------------- */
   --color-surface-primary: var(--color-neutral-0);
-  --color-surface-secondary: var(--color-neutral-50);
+  --color-surface-secondary: var(--color-neutral-0);
   --color-surface-elevated: var(--color-neutral-0);
   --color-surface-canvas: var(--color-neutral-100);
   --color-surface-field: var(--color-neutral-100);
@@ -521,8 +521,19 @@
   border-top: 12px solid var(--color-accent-primary);
 }
 
-/* Figma "Pattern/Placa antiderrapante": textura de placa diamante. */
+/* Patrón de fondo de las secciones oscuras. */
 @utility pattern-placa {
+  /* Patrón de productos de acero (src/assets/patron-acero.webp): mosaico
+     blanco con transparencia que se repite sin costuras. */
+  background-image: url("../assets/patron-acero.webp");
+  background-size: 200px;
+  background-repeat: repeat;
+  /* Parallax: --patron-y lo actualiza el script de layouts/Base.astro. */
+  background-position: 0 var(--patron-y, 0px);
+}
+
+/* Placa antiderrapante (diamante), sin parallax: tarjetas de Categorías. */
+@utility pattern-diamante {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='%23fff' fill-opacity='0.045'%3E%3Crect x='3' y='9' width='18' height='5' rx='2.5' transform='rotate(-45 12 11.5)'/%3E%3Crect x='27' y='33' width='18' height='5' rx='2.5' transform='rotate(-45 36 35.5)'/%3E%3Crect x='27' y='9' width='18' height='5' rx='2.5' transform='rotate(45 36 11.5)'/%3E%3Crect x='3' y='33' width='18' height='5' rx='2.5' transform='rotate(45 12 35.5)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 48px 48px;
 }
