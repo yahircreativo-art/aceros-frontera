@@ -2,40 +2,71 @@
 /**
  * Figma: "Section/Fabricantes" — "Somos fabricantes" con flechas » animadas,
  * lista de productos fabricados y tres tarjetas (Armex, Lámina, Estribos).
+ *
+ * En escritorio la sección queda fija mientras se hace scroll y cada tramo
+ * activa la siguiente tarjeta (a color); el texto de la izquierda cambia
+ * para describir el producto activo. En celular la tarjeta se activa al
+ * llegar al centro de la pantalla.
  */
 import { assetUrl } from '../../lib/asset-url';
 import { whatsappUrl } from '../../lib/seo';
 import Button from '../ui/Button.astro';
 import Pictogram, { type PictogramName } from '../ui/Pictogram.astro';
 
-const productos: { titulo: string; icono: PictogramName; texto: string; imagen: string }[] = [
+interface Fabricado {
+  titulo: string;
+  icono: PictogramName;
+  /** Texto corto de la tarjeta. */
+  texto: string;
+  /** Texto del contenedor izquierdo cuando la tarjeta está activa. */
+  detalle: string;
+  /** Renglón de la lista de la izquierda que se resalta. */
+  lista: number;
+  imagen: string;
+}
+
+const lista = ['Armex', 'Lámina R-72 y steel deck', 'Estribos y anillos', 'Corte de placa'];
+
+const productos: Fabricado[] = [
   {
     titulo: 'Armex',
     icono: 'varilla',
     texto: 'Armados de varilla para castillos y cadenas, en medidas estándar y especiales.',
+    detalle:
+      'Armados de varilla para castillos, cadenas y trabes. Los fabricamos en serie en medidas estándar y también a la medida de tu proyecto, listos para colocar.',
+    lista: 0,
     imagen: assetUrl('/images/dsc06588.webp'),
   },
   {
     titulo: 'Lámina',
     icono: 'lamina',
     texto: 'Lámina rolada y acanalada R-72 y steel deck para techos, muros y entrepisos, cortada a la medida.',
+    detalle:
+      'Rolamos lámina acanalada R-72 y steel deck para techos, muros y entrepisos, cortada al largo exacto que necesitas para reducir traslapes y mermas.',
+    lista: 1,
     imagen: assetUrl('/images/dsc06679.webp'),
   },
   {
     titulo: 'Estribos',
     icono: 'malla',
     texto: 'Estribos y anillos doblados en serie, listos para tu colado.',
+    detalle:
+      'Estribos y anillos doblados en serie con medidas uniformes, listos para armar castillos y columnas y adelantar tu colado.',
+    lista: 2,
     imagen: assetUrl('/images/dsc06752.webp'),
   },
 ];
+const total = String(productos.length).padStart(2, '0');
 ---
 
 <section
   id="fabricantes"
-  class="relative isolate scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  data-fabricantes
+  class="relative isolate scroll-mt-44 overflow-clip bg-surface-inverse py-20 text-text-inverse lg:h-[450svh] lg:scroll-mt-20 lg:py-0"
 >
-  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10"></div>
-  <div class="container-page grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+  <div
+    class="container-page grid gap-12 lg:sticky lg:top-20 lg:h-[calc(100svh-5rem)] lg:grid-cols-[0.8fr_1.2fr] lg:items-center"
+  >
     <div class="reveal">
       <div class="flex flex-wrap items-center gap-5">
         <h2 class="font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl">
@@ -49,15 +80,28 @@ const productos: { titulo: string; icono: PictogramName; texto: string; imagen: 
           }
         </span>
       </div>
-      <p class="mt-6 max-w-md type-body-l text-text-inverse-muted">
-        Fabricamos en serie y a la medida para que tu obra no se detenga. También ofrecemos corte de
-        placa A36 de 3/16″ a 1″.
-      </p>
+
+      <!-- Texto dinámico: describe la tarjeta activa -->
+      <div class="mt-6 grid max-w-md border-l-2 border-accent-primary pl-5" aria-live="polite">
+        {
+          productos.map((producto, indice) => (
+            <div class:list={['fab-texto [grid-area:1/1]', { activo: indice === 0 }]} data-fab-texto={indice}>
+              <p class="type-overline text-text-accent">
+                {String(indice + 1).padStart(2, '0')} / {total}
+              </p>
+              <h3 class="mt-1 font-display text-3xl font-extrabold uppercase">{producto.titulo}</h3>
+              <p class="mt-2 type-body-m text-text-inverse">{producto.texto}</p>
+              <p class="mt-2 type-body-s text-text-inverse-muted">{producto.detalle}</p>
+            </div>
+          ))
+        }
+      </div>
+
       <ul class="mt-6 flex flex-col gap-2 type-label">
         {
-          ['Armex', 'Lámina R-72 y steel deck', 'Estribos y anillos', 'Corte de placa'].map((item) => (
-            <li class="flex items-center gap-3">
-              <span class="size-2 bg-accent-primary" aria-hidden="true"></span>
+          lista.map((item, i) => (
+            <li class:list={['fab-lista flex items-center gap-3', { activo: i === 0 }]} data-fab-lista={i}>
+              <span class="size-2 bg-accent-primary" aria-hidden="true" />
               {item}
             </li>
           ))
@@ -75,30 +119,206 @@ const productos: { titulo: string; icono: PictogramName; texto: string; imagen: 
       />
     </div>
 
-    <ul class="grid gap-4 sm:grid-cols-3">
-      {
-        productos.map((producto, indice) => (
-          <li class="reveal" style={`--reveal-delay: ${indice * 100}ms`}>
-            <article class="group relative flex aspect-[3/5] flex-col justify-end overflow-hidden bg-surface-inverse-raised sm:aspect-[3/5.4]">
-              <img
-                src={producto.imagen}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                class="absolute inset-0 size-full object-cover opacity-50 grayscale transition duration-500 group-hover:scale-105 group-hover:opacity-80 group-hover:grayscale-0"
-              />
-              <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-              <div class="relative p-6">
-                <span class="grid size-12 place-items-center border border-white/20 text-text-accent transition-colors group-hover:border-accent-primary group-hover:bg-accent-primary group-hover:text-text-on-accent">
-                  <Pictogram name={producto.icono} class="size-7" />
+    <div class="reveal flex flex-col gap-4 [--reveal-delay:120ms]">
+      <!-- Producto activo: ocupa el ancho de las 3 tarjetas -->
+      <div class="relative h-72 overflow-hidden bg-surface-inverse-raised sm:h-96 lg:h-[min(26rem,calc(100svh-20rem))]">
+        {
+          productos.map((producto, indice) => (
+            <img
+              src={producto.imagen}
+              alt={producto.titulo}
+              loading="lazy"
+              decoding="async"
+              class:list={['fab-foto absolute inset-0 size-full object-cover', { activo: indice === 0 }]}
+              data-fab-foto={indice}
+            />
+          ))
+        }
+        <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div aria-hidden="true" class="absolute inset-0 ring-2 ring-accent-primary ring-inset"></div>
+      </div>
+
+      <!-- Tarjetas (solo imagen e ícono): señalan el producto activo -->
+      <ul class="grid grid-cols-3 gap-4">
+        {
+          productos.map((producto, indice) => (
+            <li>
+              <button
+                type="button"
+                class:list={[
+                  'fab-card group relative block h-24 w-full cursor-pointer overflow-hidden bg-surface-inverse-raised sm:h-28',
+                  { activo: indice === 0 },
+                ]}
+                data-fab-card={indice}
+                data-fab-lista-item={producto.lista}
+                aria-label={`Ver ${producto.titulo}`}
+                aria-pressed={indice === 0 ? 'true' : 'false'}
+              >
+                <img
+                  src={producto.imagen}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  class="fab-img absolute inset-0 size-full object-cover"
+                />
+                <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <span class="fab-icono absolute bottom-3 left-3 grid size-10 place-items-center border border-white/20 text-text-accent">
+                  <Pictogram name={producto.icono} class="size-6" />
                 </span>
-                <h3 class="mt-5 font-display text-3xl font-extrabold uppercase">{producto.titulo}</h3>
-                <p class="mt-2 type-body-s text-text-inverse-muted">{producto.texto}</p>
-              </div>
-            </article>
-          </li>
-        ))
-      }
-    </ul>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </div>
 </section>
+
+<script>
+  const seccion = document.querySelector<HTMLElement>('[data-fabricantes]');
+
+  if (seccion) {
+    const cards = [...seccion.querySelectorAll<HTMLElement>('[data-fab-card]')];
+    const textos = [...seccion.querySelectorAll<HTMLElement>('[data-fab-texto]')];
+    const renglones = [...seccion.querySelectorAll<HTMLElement>('[data-fab-lista]')];
+    const fotos = [...seccion.querySelectorAll<HTMLElement>('[data-fab-foto]')];
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+    let actual = 0;
+
+    const activar = (indice: number) => {
+      if (indice === actual || indice < 0 || indice >= cards.length) return;
+      actual = indice;
+      const renglon = Number(cards[indice].dataset.fabListaItem);
+      cards.forEach((card, i) => {
+        card.classList.toggle('activo', i === indice);
+        card.setAttribute('aria-pressed', String(i === indice));
+      });
+      fotos.forEach((foto, i) => foto.classList.toggle('activo', i === indice));
+      textos.forEach((texto, i) => texto.classList.toggle('activo', i === indice));
+      renglones.forEach((li, i) => li.classList.toggle('activo', i === renglon));
+    };
+
+    /* Escritorio: el avance del scroll dentro de la sección decide la tarjeta. */
+    let pendiente = false;
+    const porScroll = () => {
+      pendiente = false;
+      if (!escritorio.matches) return;
+      const caja = seccion.getBoundingClientRect();
+      const recorrido = caja.height - window.innerHeight;
+      const avance = recorrido > 0 ? Math.min(Math.max(-caja.top / recorrido, 0), 0.999) : 0;
+      activar(Math.floor(avance * cards.length));
+    };
+    const programar = () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(porScroll);
+    };
+    window.addEventListener('scroll', programar, { passive: true });
+    window.addEventListener('resize', programar);
+    escritorio.addEventListener('change', programar);
+    porScroll();
+
+    /* Clic en una tarjeta: muestra ese producto (útil sobre todo en celular). */
+    cards.forEach((card, i) => card.addEventListener('click', () => activar(i)));
+  }
+</script>
+
+<style>
+  /* Foto grande: se ve la del producto activo (fundido con un leve zoom). */
+  .fab-foto {
+    opacity: 0;
+    transform: scale(1.04);
+    transition:
+      opacity 700ms ease,
+      transform 1200ms ease;
+  }
+  .fab-foto.activo {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Tarjetas: en gris hasta que se activan (por scroll o con el cursor). */
+  .fab-img {
+    opacity: 0.45;
+    filter: grayscale(1);
+    transition:
+      opacity 700ms ease,
+      filter 700ms ease,
+      transform 700ms ease;
+  }
+  .fab-card.activo .fab-img,
+  .fab-card:hover .fab-img {
+    opacity: 0.85;
+    filter: none;
+  }
+  .fab-icono {
+    transition:
+      background-color 500ms ease,
+      border-color 500ms ease,
+      color 500ms ease;
+  }
+  .fab-card.activo .fab-icono,
+  .fab-card:hover .fab-icono {
+    border-color: var(--color-accent-primary);
+    background-color: var(--color-accent-primary);
+    color: var(--color-text-on-accent);
+  }
+  .fab-card {
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    transition: outline-color 500ms ease;
+  }
+  .fab-card.activo {
+    outline-color: var(--color-accent-primary);
+  }
+
+  /* Texto de la izquierda: solo se ve el del producto activo. */
+  .fab-texto {
+    opacity: 0;
+    transform: translateY(8px);
+    visibility: hidden;
+    transition:
+      opacity 450ms ease,
+      transform 450ms ease,
+      visibility 0s linear 450ms;
+  }
+  .fab-texto.activo {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition:
+      opacity 450ms ease 150ms,
+      transform 450ms ease 150ms,
+      visibility 0s;
+  }
+
+  /* Lista: se resalta el renglón del producto activo. */
+  .fab-lista {
+    color: var(--color-text-inverse-muted);
+    transition: color 400ms ease;
+  }
+  .fab-lista > span {
+    opacity: 0.4;
+    transition:
+      opacity 400ms ease,
+      transform 400ms ease;
+  }
+  .fab-lista.activo {
+    color: var(--color-text-inverse);
+  }
+  .fab-lista.activo > span {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fab-foto,
+    .fab-img,
+    .fab-icono,
+    .fab-texto,
+    .fab-lista,
+    .fab-lista > span {
+      transition: none !important;
+    }
+  }
+</style>
