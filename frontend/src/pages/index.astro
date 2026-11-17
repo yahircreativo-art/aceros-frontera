@@ -18,7 +18,7 @@ import CtaFinal from "../components/home/CtaFinal.astro";
 import { obtenerProductos } from "../lib/productos";
 import { assetUrl } from "../lib/asset-url";
 
-// Catálogo desde Supabase si está configurado; si no, desde los .md locales.
+// Catálogo desde Supabase (sin credenciales, la portada se genera sin productos).
 const productos = await obtenerProductos();
 ---
 

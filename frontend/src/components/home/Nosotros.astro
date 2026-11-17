@@ -1,19 +1,12 @@
 ---
 /**
- * Nosotros (referencia) + "Section/Flota y cifras" (Stat) del Figma.
+ * Nosotros (referencia): texto, botones y mosaico de fotos.
  */
 import { assetUrl } from '../../lib/asset-url';
-import { obtenerEmpresasAliadas } from '../../lib/empresas';
 import { sucursales } from '../../data/sucursales';
 import Button from '../ui/Button.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 
-const cifras = [
-  { valor: '15+', etiqueta: 'Años de experiencia' },
-  { valor: String(sucursales.length), etiqueta: 'Sucursales en B.C.' },
-  { valor: `${obtenerEmpresasAliadas().length}+`, etiqueta: 'Marcas aliadas' },
-  { valor: String(new Set(sucursales.map((s) => s.ciudad)).size), etiqueta: 'Ciudades con sucursal' },
-];
 ---
 
 <section
