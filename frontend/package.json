@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "images:webp": "node scripts/convert-images-to-webp.mjs",
+    "optimizar-imagenes": "node scripts/optimizar-imagenes.mjs",
     "predev": "node scripts/convert-images-to-webp.mjs",
     "dev": "astro dev",
     "prebuild": "node scripts/convert-images-to-webp.mjs",

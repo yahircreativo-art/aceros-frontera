@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import Footer from '../components/Footer.astro';
 import About from '../components/About.astro';
+import Services from '../components/Services.astro';
 import Contact from '../components/Contact.astro';
 import Catalog from '../components/catalog/Catalog';
 import { siteSeo } from '../lib/seo';
@@ -48,6 +49,7 @@ const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
       </div>
     </section>
     <About />
+    <Services />
     <Contact />
   </main>
 
@@ -59,6 +61,7 @@ const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
     const introduccionCatalogo = document.getElementById('catalogo-intro');
     const marcas = document.getElementById('marcas');
     const nosotros = document.getElementById('nosotros');
+    const servicios = document.getElementById('servicios');
     const contacto = document.getElementById('contacto');
 
     const mostrarDetalle = () => {
@@ -68,6 +71,7 @@ const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
       introduccionCatalogo?.classList.add('hidden');
       marcas?.classList.add('hidden');
       nosotros?.classList.add('hidden');
+      servicios?.classList.add('hidden');
       contacto?.classList.add('hidden');
     };
 
@@ -78,6 +82,7 @@ const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
       introduccionCatalogo?.classList.remove('hidden');
       marcas?.classList.remove('hidden');
       nosotros?.classList.remove('hidden');
+      servicios?.classList.remove('hidden');
       contacto?.classList.remove('hidden');
     };
 

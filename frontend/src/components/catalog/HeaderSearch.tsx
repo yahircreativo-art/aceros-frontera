@@ -55,7 +55,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     return productosActuales
       .filter((producto) => {
         const texto = normalizar(
-          [producto.nombre, producto.marca, producto.sku, producto.categoria, producto.etiquetas.join(' ')].filter(Boolean).join(' '),
+          [producto.nombre, producto.clave, producto.sku, producto.categoria].filter(Boolean).join(' '),
         );
         return terminos.every((termino) => texto.includes(termino));
       })

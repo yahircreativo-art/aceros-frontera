@@ -3,20 +3,21 @@ import { assetUrl } from './asset-url';
 import { obtenerProductosSupabase } from './supabase-productos';
 import type { Producto } from './types';
 
-/* Supabase es la fuente remota opcional; Markdown local sigue como respaldo
+/* Supabase es la fuente remota principal; Markdown local sigue como respaldo
    para que el build también funcione sin credenciales o conexión. */
 const SUPABASE_URL = (import.meta.env.SUPABASE_URL as string | undefined)?.replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY as string | undefined;
 const SUPABASE_PRODUCTS_TABLE =
-  (import.meta.env.SUPABASE_PRODUCTS_TABLE as string | undefined) ?? 'productos';
+  (import.meta.env.SUPABASE_PRODUCTS_TABLE as string | undefined) ?? 'Productos';
 
 function normalizarImagen(imagen: string): string {
+  if (!imagen) return assetUrl('/images/productos/default-product.svg');
   if (/^https?:\/\//i.test(imagen)) return imagen;
   return assetUrl(imagen.replace(/\.(?:png|jpe?g)$/i, '.webp'));
 }
 
 function ordenar(a: Producto, b: Producto): number {
-  return Number(b.destacado) - Number(a.destacado) || a.nombre.localeCompare(b.nombre, 'es');
+  return a.nombre.localeCompare(b.nombre, 'es');
 }
 
 async function desdeSupabase(): Promise<Producto[] | null> {
@@ -39,6 +40,8 @@ async function desdeMarkdown(): Promise<Producto[]> {
 
   return entries.map((entry) => ({
     slug: entry.id,
+    clave: entry.data.sku ?? entry.id,
+    sku: entry.data.sku ?? entry.id,
     ...entry.data,
     imagen: normalizarImagen(entry.data.imagen),
   }));

@@ -1,18 +1,20 @@
 export interface Producto {
   slug: string;
-  sku?: string;
+  clave: string;
   nombre: string;
-  marca?: string;
   categoria: string;
+  imagen: string;
+  linkEditado?: string;
+  sku?: string;
+  marca?: string;
   precio?: number;
   precioAnterior?: number;
-  rating: number;
-  reviews: number;
+  rating?: number;
+  reviews?: number;
   stock?: number | boolean;
-  envioGratis: boolean;
-  destacado: boolean;
-  imagen: string;
-  etiquetas: string[];
-  resumen: string;
+  envioGratis?: boolean;
+  destacado?: boolean;
+  etiquetas?: string[];
+  resumen?: string;
   especificaciones?: Record<string, string>;
 }
