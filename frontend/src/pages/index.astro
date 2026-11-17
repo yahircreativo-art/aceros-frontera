@@ -7,6 +7,7 @@ import HeroHome from "../components/home/HeroHome.astro";
 import Marcas from "../components/home/Marcas.astro";
 import Categorias from "../components/home/Categorias.astro";
 import Fabricantes from "../components/home/Fabricantes.astro";
+import Bocetos from "../components/home/Bocetos.astro";
 import Destacados from "../components/home/Destacados.astro";
 import Servicios from "../components/home/Servicios.astro";
 import CentroServicio from "../components/home/CentroServicio.astro";
@@ -38,6 +39,7 @@ const productos = await obtenerProductos();
     <Marcas />
     <Categorias productos={productos} />
     <Fabricantes />
+    <Bocetos />
     <Destacados productos={productos} />
     <Servicios />
     <CentroServicio />

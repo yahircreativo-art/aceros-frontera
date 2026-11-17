@@ -1,0 +1,83 @@
+---
+/**
+ * Boceto isométrico de una pieza (ver src/lib/planos.ts). Se dibuja cuando
+ * recibe la clase .activo (la pone el script de Bocetos.astro).
+ */
+import { ANCHO, ALTO, type Plano } from '../../lib/planos';
+
+interface Props {
+  plano: Plano;
+  nombre: string;
+  indice: number;
+  class?: string;
+}
+
+const { plano, nombre, indice, class: clase = '' } = Astro.props;
+/* El mismo boceto aparece dos veces (panel y celular): id único por instancia. */
+const mascara = `plano-mascara-${indice}-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<svg
+  viewBox={`0 0 ${ANCHO} ${ALTO}`}
+  class:list={['plano', clase]}
+  data-plano={indice}
+  fill="none"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  role="img"
+  aria-label={`Boceto de ${nombre}`}
+>
+  <!--
+    Las caras se pintan de atrás hacia adelante dentro de una máscara:
+    el relleno negro borra las líneas que quedan detrás y el trazo blanco
+    deja ver las visibles. Así la pieza no tiene fondo y se ve la retícula.
+  -->
+  <mask id={mascara} maskUnits="userSpaceOnUse" x="-50" y="-50" width={ANCHO + 100} height={ALTO + 100}>
+    <g class="plano-pieza">
+      {
+        plano.caras.map((cara, i) => (
+          <path
+            d={cara.d}
+            class={`plano-${cara.tipo}`}
+            fill-rule="evenodd"
+            pathLength={cara.tipo === 'liso' ? undefined : 1}
+            style={`--orden: ${i}`}
+          />
+        ))
+      }
+    </g>
+  </mask>
+  <rect class="plano-lineas" x="-50" y="-50" width={ANCHO + 100} height={ALTO + 100} mask={`url(#${mascara})`} />
+  {
+    plano.notas.length > 0 && (
+      <g class="plano-notas">
+        {plano.notas.map((nota) => (
+          <g>
+            <path d={nota.d} />
+            <circle cx={nota.ox} cy={nota.oy} r="2.5" />
+            <text
+              x={nota.x}
+              y={nota.y}
+              text-anchor={nota.lado === 'derecha' ? 'start' : 'middle'}
+              dominant-baseline={nota.lado === 'arriba' ? 'auto' : nota.lado === 'derecha' ? 'middle' : 'hanging'}
+            >
+              {nota.texto}
+            </text>
+          </g>
+        ))}
+      </g>
+    )
+  }
+  <g class="plano-cota">
+    <path d={plano.cota.d} />
+    <text
+      x={plano.cota.x}
+      y={plano.cota.y}
+      transform={`rotate(${plano.cota.angulo} ${plano.cota.x} ${plano.cota.y})`}
+      text-anchor="middle"
+      dominant-baseline="middle"
+    >
+      {plano.cota.texto}
+    </text>
+  </g>
+</svg>

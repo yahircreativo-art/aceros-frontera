@@ -6,6 +6,7 @@
  */
 import ProductCard from '../catalog/ProductCard';
 import { slugCategoria } from '../../lib/categorias';
+import { rutaProducto } from '../../lib/rutas-producto';
 import type { Producto } from '../../lib/types';
 import Button from '../ui/Button.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -35,8 +36,7 @@ const pestanas = [...porCategoria.entries()]
     productos: lista.slice(0, POR_PESTANA),
   }));
 
-const fichaUrl = (producto: Producto) =>
-  producto.SKU != null ? `/catalogo?producto=${encodeURIComponent(String(producto.SKU))}` : '/catalogo';
+const fichaUrl = (producto: Producto) => rutaProducto(producto);
 ---
 
 {
@@ -44,7 +44,6 @@ const fichaUrl = (producto: Producto) =>
     <section
       id="destacados-home"
       class="scroll-mt-44 bg-surface-canvas py-20 lg:scroll-mt-28 lg:py-28"
-      data-hide-on-product-detail
     >
       <div class="container-page">
         <div class="flex flex-wrap items-end justify-between gap-6">

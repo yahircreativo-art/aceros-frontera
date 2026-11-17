@@ -1,0 +1,98 @@
+---
+/**
+ * Figma (Contacto): "Location" — Location Map a la izquierda e Info a la
+ * derecha (eyebrow, titular, Contact Items y botón "Cómo llegar").
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  /** Nivel del titular: h1 si la sección encabeza la página. */
+  nivel?: 'h1' | 'h2';
+}
+
+const { nivel = 'h2' } = Astro.props;
+const Titulo = nivel;
+
+const ubicacion = encodeURIComponent('32.4851102,-116.873457');
+const icono = (nombre: string) => `${assetUrl('/icons.svg')}#${nombre}`;
+
+const items = [
+  {
+    icono: 'pin',
+    etiqueta: 'Dirección',
+    valor: `${siteSeo.address.street}, ${siteSeo.address.city}, ${siteSeo.address.region}`,
+  },
+  { icono: 'phone', etiqueta: 'Teléfono', valor: siteSeo.phone, href: `tel:${siteSeo.phoneHref}` },
+  { icono: 'whatsapp', etiqueta: 'WhatsApp', valor: siteSeo.phone, href: whatsappUrl(), externo: true },
+  { icono: 'mail', etiqueta: 'Correo', valor: siteSeo.email, href: `mailto:${siteSeo.email}` },
+  {
+    icono: 'clock',
+    etiqueta: 'Horario',
+    valor: siteSeo.openingHours.map((h) => `${h.label}: ${h.opens}–${h.closes}`).join(' · '),
+  },
+];
+---
+
+<div class="grid items-center gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-12">
+  <div class="reveal relative aspect-[4/3] overflow-hidden bg-surface-field">
+    <iframe
+      title={`Mapa de ubicación: ${siteSeo.address.street}, ${siteSeo.address.city}`}
+      src={`https://maps.google.com/maps?q=${ubicacion}&z=16&output=embed`}
+      class="absolute inset-0 size-full border-0"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen></iframe>
+  </div>
+
+  <div class="reveal [--reveal-delay:120ms]">
+    <p class="flex items-center gap-3 type-overline text-text-brand">
+      <span aria-hidden="true" class="h-0.5 w-10 bg-brand-primary"></span>
+      Visítanos
+    </p>
+    <Titulo class="mt-3 font-display text-4xl leading-[0.95] font-extrabold uppercase text-text-primary sm:text-5xl">
+      Cotiza acero y materiales para tu proyecto
+    </Titulo>
+
+    <ul class="mt-8 flex flex-col gap-6">
+      {
+        items.map((item) => (
+          <li class="flex gap-4">
+            <span class="grid size-12 shrink-0 place-items-center bg-brand-primary/10 text-text-brand">
+              <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true">
+                <use href={icono(item.icono)} />
+              </svg>
+            </span>
+            <span class="min-w-0">
+              <span class="block type-overline text-text-muted">{item.etiqueta}</span>
+              {item.href ? (
+                <a
+                  href={item.href}
+                  target={item.externo ? '_blank' : undefined}
+                  rel={item.externo ? 'noopener noreferrer' : undefined}
+                  class="mt-1 block break-words type-label text-text-primary hover:text-text-brand"
+                >
+                  {item.valor}
+                </a>
+              ) : (
+                <span class="mt-1 block type-label text-text-primary">{item.valor}</span>
+              )}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <Button
+      href={`https://www.google.com/maps/dir/?api=1&destination=${ubicacion}`}
+      target="_blank"
+      variant="primary"
+      size="md"
+      icon="arrow-right"
+      iconPosition="right"
+      label="Cómo llegar"
+      className="mt-8"
+    />
+  </div>
+</div>

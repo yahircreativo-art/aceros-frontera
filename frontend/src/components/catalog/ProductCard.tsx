@@ -6,9 +6,7 @@ import type { Producto } from '../../lib/types';
 
 interface ProductCardProps {
   producto: Producto;
-  /** En el catálogo abre la ficha en la misma página. */
-  onView?: (producto: Producto) => void;
-  /** Fuera del catálogo (portada) la tarjeta enlaza a la ficha. */
+  /** Subpágina del producto (rutaProducto); toda la tarjeta enlaza ahí. */
   href?: string;
 }
 
@@ -18,7 +16,7 @@ interface ProductCardProps {
  * Meta (Body/Overline, text/muted) · Title (Heading/H4) · Specs (Body/Body-S)
  * · Actions: Button[Secondary, M] "Cotizar" + Button[Tertiary, M] "Ver producto".
  */
-export default function ProductCard({ producto, onView, href }: ProductCardProps) {
+export default function ProductCard({ producto, href }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
 
   const sku = producto.SKU != null ? String(producto.SKU) : '';
@@ -29,21 +27,11 @@ export default function ProductCard({ producto, onView, href }: ProductCardProps
 
   return (
     <article className="@container group relative flex h-full flex-col bg-surface-primary">
-      {onView ? (
-        <Button
-          onClick={() => onView(producto)}
-          aria-label={`Ver detalles de ${nombre || 'producto'}`}
-          variant="unstyled"
-          size="none"
-          className="absolute inset-0 z-10 cursor-pointer"
-        />
-      ) : (
-        <a
-          href={rutaInterna(href ?? '/catalogo')}
-          aria-label={`Ver detalles de ${nombre || 'producto'}`}
-          className="absolute inset-0 z-10"
-        />
-      )}
+      <a
+        href={rutaInterna(href ?? '/catalogo')}
+        aria-label={`Ver detalles de ${nombre || 'producto'}`}
+        className="absolute inset-0 z-10"
+      />
 
       <div className="media-steel relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden p-3 @[16rem]:aspect-auto @[16rem]:h-[12.5rem] @[16rem]:p-4">
         {producto.Imagen && !imgError ? (
@@ -88,7 +76,7 @@ export default function ProductCard({ producto, onView, href }: ProductCardProps
             className="relative z-20 !px-3 @[12rem]:!px-6"
           />
           <Button
-            {...(onView ? { onClick: () => onView(producto) } : { href: href ?? '/catalogo' })}
+            href={href ?? '/catalogo'}
             variant="tertiary"
             size="md"
             icon="arrow-right"

@@ -1,0 +1,38 @@
+---
+/**
+ * Encabezado de subpágina: banda negra con textura de placa, ruta de
+ * navegación, etiqueta (Section Tag), titular grande y franja amarilla.
+ */
+import { rutaInterna } from '../../lib/asset-url';
+import SectionTag from './SectionTag.astro';
+
+interface Props {
+  etiqueta: string;
+  titulo: string;
+  acento?: string;
+  descripcion?: string;
+  /** Texto de la miga final (por defecto, la etiqueta). */
+  miga?: string;
+}
+
+const { etiqueta, titulo, acento, descripcion, miga = etiqueta } = Astro.props;
+---
+
+<section class="relative isolate overflow-hidden bg-surface-inverse text-text-inverse">
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10"></div>
+  <div class="container-page py-12 lg:py-20">
+    <nav aria-label="Ruta de navegación" class="flex items-center gap-2 type-body-s text-text-inverse-muted">
+      <a href={rutaInterna('/')} class="type-label text-text-accent hover:underline">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <span>{miga}</span>
+    </nav>
+    <SectionTag label={etiqueta} class="mt-6" />
+    <h1 class="mt-6 max-w-4xl font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl lg:text-7xl">
+      {titulo}
+      {acento && <span class="text-text-accent"> {acento}</span>}
+    </h1>
+    {descripcion && <p class="mt-5 max-w-2xl type-body-l text-text-inverse-muted">{descripcion}</p>}
+    <slot />
+  </div>
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>

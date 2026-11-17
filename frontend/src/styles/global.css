@@ -250,7 +250,7 @@
   --shadow-header: 0 1px 0 rgb(8 18 13 / 6%);
 
   /* --- Layout ------------------------------------------------------------ */
-  --container-page: 100rem; /* 1600px */
+  --container-page: 75rem; /* 1200px de contenido (sin contar el margen lateral) */
 }
 
 /* Spacing del Figma (spacing/0 … spacing/96, en px). La escala por defecto de
@@ -621,7 +621,9 @@ html:not(.js) .reveal {
 /* Contenedor estándar del sitio */
 @utility container-page {
   width: 100%;
-  max-width: var(--container-page);
+  --container-gutter: clamp(1rem, 4vw, 2rem);
+  /* El contenido mide como máximo --container-page; el margen va aparte. */
+  max-width: calc(var(--container-page) + var(--container-gutter) * 2);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 2rem);
+  padding-inline: var(--container-gutter);
 }

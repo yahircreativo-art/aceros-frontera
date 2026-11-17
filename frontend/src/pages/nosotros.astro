@@ -1,0 +1,101 @@
+---
+/**
+ * Página Nosotros (Figma: "About"):
+ * 1. Historia — titular y texto a la izquierda, foto a la derecha.
+ * 2. Seis tarjetas (Card) sobre placa antiderrapante, en 3 × 2.
+ * 3. Cotización (Quote Form + "¿Por qué cotizar con nosotros?").
+ * Textos e imágenes en src/data/nosotros.ts.
+ */
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Cotizacion from '../components/contacto/Cotizacion.astro';
+import { assetUrl, rutaInterna } from '../lib/asset-url';
+import { obtenerProductos } from '../lib/productos';
+import { historia, tarjetas } from '../data/nosotros';
+
+const productos = await obtenerProductos();
+const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
+---
+
+<Base page="nosotros">
+  <Header productos={productos} />
+
+  <main id="contenido">
+    <!-- 1. Historia -->
+    <section class="bg-surface-primary py-16 lg:py-24">
+      <div class="container-page grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+        <div class="reveal max-w-xl">
+          <h1 class="type-h2 text-text-primary sm:text-5xl">{historia.titulo}</h1>
+          <div class="mt-8 flex flex-col gap-4 type-body-l text-text-secondary">
+            {historia.parrafos.map((parrafo) => <p>{parrafo}</p>)}
+          </div>
+        </div>
+
+        <div class="reveal media-steel aspect-[3/2] overflow-hidden [--reveal-delay:120ms]">
+          {
+            historia.imagen && (
+              <img
+                src={assetUrl(historia.imagen)}
+                alt={historia.imagenAlt}
+                fetchpriority="high"
+                decoding="async"
+                class="size-full object-cover"
+              />
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Tarjetas -->
+    <section aria-label="Conoce Aceros Frontera" class="pattern-placa bg-surface-inverse py-16 lg:py-24">
+      <ul class="container-page grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          tarjetas.map((tarjeta, indice) => (
+            <li class="reveal" style={`--reveal-delay: ${(indice % 3) * 80}ms`}>
+              <article class="group flex h-full flex-col bg-surface-primary">
+                <div class="media-steel aspect-[4/3] overflow-hidden">
+                  {tarjeta.imagen && (
+                    <img
+                      src={assetUrl(tarjeta.imagen)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  )}
+                </div>
+                <div class="flex flex-1 flex-col gap-3 p-6">
+                  <p class="type-overline text-text-muted">{tarjeta.etiqueta}</p>
+                  <h2 class="type-h3 text-text-primary">{tarjeta.titulo}</h2>
+                  <p class="type-body-s text-text-secondary">{tarjeta.texto}</p>
+                  {tarjeta.href && (
+                    <a
+                      href={rutaInterna(tarjeta.href)}
+                      class="mt-auto inline-flex w-fit items-center gap-2 pt-3 type-button-s text-text-brand hover:text-brand-hover"
+                    >
+                      <svg viewBox="0 0 12 12" class="size-2.5" aria-hidden="true">
+                        <path d="M3 2l6 4-6 4z" fill="currentColor" />
+                      </svg>
+                      {tarjeta.enlace}
+                    </a>
+                  )}
+                </div>
+              </article>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- 3. Cotización -->
+    <section class="bg-surface-canvas py-16 lg:py-24">
+      <div class="container-page">
+        <Cotizacion />
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>

@@ -113,6 +113,34 @@
       "robots": "index, follow",
       "ogType": "website",
       "schemaType": "CollectionPage"
+    },
+    "contacto": {
+      "title": "Contacto y cotización de acero | Aceros Frontera",
+      "description": "Cotiza acero, perfiles, lámina y ferretería por WhatsApp. Dirección, teléfonos, correo y horarios de Aceros Frontera en Baja California.",
+      "path": "/contacto",
+      "keywords": [
+        "contacto Aceros Frontera",
+        "cotizar acero Tijuana",
+        "cotización de materiales de acero",
+        "teléfono Aceros Frontera"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "ContactPage"
+    },
+    "nosotros": {
+      "title": "Nosotros | Aceros Frontera, acero y ferretería en Baja California",
+      "description": "Conoce Aceros Frontera: distribución de acero, fabricación de armex y lámina a la medida, centro de servicio autorizado y sucursales en Tijuana, Mexicali y Ensenada.",
+      "path": "/nosotros",
+      "keywords": [
+        "Aceros Frontera",
+        "nosotros Aceros Frontera",
+        "distribuidor de acero Baja California",
+        "fabricantes de armex"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "AboutPage"
     }
   }
 }

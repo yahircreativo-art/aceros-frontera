@@ -1,0 +1,69 @@
+---
+/**
+ * Página de contacto (Figma: "Contacto — Desktop"): ubicación con mapa y
+ * datos de contacto, formulario de cotización y sucursales.
+ */
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PageHero from '../components/ui/PageHero.astro';
+import Ubicacion from '../components/contacto/Ubicacion.astro';
+import Cotizacion from '../components/contacto/Cotizacion.astro';
+import Sucursales from '../components/home/Sucursales.astro';
+import CtaFinal from '../components/home/CtaFinal.astro';
+import Button from '../components/ui/Button.astro';
+import { obtenerProductos } from '../lib/productos';
+import { siteSeo, whatsappUrl } from '../lib/seo';
+
+const productos = await obtenerProductos();
+---
+
+<Base page="contacto">
+  <Header productos={productos} />
+
+  <main id="contenido">
+    <PageHero
+      etiqueta="Contacto"
+      titulo="Hablemos de"
+      acento="tu proyecto"
+      descripcion="Cotiza acero, perfiles, lámina y ferretería. Te atendemos por WhatsApp, teléfono o en cualquiera de nuestras sucursales en Baja California."
+    >
+      <div class="mt-8 flex flex-wrap gap-4">
+        <Button
+          href={whatsappUrl()}
+          target="_blank"
+          variant="secondary"
+          size="lg"
+          icon="whatsapp"
+          iconPosition="right"
+          label="Escríbenos por WhatsApp"
+        />
+        <Button
+          href={`tel:${siteSeo.phoneHref}`}
+          variant="primary"
+          size="lg"
+          icon="phone"
+          iconPosition="right"
+          label={`Llamar al ${siteSeo.phone}`}
+        />
+      </div>
+    </PageHero>
+
+    <section class="bg-surface-primary py-20 lg:py-28">
+      <div class="container-page">
+        <Ubicacion />
+      </div>
+    </section>
+
+    <section class="bg-surface-canvas py-20 lg:py-28">
+      <div class="container-page">
+        <Cotizacion />
+      </div>
+    </section>
+
+    <Sucursales />
+    <CtaFinal />
+  </main>
+
+  <Footer />
+</Base>

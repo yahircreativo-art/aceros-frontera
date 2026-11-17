@@ -1,0 +1,172 @@
+---
+/**
+ * Subpágina de producto (Figma: "Ficha de producto"): breadcrumb, imagen,
+ * información, cotización por WhatsApp y productos relacionados.
+ */
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ProductCard from '../../components/catalog/ProductCard';
+import Button from '../../components/ui/Button.astro';
+import { badgeClasses } from '../../components/ui/badge-styles';
+import { obtenerProductos } from '../../lib/productos';
+import { rutaCategoria } from '../../lib/categorias';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { normalizar } from '../../lib/format';
+import { rutaProducto, sinSkuFinal, slugProducto } from '../../lib/rutas-producto';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import type { Producto } from '../../lib/types';
+
+export async function getStaticPaths() {
+  const productos = await obtenerProductos();
+  const vistos = new Set<string>();
+  const rutas: { params: { slug: string }; props: { producto: Producto; productos: Producto[] } }[] = [];
+
+  for (const producto of productos) {
+    if (!producto.Nombre) continue;
+    const slug = slugProducto(producto);
+    if (vistos.has(slug)) continue; // SKU repetido: se queda la primera ficha.
+    vistos.add(slug);
+    rutas.push({ params: { slug }, props: { producto, productos } });
+  }
+
+  return rutas;
+}
+
+const { producto, productos } = Astro.props;
+
+const nombre = producto.Nombre ?? 'Producto';
+const sku = producto.SKU != null ? String(producto.SKU) : '';
+const categoria = String(producto.Categoria ?? '').trim();
+const categorias = [...new Set(productos.map((p) => String(p.Categoria ?? '').trim()).filter(Boolean))];
+const rutaDeCategoria = categoria ? rutaCategoria(categoria, categorias) : '/catalogo';
+
+const descripcionCorta = sinSkuFinal(producto.DescripcionCorta);
+const descripcion = sinSkuFinal(producto.Descripcion);
+const mostrarCorta = descripcionCorta.length > 0 && normalizar(descripcionCorta) !== normalizar(nombre);
+
+const relacionados = productos
+  .filter((p) => p !== producto && p.Nombre && String(p.Categoria ?? '').trim() === categoria)
+  .sort((a, b) => Number(Boolean(b.Imagen)) - Number(Boolean(a.Imagen)))
+  .slice(0, 4);
+
+const mensaje = `Hola, quiero cotizar el producto: ${nombre}${sku ? ` (SKU: ${sku})` : ''}.`;
+const title = `${nombre} | ${categoria || 'Catálogo'} | Aceros Frontera`;
+const description = (
+  mostrarCorta
+    ? descripcionCorta
+    : descripcion || `${nombre} en Aceros Frontera. Cotiza por WhatsApp en Baja California.`
+).slice(0, 155);
+---
+
+<Base page="catalogo" title={title} description={description} canonicalPath={rutaProducto(producto)}>
+  <Header productos={productos} />
+
+  <main id="contenido" class="bg-surface-canvas pb-16">
+    <div class="container-page">
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2 py-6 type-body-s text-text-muted">
+        <a href={rutaInterna('/catalogo')} class="type-label text-text-brand hover:text-brand-hover">Catálogo</a>
+        {
+          categoria && (
+            <>
+              <span aria-hidden="true">/</span>
+              <a href={rutaInterna(rutaDeCategoria)} class="type-label text-text-brand hover:text-brand-hover">
+                {categoria}
+              </a>
+            </>
+          )
+        }
+        <span aria-hidden="true">/</span>
+        <span class="line-clamp-1 text-text-secondary lowercase first-letter:uppercase">{nombre}</span>
+      </nav>
+
+      <article class="grid overflow-hidden bg-surface-primary md:grid-cols-2">
+        <div class="media-steel flex min-h-72 items-center justify-center p-6 sm:min-h-[28rem] sm:p-12">
+          {
+            producto.Imagen ? (
+              <img
+                src={producto.Imagen}
+                alt={nombre}
+                width="800"
+                height="600"
+                fetchpriority="high"
+                decoding="async"
+                class="max-h-[28rem] w-full object-contain mix-blend-multiply"
+              />
+            ) : (
+              <span class="type-overline text-text-muted">Aceros Frontera</span>
+            )
+          }
+        </div>
+
+        <div class="flex flex-col gap-5 p-6 sm:p-10 lg:p-12">
+          <p class="type-overline text-text-muted">
+            {[categoria, sku ? `SKU ${sku}` : ''].filter(Boolean).join(' · ')}
+          </p>
+          <h1 class="font-display text-4xl leading-tight font-bold text-text-primary lowercase first-letter:uppercase sm:text-5xl">
+            {nombre}
+          </h1>
+          {mostrarCorta && <p class="type-subtitle text-text-secondary">{descripcionCorta}</p>}
+          {descripcion && <p class="max-w-prose type-body-m text-text-secondary">{descripcion}</p>}
+
+          <div class="flex flex-wrap gap-2">
+            {categoria && <span class={badgeClasses('brand')}>{categoria}</span>}
+            {sku && <span class={badgeClasses('neutral')}>SKU {sku}</span>}
+          </div>
+
+          <div class="mt-2 h-px bg-border-default" aria-hidden="true"></div>
+
+          <div class="flex flex-col gap-3">
+            <Button
+              href={whatsappUrl(mensaje)}
+              target="_blank"
+              variant="secondary"
+              size="lg"
+              icon="whatsapp"
+              iconPosition="right"
+              label="Cotizar por WhatsApp"
+              fullWidth
+            />
+            <Button
+              href={`tel:${siteSeo.phoneHref}`}
+              variant="tertiary"
+              size="lg"
+              icon="phone"
+              iconPosition="right"
+              label={`Llamar al ${siteSeo.phone}`}
+              fullWidth
+            />
+          </div>
+
+          <a
+            href={rutaInterna(rutaDeCategoria)}
+            class="inline-flex w-fit items-center gap-2 type-button-m text-text-brand hover:text-brand-hover"
+          >
+            <svg viewBox="0 0 24 24" class="size-4 rotate-180" aria-hidden="true">
+              <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
+            </svg>
+            {categoria ? `Ver más de ${categoria}` : 'Volver al catálogo'}
+          </a>
+        </div>
+      </article>
+
+      {
+        relacionados.length > 0 && (
+          <section aria-labelledby="relacionados-titulo" class="mt-16">
+            <p class="type-overline text-text-brand">Categoría {categoria}</p>
+            <h2 id="relacionados-titulo" class="mt-2 type-h2 text-text-primary">Productos relacionados</h2>
+            <ul class="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+              {relacionados.map((relacionado) => (
+                <li>
+                  <ProductCard producto={relacionado} href={rutaProducto(relacionado)} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </div>
+  </main>
+
+  <Footer />
+</Base>

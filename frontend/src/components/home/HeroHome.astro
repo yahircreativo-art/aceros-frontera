@@ -14,7 +14,6 @@ import SectionTag from '../ui/SectionTag.astro';
 <section
   id="inicio"
   class="relative isolate overflow-hidden bg-surface-inverse text-text-inverse"
-  data-hide-on-product-detail
 >
   {/* Imagen de fondo LCP: <img> real para que el navegador la descubra en el HTML. */}
   <img
@@ -27,7 +26,7 @@ import SectionTag from '../ui/SectionTag.astro';
   />
   <div
     aria-hidden="true"
-    class="absolute inset-0 -z-10 bg-gradient-to-r from-black/70 via-black/20 to-transparent"
+    class="absolute inset-0 -z-10 bg-gradient-to-r from-black/70 black/50 to-transparent"
   >
   </div>
   <div aria-hidden="true" class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-black/80 to-transparent"></div>

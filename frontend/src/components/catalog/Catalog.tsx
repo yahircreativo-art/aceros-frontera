@@ -2,15 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
 import Icon from '../ui/Icon';
 import Button from '../ui/Button';
-import { badgeClasses } from '../ui/badge-styles';
 import { normalizar } from '../../lib/format';
 import { rutaCategoria } from '../../lib/categorias';
 import { rutaActualSinBase, rutaInterna } from '../../lib/asset-url';
+import { rutaProducto } from '../../lib/rutas-producto';
 import type { Producto } from '../../lib/types';
 
 interface CatalogProps {
   productos: Producto[];
-  whatsapp: string;
   categoriaInicial?: string;
 }
 
@@ -18,7 +17,7 @@ interface CatalogProps {
 const PRODUCTOS_POR_PAGINA = 24;
 
 /* Una fila de productos de muestra por bloque de categoría. */
-const PRODUCTOS_POR_CATEGORIA = 4;
+const PRODUCTOS_POR_CATEGORIA = 3;
 
 /* Frase corta que acompaña el nombre de cada categoría. */
 const FRASES_CATEGORIA: { palabras: string[]; frase: string }[] = [
@@ -43,7 +42,7 @@ const fraseDeCategoria = (categoria: string) => {
   return encontrada?.frase ?? 'Explora los productos disponibles de esta categoría.';
 };
 
-export default function Catalog({ productos, whatsapp, categoriaInicial }: CatalogProps) {
+export default function Catalog({ productos, categoriaInicial }: CatalogProps) {
   const [productosActuales, setProductosActuales] = useState(productos);
 
   /* Orden al azar: se mezcla al montar en el navegador (no en el render del
@@ -59,7 +58,6 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
       return copia;
     });
   }, []);
-  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     document.getElementById('catalogo')?.setAttribute('data-hidratado', '');
@@ -67,15 +65,6 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
 
   const [filtro, setFiltro] = useState(categoriaInicial ?? 'todos');
   const [pagina, setPagina] = useState(1);
-  const [productoActivo, setProductoActivo] = useState<Producto | null>(null);
-
-  const actualizarUrlProducto = (sku: string | null, reemplazar = false) => {
-    const url = new URL(window.location.href);
-    if (sku) url.searchParams.set('producto', sku);
-    else url.searchParams.delete('producto');
-
-    window.history[reemplazar ? 'replaceState' : 'pushState']({}, '', url);
-  };
 
   const categoriasActuales = useMemo(
     () =>
@@ -115,70 +104,33 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
     window.history.replaceState({}, '', url);
   }, [filtro]);
 
+  /* Enlaces antiguos /catalogo?producto=SKU: se redirige a la subpágina del producto. */
   useEffect(() => {
-    /* El buscador del header es independiente: solo filtra el catálogo la
-       categoría elegida en el menú o en “Compra por categoría”. */
+    const sku = new URL(window.location.href).searchParams.get('producto');
+    if (!sku) return;
+    const producto = productos.find((item) => String(item.SKU) === sku);
+    if (producto) window.location.replace(rutaInterna(rutaProducto(producto)));
+  }, []);
+
+  useEffect(() => {
     const recibirCategoria = (evento: Event) => {
       const categoria = (evento as CustomEvent<string>).detail ?? '';
       const esTodos = categoria.toLowerCase().trim() === 'todos';
-
       setFiltro(esTodos ? 'todos' : resolverCategoria(categoria) ?? 'todos');
-      setProductoActivo(null);
     };
 
     const reiniciarCatalogo = () => {
       setFiltro('todos');
-      setProductoActivo(null);
       const url = new URL(window.location.href);
       url.searchParams.delete('categoria');
       window.history.replaceState({}, '', url);
-      actualizarUrlProducto(null, true);
-    };
-
-    const mostrarDetalle = (evento: Event) => {
-      const sku = (evento as CustomEvent<string>).detail;
-      const producto = productosActuales.find((item) => String(item.SKU) === sku) ?? null;
-      setProductoActivo(producto);
-      setImgError(false);
-      if (producto && new URL(window.location.href).searchParams.get('producto') !== sku) {
-        actualizarUrlProducto(sku);
-      }
-    };
-
-    const restaurarDesdeUrl = () => {
-      const sku = new URL(window.location.href).searchParams.get('producto');
-      const producto = productosActuales.find((item) => String(item.SKU) === sku) ?? null;
-      setProductoActivo(producto);
-      setImgError(false);
-      if (producto) {
-        window.dispatchEvent(new CustomEvent('catalog-search', { detail: producto.Nombre ?? '' }));
-        window.dispatchEvent(new CustomEvent('catalog-product-detail', { detail: producto.SKU ?? '' }));
-      } else {
-        window.dispatchEvent(new Event('catalog-product-close'));
-      }
     };
 
     window.addEventListener('catalog-category', recibirCategoria);
     window.addEventListener('catalog-reset', reiniciarCatalogo);
-    window.addEventListener('catalog-product-detail', mostrarDetalle);
-    window.addEventListener('popstate', restaurarDesdeUrl);
-
-    const skuInicial = new URL(window.location.href).searchParams.get('producto');
-    if (skuInicial) {
-      const productoInicial = productosActuales.find((producto) => String(producto.SKU) === skuInicial);
-      if (productoInicial) {
-        setProductoActivo(productoInicial);
-        setImgError(false);
-        window.dispatchEvent(new CustomEvent('catalog-search', { detail: productoInicial.Nombre ?? '' }));
-        window.dispatchEvent(new CustomEvent('catalog-product-detail', { detail: productoInicial.SKU ?? '' }));
-      }
-    }
-
     return () => {
       window.removeEventListener('catalog-category', recibirCategoria);
       window.removeEventListener('catalog-reset', reiniciarCatalogo);
-      window.removeEventListener('catalog-product-detail', mostrarDetalle);
-      window.removeEventListener('popstate', restaurarDesdeUrl);
     };
   }, [productosActuales]);
 
@@ -190,18 +142,6 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
       ),
     [productosActuales, filtro],
   );
-
-  const productosRelacionados = useMemo(() => {
-    if (!productoActivo) return [];
-
-    return productosActuales
-      .filter(
-        (producto) =>
-          String(producto.SKU) !== String(productoActivo.SKU) &&
-          producto.Categoria === productoActivo.Categoria,
-      )
-      .slice(0, 4);
-  }, [productosActuales, productoActivo]);
 
   useEffect(() => {
     setPagina(1);
@@ -275,139 +215,11 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
     }
 
     setFiltro('todos');
-    setProductoActivo(null);
-    actualizarUrlProducto(null, true);
     window.dispatchEvent(new CustomEvent('catalog-search', { detail: '' }));
   };
 
-  const verDetalle = (producto: Producto) => {
-    window.dispatchEvent(new CustomEvent('catalog-product-detail', { detail: producto.SKU ?? '' }));
-    window.scrollTo(0, 0);
-  };
-
-  const volverAResultados = () => {
-    setProductoActivo(null);
-    actualizarUrlProducto(null, true);
-    window.dispatchEvent(new Event('catalog-product-close'));
-  };
-
-  const claveActiva = productoActivo?.SKU;
-
-  /* Los textos traen el SKU repetido al final, y el SKU ya se muestra arriba. */
-  const sinSkuFinal = (texto?: string | null) =>
-    String(texto ?? '')
-      .replace(/\s*\|?\s*SKU:.*$/i, '')
-      .trim();
-
-  const descripcionCorta = sinSkuFinal(productoActivo?.DescripcionCorta);
-  const descripcion = sinSkuFinal(productoActivo?.Descripcion);
-
-  const mostrarDescripcionCorta =
-    descripcionCorta.length > 0 &&
-    normalizar(descripcionCorta) !== normalizar(productoActivo?.Nombre ?? '');
-
   return (
-    <div className={productoActivo ? 'mt-4' : 'mt-4'}>
-      {productoActivo ? (
-        <section
-          aria-labelledby="detalle-producto-titulo"
-          className="grid grid-cols-1 md:grid-cols-2 overflow-hidden"
-        >
-          <div className="media-steel flex min-h-56 items-center justify-center p-3 sm:min-h-[50vh] sm:p-10">
-            {productoActivo.Imagen && !imgError ? (
-              <img
-                src={productoActivo.Imagen}
-                alt={productoActivo.Nombre ?? 'Producto'}
-                width="800"
-                height="600"
-                onError={() => setImgError(true)}
-                className="max-h-[28rem] w-full object-contain mix-blend-multiply"
-              />
-            ) : (
-              <span className="type-overline text-text-muted">Aceros Frontera</span>
-            )}
-          </div>
-
-          <div className="mx-auto flex w-full max-w-2xl flex-col p-3 sm:p-8 lg:justify-center lg:p-12">
-            <Button
-              variant="link"
-              size="none"
-              icon="arrow-right"
-              iconClass="rotate-180"
-              label="Volver al catálogo"
-              onClick={volverAResultados}
-              className="w-fit"
-            />
-
-            <h2
-              id="detalle-producto-titulo"
-              className="mt-4 type-h2 text-text-primary"
-            >
-              {productoActivo.Nombre}
-            </h2>
-
-            {mostrarDescripcionCorta ? (
-              <p className="mt-3 type-subtitle text-text-secondary">
-                {descripcionCorta}
-              </p>
-            ) : null}
-
-            {descripcion ? (
-              <p className="mt-3 max-w-prose type-body-s text-text-secondary">
-                {descripcion}
-              </p>
-            ) : null}
-
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className={badgeClasses('brand')}>
-                {productoActivo.Categoria}
-              </span>
-              {claveActiva ? (
-                <span className={badgeClasses('neutral')}>SKU {claveActiva}</span>
-              ) : null}
-            </div>
-
-
-            <div className="mt-8 flex flex-col gap-3">
-              <Button
-                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                  `Hola, quiero cotizar el producto: ${productoActivo.Nombre ?? ''} ${claveActiva ? `(SKU: ${claveActiva})` : ''
-                  }.`,
-                )}`}
-                target="_blank"
-                variant="secondary"
-                size="lg"
-                icon="whatsapp"
-                iconPosition="right"
-                label="Cotizar por WhatsApp"
-                fullWidth
-              />
-            </div>
-          </div>
-
-          {productosRelacionados.length > 0 ? (
-            <div className="border-t border-border-default px-4 py-8 sm:px-8 md:col-span-2 lg:px-12">
-              <div className="mb-5">
-                <p className="type-overline text-text-brand">
-                  Categoría {productoActivo.Categoria}
-                </p>
-                <h3 className="mt-1 type-h3 text-text-primary">
-                  Otros productos relacionados
-                </h3>
-              </div>
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
-                {productosRelacionados.map((producto) => (
-                  <ProductCard
-                    key={producto.ID ?? producto.SKU}
-                    producto={producto}
-                    onView={verDetalle}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </section>
-      ) : (
+    <div className="mt-3">
         <>
           {verPorCategorias ? (
             /* Portada: cada categoría con su frase y una fila de productos de muestra,
@@ -441,15 +253,16 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
                     />
                   </div>
 
-                  <div className="mt-4 flex gap-3 overflow-x-auto">
-                    {muestra.map((producto) => (
+                  {/* 2 productos en celular, 3 desde md. */}
+                  <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {muestra.map((producto, indice) => (
                       <div
                         key={producto.ID ?? producto.SKU}
-                        className="min-w-[calc((100%-0.75rem)/2)] sm:min-w-0 sm:flex-1"
+                        className={indice >= 2 ? 'hidden md:block' : undefined}
                       >
                         <ProductCard
                           producto={producto}
-                          onView={verDetalle}
+                          href={rutaProducto(producto)}
                         />
                       </div>
                     ))}
@@ -494,7 +307,7 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
                       <ProductCard
                         key={producto.ID ?? producto.SKU}
                         producto={producto}
-                        onView={verDetalle}
+                        href={rutaProducto(producto)}
                       />
                     ))}
                   </div>
@@ -568,7 +381,6 @@ export default function Catalog({ productos, whatsapp, categoriaInicial }: Catal
             </>
           )}
         </>
-      )}
     </div>
   );
 }

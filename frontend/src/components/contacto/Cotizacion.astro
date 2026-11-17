@@ -1,0 +1,190 @@
+---
+/**
+ * Figma (Contacto): "Quote" — Quote Form (Input Field / Select / Textarea)
+ * a la izquierda y Aside a la derecha (Alert + "¿Por qué cotizar con
+ * nosotros?" + Feature Items). Envía la solicitud por WhatsApp.
+ * Solo debe haber una por página (los id del formulario son fijos).
+ */
+import { assetUrl } from '../../lib/asset-url';
+import Button from '../ui/Button.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+const icono = (nombre: string) => `${assetUrl('/icons.svg')}#${nombre}`;
+
+/* Figma Input Field: Label Body/Label · campo surface/field con borde
+   inferior border/field (2 px border/focus al enfocar). */
+const campo =
+  'h-12 w-full border-0 border-b border-border-field bg-surface-field px-4 type-body-m text-text-primary outline-none placeholder:text-text-muted focus:border-b-2 focus:border-border-focus';
+const etiqueta = 'mb-2 block type-label text-text-primary';
+const flecha =
+  'pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-text-muted';
+
+const razones = [
+  {
+    icono: 'shield-check',
+    titulo: 'Marcas certificadas',
+    texto: 'Distribuidores autorizados con respaldo directo de fábrica.',
+  },
+  {
+    icono: 'truck',
+    titulo: 'Entrega en tu obra',
+    texto: 'Flota propia para llevar el material a Tijuana, Mexicali y Ensenada.',
+  },
+  {
+    icono: 'clock',
+    titulo: 'Respuesta el mismo día',
+    texto: 'Cotizaciones y surtido en horario extendido, de lunes a sábado.',
+  },
+];
+---
+
+<div id="formulario-cotizacion" class="scroll-mt-44 lg:scroll-mt-28">
+  <SectionHeading
+    eyebrow="Cotización"
+    title="Cuéntanos qué"
+    accent="material necesitas"
+    description="Completa los datos y continuamos tu solicitud por WhatsApp."
+  />
+
+  <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,45rem)_minmax(0,24rem)] lg:justify-between lg:gap-12">
+    <form id="formulario-whatsapp" class="reveal grid gap-6 bg-surface-primary p-6 sm:grid-cols-2 sm:p-8">
+      <div>
+        <label for="cotizacion-nombre" class={etiqueta}>Nombre</label>
+        <input id="cotizacion-nombre" name="nombre" type="text" autocomplete="name" required class={campo} placeholder="Tu nombre" />
+      </div>
+      <div>
+        <label for="cotizacion-telefono" class={etiqueta}>Teléfono</label>
+        <input id="cotizacion-telefono" name="telefono" type="tel" autocomplete="tel" required class={campo} placeholder="664 000 0000" />
+      </div>
+      <div>
+        <label for="cotizacion-material" class={etiqueta}>Material o pieza</label>
+        <div class="relative">
+          <select id="cotizacion-material" name="material" required class={`${campo} appearance-none pr-12`}>
+            <option value="" disabled selected>Selecciona un material</option>
+            <option>Perfil tubular cuadrado</option>
+            <option>Perfil ángulo</option>
+            <option>Tubo redondo</option>
+            <option>Alambrón</option>
+            <option>Malla electrosoldada</option>
+            <option>Placa o lámina</option>
+            <option>Armex o estribos</option>
+            <option>Ferretería o herramienta</option>
+            <option value="otro">Otro material</option>
+          </select>
+          <svg viewBox="0 0 24 24" class={flecha} fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+        <input id="cotizacion-material-otro" name="material_otro" type="text" hidden class={`${campo} mt-3`} placeholder="Especifica el material o pieza" aria-label="Otro material o pieza" />
+      </div>
+      <div>
+        <label for="cotizacion-medidas" class={etiqueta}>Medidas o especificaciones</label>
+        <div class="relative">
+          <select id="cotizacion-medidas" name="medidas" class={`${campo} appearance-none pr-12`}>
+            <option value="" selected>Selecciona una especificación</option>
+            <option>Calibre o espesor</option>
+            <option>Diámetro</option>
+            <option>Largo</option>
+            <option>Ancho</option>
+            <option>Medida de sección</option>
+            <option>Grado o acabado</option>
+            <option>Presentación o peso</option>
+            <option value="otro">Otra especificación</option>
+          </select>
+          <svg viewBox="0 0 24 24" class={flecha} fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+        <input id="cotizacion-medidas-otro" name="medidas_otro" type="text" hidden class={`${campo} mt-3`} placeholder="Especifica las medidas o características" aria-label="Otra especificación" />
+      </div>
+      <div class="sm:col-span-2">
+        <label for="cotizacion-cantidad" class={etiqueta}>Cantidad aproximada</label>
+        <input id="cotizacion-cantidad" name="cantidad" type="text" class={campo} placeholder="Piezas, metros, toneladas..." />
+      </div>
+      <div class="sm:col-span-2">
+        <label for="cotizacion-notas" class={etiqueta}>Detalles adicionales</label>
+        <textarea id="cotizacion-notas" name="notas" rows="4" class={`${campo} h-auto py-3`} placeholder="Cuéntanos sobre tu proyecto"></textarea>
+      </div>
+      <Button
+        type="submit"
+        variant="secondary"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Enviar por WhatsApp"
+        className="w-full sm:col-span-2 sm:w-fit"
+      />
+    </form>
+
+    <aside class="reveal flex flex-col gap-6 [--reveal-delay:120ms]">
+      <div class="flex gap-3 border-l-4 border-feedback-info-text bg-feedback-info-surface p-4" role="note">
+        <svg viewBox="0 0 24 24" class="mt-0.5 size-5 shrink-0 text-feedback-info-text" aria-hidden="true"><use href={icono('clock')} /></svg>
+        <p class="type-body-s text-feedback-info-text">
+          <strong class="type-label">Te respondemos hoy.</strong> Las solicitudes en horario de atención se cotizan el mismo día.
+        </p>
+      </div>
+
+      <h3 class="type-h3 text-text-primary">¿Por qué cotizar con nosotros?</h3>
+      <ul class="flex flex-col gap-6">
+        {
+          razones.map((razon) => (
+            <li class="flex gap-4">
+              <span class="grid size-12 shrink-0 place-items-center bg-accent-primary text-text-on-accent">
+                <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true">
+                  <use href={icono(razon.icono)} />
+                </svg>
+              </span>
+              <span>
+                <span class="block type-h4 text-text-primary">{razon.titulo}</span>
+                <span class="mt-1 block type-body-s text-text-secondary">{razon.texto}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+  </div>
+</div>
+
+<script>
+  import { siteSeo } from '../../lib/seo';
+
+  const form = document.querySelector<HTMLFormElement>('#formulario-whatsapp');
+
+  const enlazarOpcionOtro = (selectId: string, inputId: string) => {
+    const select = document.querySelector<HTMLSelectElement>(`#${selectId}`);
+    const input = document.querySelector<HTMLInputElement>(`#${inputId}`);
+    if (!select || !input) return;
+
+    const actualizar = () => {
+      const mostrar = select.value === 'otro';
+      input.hidden = !mostrar;
+      input.required = mostrar;
+      if (!mostrar) input.value = '';
+    };
+
+    select.addEventListener('change', actualizar);
+    actualizar();
+  };
+
+  enlazarOpcionOtro('cotizacion-material', 'cotizacion-material-otro');
+  enlazarOpcionOtro('cotizacion-medidas', 'cotizacion-medidas-otro');
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    const material = data.get('material') === 'otro' ? data.get('material_otro') : data.get('material');
+    const medidas = data.get('medidas') === 'otro' ? data.get('medidas_otro') : data.get('medidas');
+    const mensaje = [
+      'Hola, quiero solicitar una cotización.',
+      `Nombre: ${data.get('nombre')}`,
+      `Teléfono: ${data.get('telefono')}`,
+      `Material o pieza: ${material}`,
+      medidas ? `Medidas o especificaciones: ${medidas}` : '',
+      data.get('cantidad') ? `Cantidad aproximada: ${data.get('cantidad')}` : '',
+      data.get('notas') ? `Detalles: ${data.get('notas')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    window.open(`https://wa.me/${siteSeo.whatsapp}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+  });
+</script>

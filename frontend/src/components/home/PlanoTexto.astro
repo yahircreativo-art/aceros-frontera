@@ -1,0 +1,19 @@
+---
+/** Texto de una celda del bento "Planos de producto". */
+import type { PiezaPlano } from '../../lib/planos';
+
+interface Props {
+  pieza: PiezaPlano;
+}
+
+const { pieza } = Astro.props;
+---
+
+<span
+  class="absolute top-5 right-5 text-lg text-text-inverse-muted transition-colors group-hover:text-text-accent"
+  aria-hidden="true">↗</span
+>
+<span class="type-overline text-text-inverse-muted">{pieza.spec}</span>
+<span class="mt-2 font-display text-3xl font-extrabold uppercase sm:text-4xl">{pieza.nombre}</span>
+<span class="mt-2 max-w-xs type-body-s text-text-inverse-muted">{pieza.texto}</span>
+<span class="sr-only">Cotizar {pieza.nombre} por WhatsApp</span>

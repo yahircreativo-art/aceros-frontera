@@ -6,7 +6,6 @@ import Catalog from "../components/catalog/Catalog";
 import PromocionesDestacadas from "../components/catalog/PromocionesDestacadas";
 import CategoriasCatalogo from "../components/catalog/CategoriasCatalogo.astro";
 import SeccionesPromociones from "../components/catalog/SeccionesPromociones.astro";
-import { siteSeo } from "../lib/seo";
 import { obtenerProductos } from "../lib/productos";
 import { esBanner, obtenerPromociones } from "../lib/destacados";
 
@@ -35,7 +34,6 @@ const supabasePromosBucket =
     <section
       id="destacados"
       class="scroll-mt-44 lg:scroll-mt-28"
-      data-hide-on-product-detail
     >
       {promocionesBanner.length ? (
         <PromocionesDestacadas
@@ -52,7 +50,6 @@ const supabasePromosBucket =
       {/* La tarjeta de categorías se monta ligeramente sobre la franja de promociones. */}
       <div
         class={`container-page relative ${promocionesBanner.length ? "-mt-12 lg:-mt-18" : ""}`}
-        data-hide-on-product-detail
       >
         <CategoriasCatalogo
           productos={productos}
@@ -65,7 +62,7 @@ const supabasePromosBucket =
 
     {/* Imágenes promocionales administradas en la misma tabla de Supabase. */}
     {promocionesGrid.length ? (
-      <div class="container-page" data-hide-on-product-detail>
+      <div class="container-page">
         <SeccionesPromociones promociones={promocionesGrid} categorias={categorias} />
       </div>
     ) : null}
@@ -73,22 +70,15 @@ const supabasePromosBucket =
     <section
       id="catalogo"
       class="scroll-mt-44 bg-surface-canvas pt-4 lg:scroll-mt-28 pb-16"
-      data-product-detail-layout="pb-16"
-      data-product-detail-compact="py-0"
     >
       <div class="container-page">
         <Catalog
           client:idle
           productos={productos}
-          whatsapp={siteSeo.whatsapp}
         />
       </div>
     </section>
   </main>
 
   <Footer />
-
-  <script>
-    import '../scripts/catalog-detail-visibility';
-  </script>
 </Base>

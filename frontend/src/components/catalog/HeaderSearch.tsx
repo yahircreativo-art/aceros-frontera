@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Button from '../ui/Button';
 import Icon from '../ui/Icon';
 import { normalizar } from '../../lib/format';
+import { rutaInterna } from '../../lib/asset-url';
+import { rutaProducto } from '../../lib/rutas-producto';
 import type { Producto } from '../../lib/types';
 
 interface HeaderSearchProps {
@@ -75,7 +77,7 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     setConsulta(producto.Nombre ?? '');
     setEnfocado(false);
     setIndiceSugerencia(-1);
-    window.dispatchEvent(new CustomEvent('catalog-product-detail', { detail: producto.SKU ?? '' }));
+    window.location.href = rutaInterna(rutaProducto(producto));
   };
 
   const sugerenciasAbiertas = enfocado && consulta.trim().length > 0;
