@@ -7,7 +7,7 @@
  */
 import Logo from './Logo.astro';
 import Button from './ui/Button.astro';
-import HeaderCatalogoDropdown from './HeaderCatalogoDropdown.tsx';
+import MegaMenu from './MegaMenu.astro';
 import HeaderSearch from './catalog/HeaderSearch';
 import { whatsappUrl } from '../lib/seo';
 import { rutaCategoria } from '../lib/categorias';
@@ -68,7 +68,18 @@ const enlaces = [
     aria-label="Navegación secundaria"
     class="container-page flex h-[2.875rem] items-center gap-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
   >
-    <HeaderCatalogoDropdown categorias={categorias} client:only="react" />
+    <button
+      type="button"
+      data-mega-trigger
+      aria-expanded="false"
+      aria-controls="mega-menu"
+      class="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 type-label text-text-primary transition-colors hover:text-text-brand aria-expanded:text-text-brand"
+    >
+      Catálogo
+      <svg viewBox="0 0 10 6" class="h-1.5 w-2.5 transition-transform group-aria-expanded:rotate-180" fill="none" aria-hidden="true">
+        <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
     {
       enlaces.map((enlace) => (
         <a
@@ -95,4 +106,6 @@ const enlaces = [
       )
     }
   </nav>
+
+  <MegaMenu categorias={categorias} />
 </header>

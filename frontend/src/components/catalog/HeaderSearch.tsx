@@ -93,9 +93,9 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
           evento.preventDefault();
           setEnfocado(false);
         }}
-        className="group/search flex h-12 overflow-hidden rounded-sm"
+        className="group/search flex h-12 overflow-hidden"
       >
-        <div className="flex min-w-0 flex-1 items-center gap-3 border-b border-border-field bg-surface-primary px-4 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus">
+        <div className="flex min-w-0 flex-1 items-center gap-3  bg-surface-primary px-4 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus">
           <label className="sr-only" htmlFor="buscar-navbar">Buscar productos</label>
           <input
             id="buscar-navbar"

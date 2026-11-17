@@ -73,20 +73,4 @@ const cifras = [
       </div>
     </div>
   </div>
-
-  <div class="container-page relative mt-16 lg:mt-24">
-    <dl class="grid grid-cols-2 border-y border-border-default lg:grid-cols-4">
-      {
-        cifras.map((cifra, indice) => (
-          <div
-            class={`reveal flex flex-col gap-2 px-2 py-8 sm:px-6 ${indice > 0 ? 'lg:border-l lg:border-border-default' : ''} ${indice % 2 === 1 ? 'border-l border-border-default lg:border-l' : ''} ${indice > 1 ? 'border-t border-border-default lg:border-t-0' : ''}`}
-            style={`--reveal-delay: ${indice * 80}ms`}
-          >
-            <dt class="order-2 type-overline text-text-muted">{cifra.etiqueta}</dt>
-            <dd class="order-1 font-display text-6xl leading-none font-extrabold text-text-brand lg:text-7xl">{cifra.valor}</dd>
-          </div>
-        ))
-      }
-    </dl>
-  </div>
 </section>

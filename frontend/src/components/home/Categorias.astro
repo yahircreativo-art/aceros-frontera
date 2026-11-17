@@ -6,12 +6,11 @@
  * Numeración grande al estilo de la referencia ("Catálogo central").
  */
 import { assetUrl, rutaInterna } from '../../lib/asset-url';
-import { normalizar } from '../../lib/format';
-import { rutaCategoria } from '../../lib/categorias';
+import { familias, rutaFamilia } from '../../data/familias';
 import { whatsappUrl } from '../../lib/seo';
 import type { Producto } from '../../lib/types';
 import Button from '../ui/Button.astro';
-import Pictogram, { type PictogramName } from '../ui/Pictogram.astro';
+import Pictogram from '../ui/Pictogram.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 
 interface Props {
@@ -24,23 +23,8 @@ const categoriasSitio = [
   ...new Set(productos.map((p) => String(p.Categoria ?? '').trim()).filter(Boolean)),
 ];
 
-/** Enlaza al listado de la categoría si existe en el catálogo; si no, al buscador general. */
-const enlace = (nombres: string[]) => {
-  const encontrada = categoriasSitio.find((categoria) =>
-    nombres.some((nombre) => normalizar(categoria).includes(normalizar(nombre))),
-  );
-  return encontrada ? rutaCategoria(encontrada, categoriasSitio) : '/catalogo';
-};
-
-const tiles: { titulo: string; icono: PictogramName; items: string[]; buscar: string[] }[] = [
-  { titulo: 'Láminas', icono: 'lamina', items: ['Metal desplegado', 'Perforada', 'Tablero', 'Traslúcida'], buscar: ['lamina'] },
-  { titulo: 'Construcción', icono: 'varilla', items: ['Varilla', 'Recocido', 'Alambrón', 'Malla electrosoldada'], buscar: ['construccion', 'varilla'] },
-  { titulo: 'Perfiles', icono: 'angulo', items: ['Ángulo', 'Perfiles', 'Soleras', 'Tubulares', 'Cuadrado', 'Redondo'], buscar: ['perfil'] },
-  { titulo: 'Planos', icono: 'placa', items: ['Lámina galvanizada', 'Lámina negra', 'Antiderrapante', 'Pintada'], buscar: ['plano', 'placa'] },
-  { titulo: 'Estructurales', icono: 'viga', items: ['Vigas', 'Canal', 'Polín', 'PTR / HSS'], buscar: ['estructural', 'viga'] },
-  { titulo: 'Tubería', icono: 'tubos', items: ['Mofle', 'Para cerco', 'Negro'], buscar: ['tuberia', 'tubo'] },
-  { titulo: 'Ferretería', icono: 'tornillo', items: ['Pintura y accesorios', 'Tornillería', 'Figuras y herrajes', 'Cerraduras', 'Soldadura'], buscar: ['ferreteria'] },
-];
+const tiles = familias;
+const enlace = (familia: (typeof familias)[number]) => rutaFamilia(familia, categoriasSitio);
 
 const check = `${assetUrl('/icons.svg')}#check`;
 ---
@@ -73,7 +57,7 @@ const check = `${assetUrl('/icons.svg')}#check`;
         tiles.map((tile, indice) => (
           <li class="reveal" style={`--reveal-delay: ${indice * 60}ms`}>
             <a
-              href={rutaInterna(enlace(tile.buscar))}
+              href={rutaInterna(enlace(tile))}
               class="group pattern-placa relative flex h-full min-h-[22rem] flex-col overflow-hidden bg-surface-inverse p-6 text-text-inverse transition-colors duration-300 "
             >
               <span
@@ -100,7 +84,7 @@ const check = `${assetUrl('/icons.svg')}#check`;
 
               <span class="mt-auto flex items-end justify-between gap-3 pt-8">
                 <span class="chamfer bg-accent-primary py-2 pl-4 pr-6 type-tag text-text-on-accent [--chamfer:12px]">
-                  {tile.titulo}
+                  {tile.corto}
                 </span>
                 <span class="grid size-10 shrink-0 place-items-center border border-white/20 text-text-inverse transition-all duration-300 group-hover:translate-x-1 group-hover:border-accent-primary group-hover:bg-accent-primary group-hover:text-text-on-accent">
                   <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">

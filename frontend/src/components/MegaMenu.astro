@@ -1,0 +1,154 @@
+---
+/**
+ * Figma: "Mega Menu" — se despliega desde "Catálogo" en la barra del header.
+ * Panel blanco (padding 40/64/48/64, sombra) con las familias de producto
+ * (pictograma verde, título Heading/H4, enlaces Body/Body-S), enlace
+ * "Ver catálogo completo" y mosaico amarillo "¿No encuentras lo que buscas?".
+ * Debajo, las categorías reales del catálogo en línea.
+ *
+ * Uso: <MegaMenu> va dentro del <header> (que es el contenedor posicionado)
+ * y su botón disparador se pinta con el slot "trigger" en la barra de enlaces.
+ */
+import { assetUrl, rutaInterna } from '../lib/asset-url';
+import { rutaCategoria } from '../lib/categorias';
+import { whatsappUrl } from '../lib/seo';
+import { familias, rutaFamilia } from '../data/familias';
+import Button from './ui/Button.astro';
+import Pictogram from './ui/Pictogram.astro';
+
+interface Props {
+  categorias: string[];
+}
+
+const { categorias } = Astro.props;
+---
+
+<div
+  id="mega-menu"
+  data-mega-menu
+  hidden
+  class="absolute inset-x-0 top-full z-50 max-h-[calc(100svh-8rem)] overflow-y-auto border-t border-border-default bg-surface-primary shadow-modal"
+>
+  <div class="container-page flex flex-col gap-10 pb-12 pt-10 lg:flex-row lg:gap-12">
+    <div class="min-w-0 flex-1">
+      <ul class="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
+        {
+          familias.map((familia) => {
+            const href = rutaInterna(rutaFamilia(familia, categorias));
+            return (
+              <li class="flex flex-col gap-2">
+                <a href={href} class="group flex flex-col gap-2">
+                  <Pictogram name={familia.icono} class="size-8 text-text-brand transition-transform group-hover:-translate-y-0.5" />
+                  <span class="type-h4 text-text-primary transition-colors group-hover:text-text-brand">
+                    {familia.titulo}
+                  </span>
+                </a>
+                <ul class="flex flex-col gap-2">
+                  {familia.items.map((item) => (
+                    <li>
+                      <a href={href} class="type-body-s text-text-secondary transition-colors hover:text-text-brand">
+                        {item}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })
+        }
+        <li class="flex items-start pt-2">
+          <a
+            href={rutaInterna('/catalogo')}
+            class="inline-flex items-center gap-2 type-button-m text-text-brand transition-colors hover:text-brand-hover"
+          >
+            <svg viewBox="0 0 12 12" class="size-3" aria-hidden="true"><path d="M3 2l6 4-6 4z" fill="currentColor" /></svg>
+            Ver catálogo completo
+          </a>
+        </li>
+      </ul>
+
+      {
+        categorias.length > 0 && (
+          <div class="mt-10 border-t border-border-default pt-6">
+            <p class="type-overline text-text-muted">Catálogo en línea</p>
+            <ul class="mt-3 flex flex-wrap gap-2">
+              {categorias.map((categoria) => (
+                <li>
+                  <a
+                    href={rutaInterna(rutaCategoria(categoria, categorias))}
+                    class="inline-flex rounded-xs bg-surface-field px-3 py-1.5 type-label text-text-primary transition-colors hover:bg-brand-primary hover:text-text-on-brand"
+                  >
+                    {categoria}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+
+    <aside class="flex shrink-0 flex-col gap-4 bg-accent-primary px-6 py-8 text-text-on-accent lg:w-[16.875rem]">
+      <Pictogram name="herramienta" class="size-16" />
+      <p class="mt-auto type-h3">¿No encuentras lo que buscas?</p>
+      <p class="type-body-s">Mándanos tu lista de materiales y te cotizamos.</p>
+      <Button
+        href={whatsappUrl('Hola, les envío mi lista de materiales para cotizar.')}
+        target="_blank"
+        variant="dark"
+        size="md"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Cotizar"
+        className="w-fit"
+      />
+    </aside>
+  </div>
+</div>
+
+<script>
+  /* Abre con clic, con el cursor (en pantallas con puntero) y con teclado;
+     cierra con Escape, clic fuera o al salir del menú. */
+  const menu = document.querySelector<HTMLElement>('[data-mega-menu]');
+  const trigger = document.querySelector<HTMLButtonElement>('[data-mega-trigger]');
+
+  if (menu && trigger) {
+    let cierre: number | undefined;
+    const conPuntero = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+    const abrir = () => {
+      window.clearTimeout(cierre);
+      menu.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+    };
+    const cerrar = () => {
+      window.clearTimeout(cierre);
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+    const programarCierre = () => {
+      window.clearTimeout(cierre);
+      cierre = window.setTimeout(cerrar, 200);
+    };
+
+    trigger.addEventListener('click', () => (menu.hidden ? abrir() : cerrar()));
+    for (const el of [trigger, menu]) {
+      el.addEventListener('mouseenter', () => conPuntero.matches && abrir());
+      el.addEventListener('mouseleave', () => conPuntero.matches && programarCierre());
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        cerrar();
+        trigger.focus();
+      }
+    });
+    document.addEventListener('mousedown', (e) => {
+      const objetivo = e.target as Node;
+      if (!menu.hidden && !menu.contains(objetivo) && !trigger.contains(objetivo)) cerrar();
+    });
+    menu.addEventListener('focusout', (e) => {
+      const siguiente = e.relatedTarget as Node | null;
+      if (siguiente && !menu.contains(siguiente) && siguiente !== trigger) cerrar();
+    });
+  }
+</script>
