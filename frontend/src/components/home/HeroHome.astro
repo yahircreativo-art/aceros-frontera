@@ -1,0 +1,94 @@
+---
+/**
+ * Portada — fusión de Figma "Section/Hero" (Section Tag, titular Display,
+ * botones Cotizar por WhatsApp / Ver catálogo, teléfono) con la referencia
+ * (titular gigante con palabra metálica) sobre la fotografía de la sucursal
+ * con degradado negro.
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+import SectionTag from '../ui/SectionTag.astro';
+---
+
+<section
+  id="inicio"
+  class="relative isolate overflow-hidden bg-surface-inverse text-text-inverse"
+  data-hide-on-product-detail
+>
+  {/* Imagen de fondo LCP: <img> real para que el navegador la descubra en el HTML. */}
+  <img
+    src={assetUrl('/images/hero-bg.webp')}
+    alt=""
+    fetchpriority="high"
+    loading="eager"
+    decoding="async"
+    class="absolute inset-0 -z-20 size-full object-cover object-center"
+  />
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 -z-10 bg-gradient-to-r from-black/70 via-black/20 to-transparent"
+  >
+  </div>
+  <div aria-hidden="true" class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-black/80 to-transparent"></div>
+
+  <div class="container-page flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+    <div class="relative z-10 max-w-3xl">
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <SectionTag label="Abierto al público" />
+        <p class="flex items-center gap-3 type-overline text-text-accent">
+          <span aria-hidden="true" class="h-0.5 w-10 bg-accent-primary"></span>
+          ¿Precios? ¡Nos arreglamos!
+        </p>
+      </div>
+
+      <h1
+        class="reveal mt-8 font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase [--reveal-delay:100ms]"
+        style="text-shadow: 0 4px 24px rgb(0 0 0 / 45%)"
+      >
+        <span class="block">Hacemos</span>
+        <span class=" block">posible</span>
+        <span class="block text-text-accent">tu proyecto</span>
+      </h1>
+
+      <p
+        class="reveal mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-inverse [--reveal-delay:200ms]"
+      >
+        Acero, ferretería y herramienta en un solo lugar. Mayoreo y menudeo, fabricación de
+        armex y centro de servicio autorizado, con entrega en tu obra con flota propia.
+      </p>
+
+      <div class="reveal mt-10 flex flex-wrap gap-4 [--reveal-delay:300ms]">
+        <Button
+          href={whatsappUrl()}
+          target="_blank"
+          variant="secondary"
+          size="lg"
+          icon="whatsapp"
+          iconPosition="right"
+          label="Cotizar por WhatsApp"
+        />
+        <Button
+          href="/catalogo"
+          variant="primary"
+          size="lg"
+          icon="arrow-right"
+          iconPosition="right"
+          label="Ver catálogo"
+        />
+      </div>
+
+      <a
+        href={`tel:${siteSeo.phoneHref}`}
+        class="reveal mt-10 inline-flex items-center gap-3 type-label text-text-inverse transition-colors hover:text-text-accent [--reveal-delay:400ms]"
+      >
+        <svg viewBox="0 0 24 24" class="size-5 text-text-accent" aria-hidden="true">
+          <use href={`${assetUrl('/icons.svg')}#phone`}></use>
+        </svg>
+        {siteSeo.phone}
+      </a>
+    </div>
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>

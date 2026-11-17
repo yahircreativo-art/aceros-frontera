@@ -1,0 +1,179 @@
+---
+/**
+ * Servicios en paneles numerados que se expanden al pasar el cursor
+ * (referencia: "Catálogo central" / "Infraestructura que respalda"),
+ * con etiquetas y botones del Design System.
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Servicio {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  imagen: string;
+}
+
+// Los id son anclas públicas (#servicio): no cambiarlos sin revisar los enlaces.
+const servicios: Servicio[] = [
+  {
+    id: 'venta-y-distribucion',
+    titulo: 'Venta y distribución de acero',
+    descripcion:
+      'Con más de 5 sucursales y distintos centros de distribución ubicados estratégicamente, proveemos acero a todo Baja California.',
+    imagen: assetUrl('/images/dsc06636.webp'),
+  },
+  {
+    id: 'productos-a-la-medida',
+    titulo: 'Productos a la medida',
+    descripcion:
+      'Fabricamos ARMEX, anillos para castillos, lámina R-72 y steel deck, y ofrecemos corte de placa a tu especificación.',
+    imagen: assetUrl('/images/dsc06679.webp'),
+  },
+  {
+    id: 'venta-de-pintura',
+    titulo: 'Venta de pintura',
+    descripcion: 'Las mejores marcas de pintura en distintas presentaciones para obra, herrería e industria.',
+    imagen: assetUrl('/images/dsc06771.webp'),
+  },
+  {
+    id: 'fabricacion-de-armex',
+    titulo: 'Armex, castillos y anillos',
+    descripcion: 'Somos fabricantes de ARMEX y anillos para castillos, en medidas estándar y especiales.',
+    imagen: assetUrl('/images/dsc06588.webp'),
+  },
+  {
+    id: 'corte-de-placa',
+    titulo: 'Corte de placa',
+    descripcion: 'Corte de placa de acero A36 en 3/16″, 1/4″, 5/16″, 3/8″, 1/2″, 5/8″, 3/4″ y 1″.',
+    imagen: assetUrl('/images/dsc06752.webp'),
+  },
+  {
+    id: 'venta-y-servicio-de-herramienta',
+    titulo: 'Venta y servicio de herramienta',
+    descripcion:
+      'Venta y reparación de maquinaria. Centro de servicio autorizado de Makita, Bosch y Lincoln Electric.',
+    imagen: assetUrl('/images/dsc06784.webp'),
+  },
+];
+
+const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
+---
+
+<section
+  id="servicios"
+  class="scroll-mt-44 bg-surface-inverse-raised py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  <div class="container-page">
+    <SectionHeading
+      tone="dark"
+      eyebrow="Nuestros servicios"
+      title="Infraestructura"
+      accent="que respalda"
+      description="Cobertura, versatilidad en transformación y soporte técnico para optimizar tus tiempos y reducir mermas."
+    />
+
+    <ul
+      class="servicios-lista reveal mt-12 flex flex-col gap-3 lg:h-[34rem] lg:flex-row"
+    >
+      {
+        servicios.map((servicio, indice) => (
+          <li
+            id={servicio.id}
+            class="group relative min-h-[18rem] scroll-mt-44 overflow-hidden bg-surface-inverse lg:min-h-0 lg:scroll-mt-32"
+          >
+            <a
+              href={whatsappUrl(`Hola, quiero información sobre el servicio de ${servicio.titulo}.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${servicio.titulo}: solicitar información por WhatsApp`}
+              class="absolute inset-0 flex flex-col justify-between p-6"
+            >
+              <img
+                src={servicio.imagen}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                class="absolute inset-0 -z-0 size-full object-cover opacity-60 grayscale transition duration-1000 group-hover:scale-105 group-hover:opacity-90 group-hover:grayscale-0"
+              />
+              <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
+
+              <span class="relative font-display text-5xl leading-none font-extrabold text-text-accent">
+                {String(indice + 1).padStart(2, '0')}
+              </span>
+
+              <span
+                aria-hidden="true"
+                class="servicio-vertical absolute bottom-6 left-6 hidden font-display text-2xl font-extrabold whitespace-nowrap uppercase [writing-mode:vertical-rl] rotate-180"
+              >
+                {servicio.titulo}
+              </span>
+
+              <span class="servicio-cuerpo relative block">
+                <span class="block font-display text-3xl leading-[0.95] font-extrabold uppercase lg:max-w-[20rem]">
+                  {servicio.titulo}
+                </span>
+                <span class="servicio-desc mt-3 block max-w-md overflow-hidden type-body-s text-text-inverse-muted">
+                  {servicio.descripcion}
+                </span>
+                <span class="mt-5 inline-flex items-center gap-2 type-button-s text-text-accent">
+                  Solicitar información
+                  <svg viewBox="0 0 24 24" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true">
+                    <use href={flecha} />
+                  </svg>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  @media (min-width: 64rem) {
+    .servicios-lista > li {
+      flex: 1 1 0%;
+      transition: flex 900ms cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .servicios-lista > li:hover,
+    .servicios-lista:not(:hover) > li:first-child {
+      flex-grow: 5;
+    }
+    .servicio-desc {
+      max-height: 0;
+      opacity: 0;
+      transition:
+        max-height 900ms ease,
+        opacity 700ms ease;
+    }
+    .servicio-vertical {
+      display: block;
+      transition: opacity 500ms ease;
+    }
+    .servicio-cuerpo {
+      min-width: 22rem;
+      transition: opacity 500ms ease;
+    }
+    .servicios-lista > li .servicio-cuerpo {
+      opacity: 0;
+    }
+    .servicios-lista > li:hover .servicio-vertical,
+    .servicios-lista:not(:hover) > li:first-child .servicio-vertical {
+      opacity: 0;
+    }
+    .servicios-lista > li:hover .servicio-cuerpo,
+    .servicios-lista:not(:hover) > li:first-child .servicio-cuerpo {
+      opacity: 1;
+      transition-delay: 300ms;
+    }
+    .servicios-lista > li:hover .servicio-desc,
+    .servicios-lista:not(:hover) > li:first-child .servicio-desc {
+      max-height: 10rem;
+      opacity: 1;
+    }
+  }
+</style>

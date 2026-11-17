@@ -1,8 +1,12 @@
 /**
- * Rutas relativas al sitio: funcionan igual con SITE_BASE_PATH vacío o con un
- * subdirectorio. Tolera rutas escritas a mano con `public/` al inicio (error
- * común en el frontmatter) para que no se rompan en producción.
+ * Rutas públicas absolutas respecto a la base del sitio. Así funcionan desde
+ * páginas anidadas y también cuando el sitio se publica en un subdirectorio.
+ * Tolera rutas escritas a mano con `public/` al inicio.
  */
 export function assetUrl(path: string): string {
-  return path.replace(/^\/+/, '').replace(/^public\//, '');
+  const baseUrl = import.meta.env.BASE_URL;
+  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const assetPath = path.replace(/^\/+/, '').replace(/^public\//, '');
+
+  return `${base}${assetPath}`;
 }

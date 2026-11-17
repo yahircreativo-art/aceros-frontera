@@ -1,85 +1,103 @@
 import { useState } from 'react';
-import Icon from '../ui/Icon';
+import Button from '../ui/Button';
+import { whatsappUrl } from '../../lib/seo';
 import type { Producto } from '../../lib/types';
 
 interface ProductCardProps {
   producto: Producto;
-  whatsapp: string;
-  onView: (producto: Producto) => void;
+  /** En el catálogo abre la ficha en la misma página. */
+  onView?: (producto: Producto) => void;
+  /** Fuera del catálogo (portada) la tarjeta enlaza a la ficha. */
+  href?: string;
 }
 
-export default function ProductCard({ producto, whatsapp, onView }: ProductCardProps) {
+/**
+ * Figma: Product Card.
+ * Media de 200 px sobre fondo metálico · Content (padding 24, gap 12):
+ * Meta (Body/Overline, text/muted) · Title (Heading/H4) · Specs (Body/Body-S)
+ * · Actions: Button[Secondary, M] "Cotizar" + Button[Tertiary, M] "Ver producto".
+ */
+export default function ProductCard({ producto, onView, href }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
 
-  const claveDisplay = producto.clave ?? producto.sku;
-  const referencia = claveDisplay ? ` (Clave: ${claveDisplay})` : '';
-  const mensajeCotizar = `Hola, quiero cotizar el producto: ${producto.nombre}${referencia}.`;
-  const urlCotizar = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeCotizar)}`;
+  const sku = producto.SKU != null ? String(producto.SKU) : '';
+  const nombre = producto.Nombre ?? '';
+  const categoria = producto.Categoria ?? '';
+  const meta = [categoria, sku ? `SKU ${sku}` : ''].filter(Boolean).join(' · ');
+  const specs = producto.DescripcionCorta?.trim() ?? '';
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-lift">
-      {/* Botón que cubre la tarjeta para abrir el detalle */}
-      <button
-        type="button"
-        onClick={() => onView(producto)}
-        aria-label={`Ver detalles de ${producto.nombre}`}
-        className="absolute inset-0 z-10 cursor-pointer rounded-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      />
+    <article className="@container group relative flex h-full flex-col bg-surface-primary">
+      {onView ? (
+        <Button
+          onClick={() => onView(producto)}
+          aria-label={`Ver detalles de ${nombre || 'producto'}`}
+          variant="unstyled"
+          size="none"
+          className="absolute inset-0 z-10 cursor-pointer"
+        />
+      ) : (
+        <a
+          href={href ?? '/catalogo'}
+          aria-label={`Ver detalles de ${nombre || 'producto'}`}
+          className="absolute inset-0 z-10"
+        />
+      )}
 
-      {/* Imagen del producto */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink-50/60 p-3 flex items-center justify-center">
-        {producto.imagen && !imgError ? (
+      <div className="media-steel relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden p-3 @[16rem]:aspect-auto @[16rem]:h-[12.5rem] @[16rem]:p-4">
+        {producto.Imagen && !imgError ? (
           <img
-            src={producto.imagen}
-            alt={producto.nombre}
+            src={producto.Imagen}
+            alt=""
             width="800"
             height="600"
             loading="lazy"
             decoding="async"
             onError={() => setImgError(true)}
-            className="size-full object-contain transition duration-300 group-hover:scale-[1.03]"
+            className="size-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center gap-1.5 text-center text-ink-300 p-4">
-            <Icon name="tag" className="size-8 text-brand-600/30" />
-            <span className="text-3xs font-bold uppercase tracking-wider text-ink-400">Aceros Frontera</span>
-          </div>
+          <span className="type-overline text-text-muted">Aceros Frontera</span>
         )}
-
-        {/* Badge de Categoría */}
-        {producto.categoria ? (
-          <div className="absolute left-3 top-3 z-20">
-            <span className="inline-flex items-center rounded bg-brand-600/90 backdrop-blur-xs px-2 py-0.5 text-2xs font-bold uppercase tracking-wider text-white shadow-xs">
-              {producto.categoria}
-            </span>
-          </div>
-        ) : null}
       </div>
 
-      {/* Información del producto: Clave, Nombre y Acción */}
-      <div className="flex flex-1 flex-col p-4">
-        {claveDisplay ? (
-          <p className="text-2xs font-mono font-semibold uppercase tracking-wider text-ink-400">
-            Clave: <span className="font-bold text-ink-600">{claveDisplay}</span>
+      <div className="flex flex-1 flex-col gap-2 p-3 @[12rem]:p-4 @[16rem]:gap-3 @[16rem]:p-6">
+        {meta ? <p className="truncate type-overline text-text-muted">{meta}</p> : null}
+
+        <h3 className="font-display text-lg leading-tight font-semibold text-text-primary lowercase first-letter:uppercase @[16rem]:type-h4">
+          <span className="line-clamp-2">{nombre}</span>
+        </h3>
+
+        {specs ? (
+          <p className="line-clamp-2 type-body-s text-text-secondary @max-[12rem]:hidden">
+            {specs}
           </p>
         ) : null}
 
-        <h3 className="mt-1.5 font-display text-sm sm:text-[15px] font-bold leading-snug text-ink-900 transition-colors group-hover:text-brand-700">
-          <span className="line-clamp-2">{producto.nombre}</span>
-        </h3>
-
-        {/* Acción directa: Cotizar */}
-        <div className="relative z-20 mt-auto pt-4">
-          <a
-            href={urlCotizar}
+        <div className="mt-auto flex flex-col gap-2 pt-1">
+          <Button
+            href={whatsappUrl(`Hola, quiero cotizar: ${nombre}${sku ? ` (SKU ${sku})` : ''}.`)}
             target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Cotizar ${producto.nombre} por WhatsApp`}
-            className="pointer-events-auto inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-field bg-accent-400 px-3 py-2 text-xs font-bold text-ink-950 transition-colors hover:bg-accent-500 shadow-xs"
-          >
-            <Icon name="whatsapp" className="size-4" />
-            Cotizar por WhatsApp
-          </a>
+            variant="secondary"
+            size="md"
+            icon="whatsapp"
+            iconPosition="right"
+            label="Cotizar"
+            fullWidth
+            className="relative z-20 !px-3 @[12rem]:!px-6"
+          />
+          <Button
+            {...(onView ? { onClick: () => onView(producto) } : { href: href ?? '/catalogo' })}
+            variant="tertiary"
+            size="md"
+            icon="arrow-right"
+            iconPosition="right"
+            label="Ver producto"
+            fullWidth
+            tabIndex={-1}
+            aria-hidden="true"
+            className="relative z-20 @max-[14rem]:hidden"
+          />
         </div>
       </div>
     </article>

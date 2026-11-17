@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Icon from '../ui/Icon';
+import Button from '../ui/Button';
 import type { Producto } from '../../lib/types';
 
 interface ProductRowProps {
@@ -7,51 +7,49 @@ interface ProductRowProps {
   onView: (producto: Producto) => void;
 }
 
+/**
+ * Figma: Product Row.
+ * Fila blanca (padding 16/24/16/16, gap 24): Thumbnail 72 px · Info
+ * (Overline · Heading/H4 · Body/Body-S) · Button[Primary, S] "Ver producto".
+ */
 export default function ProductRow({ producto, onView }: ProductRowProps) {
   const [imgError, setImgError] = useState(false);
-  const claveDisplay = producto.clave ?? producto.sku;
+  const sku = producto.SKU != null ? String(producto.SKU) : '';
+  const meta = [producto.Categoria, sku ? `SKU ${sku}` : ''].filter(Boolean).join(' · ');
+  const specs = producto.DescripcionCorta?.trim() ?? '';
 
   return (
-    <article className="grid grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-card border border-line bg-white p-3 shadow-card sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 sm:p-4 hover:shadow-lift transition-shadow">
-      <div className="size-14 sm:size-16 rounded-field bg-ink-50/60 flex items-center justify-center overflow-hidden shrink-0">
-        {producto.imagen && !imgError ? (
+    <article className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-4 gap-y-3 bg-surface-primary py-4 pl-4 pr-6 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-x-6">
+      <div className="media-steel flex size-14 shrink-0 items-center justify-center overflow-hidden sm:size-18">
+        {producto.Imagen && !imgError ? (
           <img
-            src={producto.imagen}
+            src={producto.Imagen}
             alt=""
             width="72"
             height="72"
             loading="lazy"
             decoding="async"
             onError={() => setImgError(true)}
-            className="size-full object-contain"
+            className="size-full object-contain mix-blend-multiply"
           />
-        ) : (
-          <Icon name="tag" className="size-6 text-ink-300" />
-        )}
+        ) : null}
       </div>
 
-      <div className="min-w-0">
-        <p className="truncate text-2xs font-semibold uppercase text-brand-700 tracking-wider">
-          {producto.categoria}
-          {claveDisplay ? (
-            <span className="font-mono text-ink-400 font-normal ml-2">
-              · Clave: <span className="font-bold text-ink-600">{claveDisplay}</span>
-            </span>
-          ) : null}
-        </p>
-        <h3 className="mt-0.5 truncate font-display text-sm font-bold text-ink-900 sm:text-base">
-          {producto.nombre}
-        </h3>
+      <div className="min-w-0 space-y-1">
+        {meta ? <p className="truncate type-overline text-text-muted">{meta}</p> : null}
+        <h3 className="truncate type-h4 text-text-primary lowercase first-letter:uppercase">{producto.Nombre}</h3>
+        {specs ? <p className="truncate type-body-s text-text-secondary">{specs}</p> : null}
       </div>
 
-      <button
-        type="button"
+      <Button
         onClick={() => onView(producto)}
-        className="inline-flex w-fit items-center gap-1.5 rounded-field bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-700 sm:px-4 sm:py-2.5 sm:text-sm"
-      >
-        <Icon name="arrow-right" className="size-4" />
-        Ver detalles
-      </button>
+        variant="primary"
+        size="sm"
+        icon="arrow-right"
+        iconPosition="right"
+        label="Ver producto"
+        className="col-span-2 w-fit sm:col-span-1"
+      />
     </article>
   );
 }

@@ -1,97 +1,276 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-  ACEROS FRONTERA · Design tokens
-   Todo el sistema visual vive aquí. Tailwind 4 genera utilidades a partir de
-   estas variables: --color-brand-600 → bg-brand-600 / text-brand-600, etc.
+   ACEROS FRONTERA · Design tokens
+   Fuente de verdad: Figma "ACEROS-FRONTERA" → página "01 - Design System"
+   (colecciones "01. Primitives" y "02. Semantic Tokens" + estilos de texto
+   y de efecto). Tailwind 4 genera utilidades a partir de estas variables:
+   --color-green-600 → bg-green-600, --color-text-primary → text-text-primary…
    ========================================================================== */
 
 @theme {
   /* --- Tipografía -------------------------------------------------------- */
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Figma: Montserrat para el texto corrido, Barlow Condensed para títulos,
+     botones, overlines y cifras. Se cargan desde Google Fonts en Base.astro. */
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
 
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
   --text-xs: 0.75rem;
-  --text-xs--line-height: 1.1rem;
+  --text-xs--line-height: 1rem; /* Body/Caption 12/16 */
   --text-sm: 0.875rem;
-  --text-sm--line-height: 1.35rem;
+  --text-sm--line-height: 1.375rem; /* Body/Body-S 14/22 */
   --text-base: 1rem;
-  --text-base--line-height: 1.6rem;
+  --text-base--line-height: 1.625rem; /* Body/Body-M 16/26 */
   --text-lg: 1.125rem;
-  --text-lg--line-height: 1.55rem;
-  --text-xl: 1.25rem;
-  --text-xl--line-height: 1.45rem;
+  --text-lg--line-height: 1.875rem; /* Body/Body-L 18/30 */
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.625rem; /* Heading/H4 22/26 */
   --text-2xl: 1.5rem;
-  --text-2xl--line-height: 1.35;
+  --text-2xl--line-height: 1.75rem; /* Heading/Tag 24/28 */
   --text-3xl: 1.875rem;
-  --text-3xl--line-height: 1.15;
-  --text-4xl: 2.25rem;
-  --text-4xl--line-height: 1.1;
+  --text-3xl--line-height: 2.125rem; /* Heading/H3 30/34 */
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 2.75rem; /* Heading/H2 40/44 */
   --text-5xl: 3rem;
-  --text-5xl--line-height: 1;
-  --text-6xl: 3.75rem;
-  --text-6xl--line-height: 0.98;
-  --text-display: clamp(2.5rem, 5vw, 4.25rem);
-  --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.03em;
+  --text-5xl--line-height: 1; /* Heading/Number 48/48 */
+  --text-6xl: 3.5rem;
+  --text-6xl--line-height: 1; /* Heading/H1 56/56 */
+  /* Heading/Display: 44/44 en móvil → 72/72 en escritorio */
+  --text-display: clamp(2.75rem, 5vw, 4.5rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: 0;
   --text-display--font-weight: 800;
 
-  /* --- Marca (verde ferretería) ------------------------------------------ */
-  --color-brand-50: #eef8f2;
-  --color-brand-100: #d8efe2;
-  --color-brand-200: #b3e0c8;
-  --color-brand-300: #82cba6;
-  --color-brand-400: #4eb181;
-  --color-brand-500: #24925f;
-  --color-brand-600: #12703f;
-  --color-brand-700: #0e5a33;
-  --color-brand-800: #0d4a2b;
-  --color-brand-900: #0b3a23;
-  --color-brand-950: #062315;
+  /* --- 01. Primitives · Colores ----------------------------------------- */
+  --color-green-50: #effaf5;
+  --color-green-100: #ddf0e7;
+  --color-green-200: #c0e0d1;
+  --color-green-300: #99cdb6;
+  --color-green-400: #6cb698;
+  --color-green-500: #3f9d7a;
+  --color-green-600: #0d805e;
+  --color-green-700: #025d3d;
+  --color-green-800: #004a34;
+  --color-green-900: #013122;
+  --color-green-950: #001c12;
 
-  /* --- Acento (amarillo seguridad) --------------------------------------- */
-  --color-accent-50: #fff9e6;
-  --color-accent-100: #fff1c2;
-  --color-accent-200: #ffe38a;
-  --color-accent-300: #ffd45c;
-  --color-accent-400: #f7c948;
-  --color-accent-500: #15803d;
-  --color-accent-600: #d79f0a;
-  --color-accent-700: #a97a06;
+  --color-yellow-50: #faf7e9;
+  --color-yellow-100: #f7f0d2;
+  --color-yellow-200: #f3e4ae;
+  --color-yellow-300: #eed47c;
+  --color-yellow-400: #eac02b;
+  --color-yellow-500: #cc9d06;
+  --color-yellow-600: #a87a00;
+  --color-yellow-700: #845b04;
+  --color-yellow-800: #633f03;
+  --color-yellow-900: #422601;
+  --color-yellow-950: #241100;
 
-  /* --- Neutros ----------------------------------------------------------- */
-  --color-ink-50: #f7f8f9;
-  --color-ink-100: #eef0f2;
-  --color-ink-200: #e4e7ec;
-  --color-ink-300: #d0d5dd;
-  --color-ink-400: #98a2b3;
-  --color-ink-500: #667085;
-  --color-ink-600: #475467;
-  --color-ink-700: #344054;
-  --color-ink-800: #27303d;
-  --color-ink-900: #1b2430;
-  --color-ink-950: #0f1720;
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fbf9;
+  --color-neutral-100: #f0f3f2;
+  --color-neutral-200: #e2e6e4;
+  --color-neutral-300: #d0d5d3;
+  --color-neutral-400: #9fa4a2;
+  --color-neutral-500: #686d6b;
+  --color-neutral-600: #525654;
+  --color-neutral-700: #3e4240;
+  --color-neutral-800: #272a28;
+  --color-neutral-900: #171918;
+  --color-neutral-950: #0b0d0c;
+  --color-neutral-1000: #000000;
 
-  /* --- Semánticos -------------------------------------------------------- */
-  --color-canvas: #f6f7f9;
-  --color-surface: #ffffff;
-  --color-line: #e4e7ec;
-  --color-success: #12703f;
-  --color-danger: #d92d20;
+  --color-success-50: #eefbef;
+  --color-success-100: #def4e1;
+  --color-success-200: #c3eac9;
+  --color-success-300: #a0dcaa;
+  --color-success-400: #77cc88;
+  --color-success-500: #4bb967;
+  --color-success-600: #16a34a;
+  --color-success-700: #057c35;
+  --color-success-800: #015a24;
+  --color-success-900: #013914;
+  --color-success-950: #011c07;
 
-  /* --- Forma y profundidad ------------------------------------------------ */
-  --radius-field: 0.5rem;
-  --radius-card: 0.75rem;
-  --radius-panel: 1rem;
+  --color-warning-50: #fff5ea;
+  --color-warning-100: #feecd8;
+  --color-warning-200: #fedeb9;
+  --color-warning-300: #fccb93;
+  --color-warning-400: #f9b663;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #c97a00;
+  --color-warning-700: #9c5904;
+  --color-warning-800: #733d01;
+  --color-warning-900: #4b2301;
+  --color-warning-950: #270e00;
 
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 4%), 0 4px 12px rgb(16 24 40 / 4%);
-  --shadow-lift: 0 12px 32px rgb(16 24 40 / 10%);
-  --shadow-header: 0 1px 0 rgb(16 24 40 / 6%);
+  --color-error-50: #fff4f2;
+  --color-error-100: #fee5e2;
+  --color-error-200: #fecdc6;
+  --color-error-300: #ffaca1;
+  --color-error-400: #ff8276;
+  --color-error-500: #f4554b;
+  --color-error-600: #dc2626;
+  --color-error-700: #b0010f;
+  --color-error-800: #830008;
+  --color-error-900: #580003;
+  --color-error-950: #320001;
+
+  --color-info-50: #f3f7fe;
+  --color-info-100: #e1ebfe;
+  --color-info-200: #c4d9ff;
+  --color-info-300: #a1c1fe;
+  --color-info-400: #77a5fe;
+  --color-info-500: #4a84ff;
+  --color-info-600: #2563eb;
+  --color-info-700: #1148c2;
+  --color-info-800: #002f9d;
+  --color-info-900: #001e6c;
+  --color-info-950: #000e43;
+
+  /* --- 02. Semantic Tokens (modo Light) ---------------------------------- */
+  --color-surface-primary: var(--color-neutral-0);
+  --color-surface-secondary: var(--color-neutral-50);
+  --color-surface-elevated: var(--color-neutral-0);
+  --color-surface-canvas: var(--color-neutral-100);
+  --color-surface-field: var(--color-neutral-100);
+  --color-surface-disabled: var(--color-neutral-100);
+  --color-surface-control: var(--color-neutral-200);
+  --color-surface-control-hover: var(--color-neutral-300);
+  --color-surface-control-active: var(--color-neutral-400);
+  --color-surface-inverse: var(--color-neutral-950);
+  --color-surface-inverse-raised: var(--color-neutral-900);
+  --color-surface-inverse-active: var(--color-neutral-800);
+  --color-surface-brand-deep: var(--color-green-700);
+
+  --color-text-primary: var(--color-neutral-950);
+  --color-text-secondary: var(--color-neutral-700);
+  --color-text-muted: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-text-inverse-muted: var(--color-neutral-300);
+  --color-text-on-brand: var(--color-neutral-0);
+  --color-text-on-accent: var(--color-neutral-1000);
+  --color-text-brand: var(--color-green-700);
+  --color-text-accent: var(--color-yellow-400);
+  --color-text-error: var(--color-error-700);
+
+  --color-border-subtle: var(--color-neutral-100);
+  --color-border-default: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-400);
+  --color-border-field: var(--color-neutral-500);
+  --color-border-focus: var(--color-green-600);
+  --color-border-error: var(--color-error-600);
+
+  --color-brand-primary: var(--color-green-600);
+  --color-brand-hover: var(--color-green-700);
+  --color-brand-active: var(--color-green-800);
+  --color-brand-ink: var(--color-neutral-1000);
+  --color-brand-paper: var(--color-neutral-0);
+
+  --color-accent-primary: var(--color-yellow-400);
+  --color-accent-hover: var(--color-yellow-500);
+  --color-accent-active: var(--color-yellow-600);
+
+  --color-feedback-success-surface: var(--color-success-50);
+  --color-feedback-success-border: var(--color-success-200);
+  --color-feedback-success-text: var(--color-success-700);
+  --color-feedback-warning-surface: var(--color-warning-50);
+  --color-feedback-warning-border: var(--color-warning-200);
+  --color-feedback-warning-text: var(--color-warning-700);
+  --color-feedback-error-surface: var(--color-error-50);
+  --color-feedback-error-border: var(--color-error-200);
+  --color-feedback-error-text: var(--color-error-700);
+  --color-feedback-info-surface: var(--color-info-50);
+  --color-feedback-info-border: var(--color-info-200);
+  --color-feedback-info-text: var(--color-info-700);
+
+  /* --- Alias de compatibilidad ------------------------------------------
+     Nombres que ya usa el código (bg-brand-700, text-ink-900, border-line…),
+     ahora apuntando a los primitivos del Figma. */
+  --color-brand-50: var(--color-green-50);
+  --color-brand-100: var(--color-green-100);
+  --color-brand-200: var(--color-green-200);
+  --color-brand-300: var(--color-green-300);
+  --color-brand-400: var(--color-green-400);
+  --color-brand-500: var(--color-green-500);
+  --color-brand-600: var(--color-green-600);
+  --color-brand-700: var(--color-green-700);
+  --color-brand-800: var(--color-green-800);
+  --color-brand-900: var(--color-green-900);
+  --color-brand-950: var(--color-green-950);
+
+  --color-accent-50: var(--color-yellow-50);
+  --color-accent-100: var(--color-yellow-100);
+  --color-accent-200: var(--color-yellow-200);
+  --color-accent-300: var(--color-yellow-300);
+  --color-accent-400: var(--color-yellow-400);
+  --color-accent-500: var(--color-yellow-500);
+  --color-accent-600: var(--color-yellow-600);
+  --color-accent-700: var(--color-yellow-700);
+
+  --color-ink-50: var(--color-neutral-50);
+  --color-ink-100: var(--color-neutral-100);
+  --color-ink-200: var(--color-neutral-200);
+  --color-ink-300: var(--color-neutral-300);
+  --color-ink-400: var(--color-neutral-400);
+  --color-ink-500: var(--color-neutral-500);
+  --color-ink-600: var(--color-neutral-600);
+  --color-ink-700: var(--color-neutral-700);
+  --color-ink-800: var(--color-neutral-800);
+  --color-ink-900: var(--color-neutral-900);
+  --color-ink-950: var(--color-neutral-950);
+
+  --color-canvas: var(--color-surface-canvas);
+  --color-surface: var(--color-surface-primary);
+  --color-line: var(--color-border-default);
+  --color-success: var(--color-success-600);
+  --color-danger: var(--color-error-600);
+
+  /* --- Radius (Figma: none 0 · xs 2 · sm 4 · md 6 · lg 8) ---------------- */
+  --radius-none: 0;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  /* Alias de compatibilidad */
+  --radius-field: var(--radius-xs);
+  --radius-card: var(--radius-sm);
+  --radius-panel: var(--radius-lg);
+
+  /* --- Elevación (estilos de efecto del Figma) --------------------------- */
+  --shadow-menu: 0 12px 32px rgb(8 18 13 / 12%); /* Elevation/Menu */
+  --shadow-toast: 0 12px 32px rgb(8 18 13 / 14%); /* Elevation/Toast */
+  --shadow-modal: 0 24px 64px rgb(8 18 13 / 24%); /* Elevation/Modal */
+  /* Alias de compatibilidad */
+  --shadow-card: 0 1px 2px rgb(8 18 13 / 4%), 0 4px 12px rgb(8 18 13 / 4%);
+  --shadow-lift: var(--shadow-menu);
+  --shadow-header: 0 1px 0 rgb(8 18 13 / 6%);
 
   /* --- Layout ------------------------------------------------------------ */
-  --container-page: 78rem; /* 1248px */
+  --container-page: 100rem; /* 1600px */
+}
+
+/* Spacing del Figma (spacing/0 … spacing/96, en px). La escala por defecto de
+   Tailwind ya los cubre (p-0.5 = 2px, p-1 = 4px … p-24 = 96px); aquí quedan
+   como variables para usarlos en CSS propio: var(--space-24). */
+:root {
+  --space-0: 0;
+  --space-2: 0.125rem;
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-20: 1.25rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+  --space-64: 4rem;
+  --space-80: 5rem;
+  --space-96: 6rem;
 }
 
 /* ==========================================================================
@@ -104,8 +283,8 @@
   }
 
   body {
-    background-color: var(--color-canvas);
-    color: var(--color-ink-900);
+    background-color: var(--color-surface-canvas);
+    color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
@@ -119,18 +298,20 @@
   h4 {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--color-ink-900);
+    letter-spacing: 0;
+    /* Heredan el color de su sección (el body ya usa text/primary), así
+       funcionan igual sobre fondos claros y oscuros. */
+    color: inherit;
     text-wrap: balance;
   }
 
   ::selection {
-    background-color: var(--color-accent-400);
-    color: var(--color-brand-950);
+    background-color: var(--color-accent-primary);
+    color: var(--color-brand-ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-brand-600);
+    outline: 2px solid var(--color-border-focus);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -143,6 +324,297 @@
 
   input[type='search']::-webkit-search-cancel-button {
     -webkit-appearance: none;
+  }
+}
+
+/* ==========================================================================
+   Estilos de texto del Figma → utilidades `type-*`
+   (Heading/*, Body/*, Button/*; los títulos cambian a su versión Mobile
+   por debajo de md)
+   ========================================================================== */
+
+@utility type-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 2.75rem;
+  text-transform: uppercase;
+  @variant md {
+    font-size: 4.5rem;
+    line-height: 4.5rem;
+  }
+}
+@utility type-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.25rem;
+  line-height: 2.375rem;
+  text-transform: uppercase;
+  @variant md {
+    font-size: 3.5rem;
+    line-height: 3.5rem;
+  }
+}
+@utility type-h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.875rem;
+  line-height: 2rem;
+  text-transform: uppercase;
+  @variant md {
+    font-size: 2.5rem;
+    line-height: 2.75rem;
+  }
+}
+@utility type-h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.875rem;
+  line-height: 2.125rem;
+}
+@utility type-h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.375rem;
+  line-height: 1.625rem;
+}
+@utility type-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 3rem;
+}
+@utility type-tag {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+@utility type-overline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@utility type-subtitle {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+@utility type-body-l {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 1.125rem;
+  line-height: 1.875rem;
+}
+@utility type-body-m {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.625rem;
+}
+@utility type-body-s {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+}
+@utility type-label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+@utility type-caption {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+@utility type-link {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.625rem;
+  text-decoration-line: underline;
+}
+@utility type-strike {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  text-decoration-line: line-through;
+}
+@utility type-button-l {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+@utility type-button-m {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+@utility type-button-s {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Formas del Design System
+   ========================================================================== */
+
+/* Chaflán inferior derecho de Button / Section Tag. El fondo se pinta en un
+   ::before recortado (color en --btn-bg) para que el anillo de foco no se
+   recorte junto con la forma. */
+@utility btn-chamfer {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--btn-bg, transparent);
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--chamfer, 8px)),
+      calc(100% - var(--chamfer, 8px)) 100%,
+      0 100%
+    );
+    transition: background-color 150ms;
+  }
+}
+
+/* Recorte directo (para bloques sin anillo de foco: Section Tag, imágenes). */
+@utility chamfer {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--chamfer, 12px)),
+    calc(100% - var(--chamfer, 12px)) 100%,
+    0 100%
+  );
+}
+
+/* Figma "Brand Stripe": banda amarilla S (6 px) y L (12 px). */
+@utility brand-stripe {
+  border-bottom: 6px solid var(--color-accent-primary);
+}
+@utility brand-stripe-top-lg {
+  border-top: 12px solid var(--color-accent-primary);
+}
+
+/* Figma "Pattern/Placa antiderrapante": textura de placa diamante. */
+@utility pattern-placa {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='%23fff' fill-opacity='0.045'%3E%3Crect x='3' y='9' width='18' height='5' rx='2.5' transform='rotate(-45 12 11.5)'/%3E%3Crect x='27' y='33' width='18' height='5' rx='2.5' transform='rotate(-45 36 35.5)'/%3E%3Crect x='27' y='9' width='18' height='5' rx='2.5' transform='rotate(45 36 11.5)'/%3E%3Crect x='3' y='33' width='18' height='5' rx='2.5' transform='rotate(45 12 35.5)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+/* Fondo metálico de las imágenes de producto (Figma: Media / Thumbnail). */
+@utility media-steel {
+  background-image: linear-gradient(135deg, #d9dcdb 0%, #f3f4f4 45%, #c9cccb 75%, #a9adac 100%);
+}
+
+/* Sin publicidades vigentes la franja no se dibuja y la tarjeta de categorías
+   queda como único hijo: se anula el margen negativo para que no se monte
+   sobre nada ni se suba hacia el header. */
+#destacados > .container-page:first-child {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   Efectos de la portada (fusión Figma + referencia)
+   ========================================================================== */
+
+/* Texto con brillo metálico (referencia: "POSIBLE"). */
+@utility text-metal {
+  background-image: linear-gradient(180deg, #ffffff 0%, #c9cecc 55%, #7d8381 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Texto solo con contorno, para palabras gigantes de fondo. */
+@utility text-outline {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.5px currentColor;
+}
+
+/* Aparición al hacer scroll: el script de la portada añade .is-visible. */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+html:not(.js) .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* Cinta en movimiento (marquesina). */
+@keyframes marquesina {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquesina-pista {
+  animation: marquesina var(--marquesina-duracion, 30s) linear infinite;
+}
+.marquesina-pista[data-reversa] {
+  animation-direction: reverse;
+}
+
+/* Flechas » de "Somos fabricantes". */
+@keyframes chevrones {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.chevron-anim > * {
+  animation: chevrones 1.6s ease-in-out infinite;
+}
+.chevron-anim > *:nth-child(2) { animation-delay: 0.15s; }
+.chevron-anim > *:nth-child(3) { animation-delay: 0.3s; }
+.chevron-anim > *:nth-child(4) { animation-delay: 0.45s; }
+.chevron-anim > *:nth-child(5) { animation-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .marquesina-pista,
+  .chevron-anim > * {
+    animation: none;
   }
 }
 

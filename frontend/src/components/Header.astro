@@ -1,100 +1,97 @@
 ---
+/**
+ * Figma: Navbar [Type=Tienda]
+ * Top Bar (surface/inverse) → Logo · Search Bar[Header] · Button[Secondary, M]
+ * Brand Stripe[S] (6 px amarillo)
+ * Category Bar (blanco) → enlaces Body/Label · separador · categorías Body/Body-S
+ */
 import Logo from './Logo.astro';
-import { whatsappUrl } from '../lib/seo';
+import Button from './ui/Button.astro';
+import HeaderCatalogoDropdown from './HeaderCatalogoDropdown.tsx';
 import HeaderSearch from './catalog/HeaderSearch';
+import { whatsappUrl } from '../lib/seo';
+import { rutaCategoria } from '../lib/categorias';
 import type { Producto } from '../lib/types';
-import { assetUrl } from '../lib/asset-url';
 
 interface Props {
   productos: Producto[];
 }
 
 const { productos } = Astro.props;
-const categorias = [...new Set(productos.map((producto) => producto.categoria))].sort((a, b) =>
-  a.localeCompare(b, 'es'),
-);
+const categorias = [...new Set(productos.map((producto) => producto.Categoria).filter(Boolean))]
+  .map((c) => String(c).trim())
+  .filter(Boolean)
+  .sort((a, b) => a.localeCompare(b, 'es'));
+
+/* Categorías con más productos primero, como accesos rápidos de la barra. */
+const conteo = new Map<string, number>();
+for (const producto of productos) {
+  const categoria = String(producto.Categoria ?? '').trim();
+  if (categoria) conteo.set(categoria, (conteo.get(categoria) ?? 0) + 1);
+}
+const categoriasRapidas = [...conteo.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 7)
+  .map(([categoria]) => categoria);
+
+const enlaces = [
+  { href: '/#nosotros', label: 'Nosotros' },
+  { href: '/#servicios', label: 'Servicios' },
+  { href: '/sucursales', label: 'Sucursales' },
+  { href: '/#contacto', label: 'Contacto' },
+];
 ---
 
-<header class="sticky top-0 z-40 bg-black shadow-header">
-  <div class="container-page flex min-h-16 flex-wrap items-center justify-between gap-3 py-3 md:h-[4.25rem] md:flex-nowrap md:py-0">
-    <Logo />
+<header class="sticky top-0 z-40 bg-surface-primary shadow-header">
+  <div class="brand-stripe bg-surface-inverse">
+    <div class="container-page flex flex-wrap items-center justify-between gap-x-8 gap-y-3 py-4 md:flex-nowrap">
+      <Logo />
 
-    <HeaderSearch productos={productos} client:load />
+      <HeaderSearch productos={productos} client:load />
 
-    <div class="hidden items-center gap-2 md:flex">
-      <a
-        class="inline-flex items-center rounded-lg gap-2 bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
-        href={whatsappUrl()}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-          <use href={`${assetUrl('/icons.svg')}#whatsapp`}></use>
-        </svg>
-        Cotizar
-      </a>
+      <div class="hidden shrink-0 md:block">
+        <Button
+          href={whatsappUrl()}
+          target="_blank"
+          variant="secondary"
+          size="md"
+          icon="whatsapp"
+          iconPosition="right"
+          label="Cotizar"
+        />
+      </div>
     </div>
   </div>
 
-  <div class="border-t border-line bg-white text-ink-900">
-    <nav
-      aria-label="Navegación secundaria"
-      class="container-page flex h-11 items-center gap-5 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#catalogo">
-        Catálogo
-      </a>
-      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#nosotros">
-        Nosotros
-      </a>
-      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#servicios">
-        Servicios
-      </a>
-      <a class="shrink-0 cursor-pointer text-sm font-bold transition-colors hover:text-accent-500" href="#contacto">
-        Contacto
-      </a>
-
-      <span class="h-5 w-px shrink-0 bg-line" aria-hidden="true"></span>
-
-      {categorias.map((categoria) => (
-        <button
-          type="button"
-          data-catalog-category={categoria}
-          class="shrink-0 cursor-pointer px-2 py-1 text-sm font-medium text-ink-700 transition-colors hover:text-accent-500"
+  <nav
+    aria-label="Navegación secundaria"
+    class="container-page flex h-[2.875rem] items-center gap-6 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+  >
+    <HeaderCatalogoDropdown categorias={categorias} client:only="react" />
+    {
+      enlaces.map((enlace) => (
+        <a
+          class="shrink-0 type-label text-text-primary transition-colors hover:text-text-brand"
+          href={enlace.href}
         >
-          {categoria}
-        </button>
-      ))}
-    </nav>
-  </div>
+          {enlace.label}
+        </a>
+      ))
+    }
+    {
+      categoriasRapidas.length > 0 && (
+        <>
+          <span aria-hidden="true" class="h-5 w-px shrink-0 bg-border-default" />
+          {categoriasRapidas.map((categoria) => (
+            <a
+              class="shrink-0 type-body-s text-text-secondary transition-colors hover:text-text-brand"
+              href={rutaCategoria(categoria, categorias)}
+            >
+              {categoria}
+            </a>
+          ))}
+        </>
+      )
+    }
+  </nav>
 </header>
-
-<script>
-  const nav = document.querySelector<HTMLElement>('nav[aria-label="Navegación secundaria"]');
-
-  nav?.addEventListener('click', (evento) => {
-    const boton = (evento.target as Element).closest<HTMLButtonElement>('[data-catalog-category]');
-    if (!boton) return;
-
-    window.dispatchEvent(new CustomEvent('catalog-category', { detail: boton.dataset.catalogCategory }));
-    document.getElementById('catalogo')?.scrollIntoView();
-  });
-
-  window.addEventListener('catalog-products-updated', (evento) => {
-    if (!nav) return;
-
-    nav.querySelectorAll('[data-catalog-category]').forEach((boton) => boton.remove());
-    const productos = (evento as CustomEvent<{ categoria: string }[]>).detail;
-    const categoriasActualizadas = [...new Set(productos.map((producto) => producto.categoria))]
-      .sort((a, b) => a.localeCompare(b, 'es'));
-
-    categoriasActualizadas.forEach((categoria) => {
-      const boton = document.createElement('button');
-      boton.type = 'button';
-      boton.dataset.catalogCategory = categoria;
-      boton.className = 'shrink-0 cursor-pointer px-2 py-1 text-sm font-medium text-ink-700 transition-colors hover:text-accent-500';
-      boton.textContent = categoria;
-      nav.append(boton);
-    });
-  });
-</script>

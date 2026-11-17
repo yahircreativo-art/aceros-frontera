@@ -5,9 +5,10 @@ import { assetUrl } from "../lib/asset-url";
 <section
   id="nosotros"
   class="scroll-mt-44 lg:scroll-mt-28 border-t border-line bg-white py-16 lg:py-24"
+  data-hide-on-product-detail
 >
   <div
-    class="container-page grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16"
+    class="container-page grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16"
   >
     <div class="max-w-xl">
       <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">
@@ -50,7 +51,7 @@ import { assetUrl } from "../lib/asset-url";
       height="3072"
       loading="lazy"
       decoding="async"
-      class="aspect-4/3 w-full object-cover object-[50%_68%]"
+      class="aspect-4/3 w-full object-contain  lg:aspect-4/5 lg:h-full"
     />
   </div>
 </section>

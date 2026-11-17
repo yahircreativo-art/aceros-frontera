@@ -1,22 +1,31 @@
 ---
 import { assetUrl } from '../lib/asset-url';
+import Button from './ui/Button.astro';
 ---
 
-<section id="inicio" class="relative isolate overflow-hidden bg-brand-950">
-  {/* Imagen de fondo: reemplaza public/images/hero-bg.webp para cambiar la fotografía. */}
-  <div
-    class="absolute inset-0 -z-20 bg-cover bg-center"
-    style={`background-image: url('${assetUrl('/images/hero-bg.webp')}')`}
-    aria-hidden="true"
-  >
-  </div>
+<section
+  id="inicio"
+  class="relative isolate overflow-hidden bg-brand-950"
+  data-hide-on-product-detail
+>
+  {/* Imagen de fondo LCP: usa <img> real para que el navegador la descubra en el HTML
+      y aplicarle fetchpriority="high". Posicionada como fondo con object-fit. */}
+  <img
+    src={assetUrl('/images/hero-bg.webp')}
+    alt=""
+    fetchpriority="high"
+    loading="eager"
+    decoding="async"
+    style="aspect-ratio: 1920 / 1080"
+    class="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+  />
   <div
     class="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/35 to-transparent"
     aria-hidden="true"
   >
   </div>
 
-  <div class="container-page relative flex min-h-[560px] flex-col justify-center py-20 sm:min-h-[620px] lg:py-28">
+  <div class="container-page relative flex min-h-[620px] flex-col justify-center py-20 sm:min-h-[720px] lg:min-h-[720px] xl:min-h-[800px] lg:py-28">
     <div class="max-w-2xl">
 
       <h1
@@ -35,24 +44,24 @@ import { assetUrl } from '../lib/asset-url';
       </p>
 
       <div class="mt-8 flex flex-wrap gap-3">
-        <a
+        <Button
           href="#formulario-cotizacion"
-          class="inline-flex items-center gap-2 cursor-pointer rounded-field bg-accent-400 px-5 py-3 text-sm font-bold text-ink-950 shadow-lg shadow-black/10 transition-colors hover:bg-accent-500"
-        >
-          Solicitar cotización
-          <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-            <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
-          </svg>
-        </a>
-        <a
-          href="#catalogo"
-          class="inline-flex items-center gap-2  cursor-pointer rounded-field bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-black/10 transition-colors hover:bg-brand-700"
-        >
-          Explorar catálogo
-          <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
-            <use href={`${assetUrl('/icons.svg')}#arrow-right`}></use>
-          </svg>
-        </a>
+          variant="secondary"
+          size="lg"
+          icon="arrow-right"
+          iconPosition="right"
+          label="Solicitar cotización"
+          className="shadow-lg shadow-black/10"
+        />
+        <Button
+          href="/catalogo"
+          variant="primary"
+          size="lg"
+          icon="arrow-right"
+          iconPosition="right"
+          label="Explorar catálogo"
+          className="shadow-lg shadow-black/10"
+        />
       </div>
 
       

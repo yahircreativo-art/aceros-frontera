@@ -1,0 +1,43 @@
+---
+/**
+ * Figma: "Section/CTA" (banda amarilla) + "Hablemos de tu proyecto" (referencia).
+ */
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+---
+
+<section
+  aria-labelledby="cta-final-titulo"
+  class="relative isolate overflow-hidden bg-accent-primary text-text-on-accent"
+  data-hide-on-product-detail
+>
+  <span
+    aria-hidden="true"
+    class="text-outline pointer-events-none absolute -bottom-8 -right-6 -z-10 font-display text-[clamp(7rem,16vw,14rem)] leading-none font-extrabold whitespace-nowrap text-black/10 uppercase"
+  >
+    Cotiza hoy
+  </span>
+  <div class="container-page flex flex-col gap-8 py-16 lg:flex-row lg:items-center lg:justify-between lg:py-20">
+    <div class="reveal">
+      <p class="type-overline">Hablemos de tu proyecto</p>
+      <h2 id="cta-final-titulo" class="mt-3 font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl lg:text-7xl">
+        ¿Precios? ¡Nos arreglamos!
+      </h2>
+      <p class="mt-4 max-w-xl type-body-l">
+        Mándanos tu lista de materiales por WhatsApp y te cotizamos hoy mismo.
+      </p>
+    </div>
+    <div class="reveal flex shrink-0 flex-col gap-3 [--reveal-delay:150ms] lg:items-end">
+      <Button
+        href={whatsappUrl()}
+        target="_blank"
+        variant="dark"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Cotizar por WhatsApp"
+      />
+      <a href={`tel:${siteSeo.phoneHref}`} class="type-label hover:underline">Tel. {siteSeo.phone}</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,47 @@
+---
+/**
+ * Bloque de impacto con el lema gigante sobre foto fija (referencia:
+ * "¿Precios? ¡Nos arreglamos!" a pantalla completa).
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+---
+
+<section
+  aria-label="¿Precios? ¡Nos arreglamos!"
+  class="relative isolate flex min-h-[70vh] items-center overflow-hidden bg-surface-inverse py-24 text-text-inverse"
+  data-hide-on-product-detail
+>
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 -z-20 bg-cover bg-center bg-fixed grayscale"
+    style={`background-image: url('${assetUrl('/images/dsc06636.webp')}')`}
+  >
+  </div>
+  <div aria-hidden="true" class="absolute inset-0 -z-10 bg-black/75"></div>
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10"></div>
+
+  <div class="container-page text-center">
+    <p class="reveal font-display text-[clamp(4rem,13vw,12rem)] leading-[0.85] font-extrabold uppercase">
+      ¿Precios?
+    </p>
+    <p
+      class="reveal font-display text-[clamp(4rem,13vw,12rem)] leading-[0.85] font-extrabold text-text-accent uppercase [--reveal-delay:150ms]"
+    >
+      ¡Nos arreglamos!
+    </p>
+    <div class="reveal mt-10 flex flex-wrap justify-center gap-4 [--reveal-delay:300ms]">
+      <Button
+        href={whatsappUrl()}
+        target="_blank"
+        variant="secondary"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Cotizar ahora"
+      />
+      <Button href="#formulario-cotizacion" variant="primary" size="lg" label="Enviar mi lista" icon="arrow-right" iconPosition="right" />
+    </div>
+  </div>
+</section>

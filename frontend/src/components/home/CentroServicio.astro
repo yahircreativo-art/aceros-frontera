@@ -1,0 +1,83 @@
+---
+/**
+ * Figma: "Section/Centro de servicio" — foto + Section Tag, titular,
+ * lista con check y botón "Agendar servicio".
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+import SectionTag from '../ui/SectionTag.astro';
+
+const puntos = [
+  'Herramienta eléctrica e inalámbrica',
+  'Refacciones originales',
+  'Garantía de fábrica',
+  'Mantenimiento preventivo',
+];
+const marcas = ['Makita', 'Bosch', 'Lincoln Electric'];
+---
+
+<section
+  id="centro-de-servicio"
+  class="relative isolate scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10 opacity-60"></div>
+  <span
+    aria-hidden="true"
+    class="text-outline pointer-events-none absolute -bottom-10 right-0 -z-10 font-display text-[clamp(8rem,20vw,18rem)] leading-none font-extrabold whitespace-nowrap text-white/10 uppercase"
+  >
+    Servicio
+  </span>
+
+  <div class="container-page grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <div class="reveal relative">
+      <div class="chamfer aspect-[4/3] overflow-hidden [--chamfer:40px]">
+        <img
+          src={assetUrl('/images/dsc06784.webp')}
+          alt="Taller del centro de servicio autorizado de Aceros Frontera"
+          loading="lazy"
+          decoding="async"
+          class="size-full object-cover"
+        />
+      </div>
+      <ul class="absolute -bottom-5 left-6 flex flex-wrap gap-2">
+        {marcas.map((marca) => <li class="bg-surface-inverse px-3 py-2 type-overline text-text-accent">{marca}</li>)}
+      </ul>
+    </div>
+
+    <div class="reveal [--reveal-delay:150ms]">
+      <SectionTag label="Centro de servicio autorizado" />
+      <h2 class="mt-6 font-display text-5xl leading-[0.92] font-extrabold uppercase sm:text-6xl">
+        Reparación y garantía de tu <span class="text-text-accent">herramienta</span>
+      </h2>
+      <p class="mt-5 max-w-lg type-body-l text-green-100">
+        Diagnóstico, mantenimiento y refacciones originales para la herramienta que usas todos los días.
+      </p>
+      <ul class="mt-8 grid gap-3 sm:grid-cols-2">
+        {
+          puntos.map((punto) => (
+            <li class="flex items-center gap-3 type-label">
+              <span class="grid size-7 shrink-0 place-items-center bg-accent-primary text-text-on-accent">
+                <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
+                  <use href={`${assetUrl('/icons.svg')}#check`} />
+                </svg>
+              </span>
+              {punto}
+            </li>
+          ))
+        }
+      </ul>
+      <Button
+        href={whatsappUrl('Hola, quiero agendar un servicio para mi herramienta.')}
+        target="_blank"
+        variant="secondary"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Agendar servicio"
+        className="mt-10"
+      />
+    </div>
+  </div>
+</section>

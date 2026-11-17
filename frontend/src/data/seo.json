@@ -3,7 +3,7 @@
     "name": "Aceros Frontera",
     "legalName": "Aceros Frontera",
     "tagline": "Acero, perfiles y piezas para tus proyectos",
-    "description": "Proveedor local en Tijuana de perfiles, tubos, alambrón, malla electrosoldada y materiales de acero para construcción, fabricación y mantenimiento.",
+    "description": "Proveedor local en Tijuana, Ensenada y Mexicali de perfiles, tubos, alambrón, malla electrosoldada y materiales de acero para construcción, fabricación y mantenimiento.",
     "baseUrl": "https://acerosfrontera.com",
     "language": "es-MX",
     "locale": "es_MX",
@@ -27,23 +27,40 @@
     },
     "openingHours": [
       {
-        "label": "Lunes a viernes",
-        "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "label": "Lunes a sábado",
+        "days": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
         "opens": "08:00",
         "closes": "18:30"
       },
       {
         "label": "Sábado",
-        "days": ["Saturday"],
-        "opens": "08:30",
+        "days": [
+          "Saturday"
+        ],
+        "opens": "08:00",
         "closes": "14:00"
       }
     ],
     "areaServed": "Mexico",
     "socials": [
-      { "name": "Instagram", "url": "https://www.instagram.com/acerosfrontera" },
-      { "name": "Facebook", "url": "https://www.facebook.com/acerosfrontera" },
-      { "name": "LinkedIn", "url": "https://www.linkedin.com/company/acerosfrontera" }
+      {
+        "name": "Instagram",
+        "url": "https://www.instagram.com/acerosfrontera"
+      },
+      {
+        "name": "Facebook",
+        "url": "https://www.facebook.com/acerosfrontera"
+      },
+      {
+        "name": "LinkedIn",
+        "url": "https://www.linkedin.com/company/acerosfrontera"
+      }
     ]
   },
   "pages": {
@@ -64,6 +81,38 @@
       "robots": "index, follow",
       "ogType": "website",
       "schemaType": "WebPage"
+    },
+    "sucursales": {
+      "title": "Sucursales en Tijuana, Mexicali y Ensenada | Aceros Frontera",
+      "description": "Mapa, direcciones, teléfonos y horarios de las 6 sucursales de Aceros Frontera en Baja California: Cucapah, Matamoros y Panamericano en Tijuana, Mexicali, y Hidalgo y Chapultepec en Ensenada.",
+      "path": "/sucursales",
+      "keywords": [
+        "sucursales Aceros Frontera",
+        "aceros Tijuana",
+        "aceros Mexicali",
+        "aceros Ensenada",
+        "direcciones aceros Baja California",
+        "horarios ferretería de acero"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "CollectionPage"
+    },
+    "catalogo": {
+      "title": "Catálogo de productos | Aceros Frontera Tijuana",
+      "description": "Consulta el catálogo completo de Aceros Frontera: perfiles, tubos, pintura, herramienta y consumibles. Busca por nombre o clave, filtra por categoría y cotiza por WhatsApp en Tijuana, Baja California.",
+      "path": "/catalogo",
+      "keywords": [
+        "catálogo de acero Tijuana",
+        "perfiles de acero",
+        "tubos de acero",
+        "pintura industrial Tijuana",
+        "herramienta y consumibles",
+        "Aceros Frontera"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "CollectionPage"
     }
   }
 }

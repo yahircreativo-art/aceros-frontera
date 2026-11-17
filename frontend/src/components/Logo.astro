@@ -3,17 +3,20 @@ import { assetUrl } from '../lib/asset-url';
 
 interface Props {
   compact?: boolean;
+  /** Figma Logo: 44 px en el Navbar, 56 px en el Footer. */
+  large?: boolean;
 }
 
-const { compact = false } = Astro.props;
+const { compact = false, large = false } = Astro.props;
 const logoSrc = assetUrl('/images/LOGO.webp');
+const alto = compact ? 'h-8' : large ? 'h-14' : 'h-11';
 ---
 
-<a href="#" class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera — ir al inicio">
+<a href="/" class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera — ir al inicio">
   <img
     src={logoSrc}
-    alt="Logo aceros frontera"
-    class={compact ? 'h-8 w-auto' : 'h-10 w-auto'}
+    alt=""
+    class={`${alto} w-auto`}
     width="286"
     height="72"
     decoding="async"

@@ -1,0 +1,140 @@
+---
+/**
+ * Figma: "Section/Categorías" (Category Tile) — "Lo que encuentras en la tienda".
+ * Mosaicos negros con pictograma, lista de productos con check y etiqueta
+ * amarilla con chaflán; último mosaico amarillo de cotización.
+ * Numeración grande al estilo de la referencia ("Catálogo central").
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { normalizar } from '../../lib/format';
+import { rutaCategoria } from '../../lib/categorias';
+import { whatsappUrl } from '../../lib/seo';
+import type { Producto } from '../../lib/types';
+import Button from '../ui/Button.astro';
+import Pictogram, { type PictogramName } from '../ui/Pictogram.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  productos: Producto[];
+}
+
+const { productos } = Astro.props;
+
+const categoriasSitio = [
+  ...new Set(productos.map((p) => String(p.Categoria ?? '').trim()).filter(Boolean)),
+];
+
+/** Enlaza al listado de la categoría si existe en el catálogo; si no, al buscador general. */
+const enlace = (nombres: string[]) => {
+  const encontrada = categoriasSitio.find((categoria) =>
+    nombres.some((nombre) => normalizar(categoria).includes(normalizar(nombre))),
+  );
+  return encontrada ? rutaCategoria(encontrada, categoriasSitio) : '/catalogo';
+};
+
+const tiles: { titulo: string; icono: PictogramName; items: string[]; buscar: string[] }[] = [
+  { titulo: 'Láminas', icono: 'lamina', items: ['Metal desplegado', 'Perforada', 'Tablero', 'Traslúcida'], buscar: ['lamina'] },
+  { titulo: 'Construcción', icono: 'varilla', items: ['Varilla', 'Recocido', 'Alambrón', 'Malla electrosoldada'], buscar: ['construccion', 'varilla'] },
+  { titulo: 'Perfiles', icono: 'angulo', items: ['Ángulo', 'Perfiles', 'Soleras', 'Tubulares', 'Cuadrado', 'Redondo'], buscar: ['perfil'] },
+  { titulo: 'Planos', icono: 'placa', items: ['Lámina galvanizada', 'Lámina negra', 'Antiderrapante', 'Pintada'], buscar: ['plano', 'placa'] },
+  { titulo: 'Estructurales', icono: 'viga', items: ['Vigas', 'Canal', 'Polín', 'PTR / HSS'], buscar: ['estructural', 'viga'] },
+  { titulo: 'Tubería', icono: 'tubos', items: ['Mofle', 'Para cerco', 'Negro'], buscar: ['tuberia', 'tubo'] },
+  { titulo: 'Ferretería', icono: 'tornillo', items: ['Pintura y accesorios', 'Tornillería', 'Figuras y herrajes', 'Cerraduras', 'Soldadura'], buscar: ['ferreteria'] },
+];
+
+const check = `${assetUrl('/icons.svg')}#check`;
+---
+
+<section
+  id="categorias"
+  class="scroll-mt-44 bg-surface-primary py-20 lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading
+        eyebrow="Catálogo"
+        title="Lo que encuentras"
+        accent="en la tienda"
+        description="Explora nuestras principales líneas de producto: del acero estructural a la ferretería para tu obra."
+      />
+      <Button
+        href="/catalogo"
+        variant="link"
+        icon="arrow-right"
+        iconPosition="right"
+        label="Ver catálogo completo"
+        className="reveal"
+      />
+    </div>
+
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        tiles.map((tile, indice) => (
+          <li class="reveal" style={`--reveal-delay: ${indice * 60}ms`}>
+            <a
+              href={enlace(tile.buscar)}
+              class="group pattern-placa relative flex h-full min-h-[22rem] flex-col overflow-hidden bg-surface-inverse p-6 text-text-inverse transition-colors duration-300 "
+            >
+              <span
+                aria-hidden="true"
+                class="text-outline absolute -right-2 -top-6 font-display text-[7.5rem] leading-none font-extrabold text-white/15 transition-colors duration-300 group-hover:text-accent-primary/40"
+              >
+                {String(indice + 1).padStart(2, '0')}
+              </span>
+
+              <span class="grid size-14 place-items-center bg-accent-primary text-text-on-accent transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
+                <Pictogram name={tile.icono} class="size-8" />
+              </span>
+
+              <ul class="mt-6 flex flex-col gap-2 type-body-s text-text-inverse-muted">
+                {tile.items.map((item) => (
+                  <li class="flex items-center gap-2">
+                    <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-text-accent" aria-hidden="true">
+                      <use href={check} />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <span class="mt-auto flex items-end justify-between gap-3 pt-8">
+                <span class="chamfer bg-accent-primary py-2 pl-4 pr-6 type-tag text-text-on-accent [--chamfer:12px]">
+                  {tile.titulo}
+                </span>
+                <span class="grid size-10 shrink-0 place-items-center border border-white/20 text-text-inverse transition-all duration-300 group-hover:translate-x-1 group-hover:border-accent-primary group-hover:bg-accent-primary group-hover:text-text-on-accent">
+                  <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true">
+                    <use href={`${assetUrl('/icons.svg')}#arrow-right`} />
+                  </svg>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+
+      <li class="reveal" style={`--reveal-delay: ${tiles.length * 60}ms`}>
+        <div class="flex h-full min-h-[22rem] flex-col bg-accent-primary p-6 text-text-on-accent">
+          <span class="grid size-14 place-items-center bg-surface-inverse text-text-accent">
+            <Pictogram name="herramienta" class="size-8" />
+          </span>
+          <h3 class="mt-6 font-display text-4xl leading-[0.95] font-extrabold uppercase">
+            ¿No encuentras lo que buscas?
+          </h3>
+          <p class="mt-3 type-body-s">Mándanos tu lista de materiales y te cotizamos.</p>
+          <div class="mt-auto pt-8">
+            <Button
+              href={whatsappUrl('Hola, les envío mi lista de materiales para cotizar.')}
+              target="_blank"
+              variant="dark"
+              size="md"
+              icon="whatsapp"
+              iconPosition="right"
+              label="Cotizar"
+            />
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>

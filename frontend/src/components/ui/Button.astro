@@ -1,0 +1,79 @@
+---
+import { assetUrl } from '../../lib/asset-url';
+import {
+  buttonClasses,
+  iconSizeFor,
+  type ButtonSize,
+  type ButtonVariant,
+  type IconPosition,
+} from './button-styles';
+
+interface Props {
+  /** Texto visible del botón. Puede omitirse si es solo icono y se pasa aria-label. */
+  label?: string;
+  /** Nombre del icono dentro de /icons.svg */
+  icon?: string;
+  iconPosition?: IconPosition;
+  /** Clase extra para el icono (por ejemplo para rotarlo) */
+  iconClass?: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  /** Si se indica, el botón se renderiza como enlace */
+  href?: string;
+  target?: string;
+  rel?: string;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  /** Clases adicionales para el elemento (se acepta class y className) */
+  class?: string;
+  className?: string;
+}
+
+const {
+  label,
+  icon,
+  iconPosition = 'left',
+  iconClass = '',
+  variant = 'primary',
+  size = 'md',
+  fullWidth = false,
+  href,
+  target,
+  rel,
+  type = 'button',
+  disabled = false,
+  class: clase,
+  className: claseJsx,
+  ...rest
+} = Astro.props;
+
+const className = [clase, claseJsx].filter(Boolean).join(' ');
+
+const Tag = href ? 'a' : 'button';
+const clases = buttonClasses({ variant, size, fullWidth, className });
+const claseIcono = [iconSizeFor(size), iconClass].filter(Boolean).join(' ');
+const relFinal = rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
+---
+
+<Tag
+  class={clases}
+  href={href}
+  target={target}
+  rel={relFinal}
+  type={href ? undefined : type}
+  disabled={href ? undefined : disabled || undefined}
+  {...rest}
+>
+  {icon && iconPosition === 'left' && (
+    <svg viewBox="0 0 24 24" class={claseIcono} aria-hidden="true">
+      <use href={`${assetUrl('/icons.svg')}#${icon}`} />
+    </svg>
+  )}
+  {label}
+  {icon && iconPosition === 'right' && (
+    <svg viewBox="0 0 24 24" class={claseIcono} aria-hidden="true">
+      <use href={`${assetUrl('/icons.svg')}#${icon}`} />
+    </svg>
+  )}
+</Tag>

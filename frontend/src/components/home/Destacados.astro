@@ -1,0 +1,132 @@
+---
+/**
+ * Figma: "Section/Productos destacados" — pestañas (Tab) por categoría y
+ * Product Card. Toma productos reales del catálogo, priorizando los que
+ * tienen foto.
+ */
+import ProductCard from '../catalog/ProductCard';
+import { slugCategoria } from '../../lib/categorias';
+import type { Producto } from '../../lib/types';
+import Button from '../ui/Button.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  productos: Producto[];
+}
+
+const { productos } = Astro.props;
+const POR_PESTANA = 4;
+
+const conFoto = productos.filter((p) => p.Imagen && p.Nombre);
+const porCategoria = new Map<string, Producto[]>();
+for (const producto of conFoto) {
+  const categoria = String(producto.Categoria ?? '').trim();
+  if (!categoria) continue;
+  porCategoria.set(categoria, [...(porCategoria.get(categoria) ?? []), producto]);
+}
+
+const pestanas = [...porCategoria.entries()]
+  .filter(([, lista]) => lista.length >= POR_PESTANA)
+  .sort((a, b) => b[1].length - a[1].length)
+  .slice(0, 4)
+  .map(([categoria, lista]) => ({
+    id: `destacados-${slugCategoria(categoria)}`,
+    categoria,
+    productos: lista.slice(0, POR_PESTANA),
+  }));
+
+const fichaUrl = (producto: Producto) =>
+  producto.SKU != null ? `/catalogo?producto=${encodeURIComponent(String(producto.SKU))}` : '/catalogo';
+---
+
+{
+  pestanas.length > 0 && (
+    <section
+      id="destacados-home"
+      class="scroll-mt-44 bg-surface-canvas py-20 lg:scroll-mt-28 lg:py-28"
+      data-hide-on-product-detail
+    >
+      <div class="container-page">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+          <SectionHeading eyebrow="Catálogo" title="Productos" accent="destacados" />
+          <Button
+            href="/catalogo"
+            variant="link"
+            icon="arrow-right"
+            iconPosition="right"
+            label="Ver todos los productos"
+            className="reveal"
+          />
+        </div>
+
+        <div
+          role="tablist"
+          aria-label="Categorías destacadas"
+          class="reveal mt-8 flex gap-8 overflow-x-auto border-b border-border-default [scrollbar-width:none]"
+          data-tabs
+        >
+          {pestanas.map((pestana, indice) => (
+            <button
+              type="button"
+              role="tab"
+              id={`${pestana.id}-tab`}
+              aria-controls={pestana.id}
+              aria-selected={indice === 0 ? 'true' : 'false'}
+              tabindex={indice === 0 ? 0 : -1}
+              class="-mb-px shrink-0 border-b-4 border-transparent py-4 type-subtitle whitespace-nowrap text-text-secondary transition-colors hover:text-text-primary aria-selected:border-brand-primary aria-selected:text-text-primary"
+            >
+              {pestana.categoria}
+            </button>
+          ))}
+        </div>
+
+        {pestanas.map((pestana, indice) => (
+          <div
+            role="tabpanel"
+            id={pestana.id}
+            aria-labelledby={`${pestana.id}-tab`}
+            hidden={indice !== 0}
+            class="mt-8"
+          >
+            <ul class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+              {pestana.productos.map((producto, i) => (
+                <li class="reveal" style={`--reveal-delay: ${i * 80}ms`}>
+                  <ProductCard producto={producto} href={fichaUrl(producto)} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((lista) => {
+    const tabs = [...lista.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const activar = (tab: HTMLButtonElement) => {
+      tabs.forEach((t) => {
+        const activa = t === tab;
+        t.setAttribute('aria-selected', String(activa));
+        t.tabIndex = activa ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls') ?? '');
+        if (panel) {
+          panel.hidden = !activa;
+          if (activa) panel.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
+        }
+      });
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => activar(tab));
+      tab.addEventListener('keydown', (e) => {
+        const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!dir) return;
+        e.preventDefault();
+        const siguiente = tabs[(i + dir + tabs.length) % tabs.length];
+        siguiente.focus();
+        activar(siguiente);
+      });
+    });
+  });
+</script>

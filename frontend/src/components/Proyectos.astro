@@ -1,0 +1,149 @@
+---
+import { assetUrl } from "../lib/asset-url";
+import Button from "./ui/Button.astro";
+
+interface Proyecto {
+  /** Ruta en `public/images/proyectos`. Sin imagen se muestra el placeholder. */
+  imagen?: string;
+  alt: string;
+}
+
+/* No hay fotos de obra todavía: las diapositivas usan el placeholder de marca.
+   Para usar fotos reales, colócalas en public/images/proyectos y agrega
+   `imagen: assetUrl("/images/proyectos/archivo.webp")` a cada proyecto. */
+const proyectos: Proyecto[] = [
+  { alt: "Proyecto de Aceros Frontera 1" },
+  { alt: "Proyecto de Aceros Frontera 2" },
+  { alt: "Proyecto de Aceros Frontera 3" },
+];
+---
+
+<section
+  id="proyectos"
+  class="scroll-mt-44  py-10 lg:scroll-mt-28 lg:py-14"
+  data-hide-on-product-detail
+>
+  <div class="container-page grid gap-0 lg:grid-cols-[minmax(0,55%)_minmax(0,45%)]">
+    <div class="order-1 flex flex-col justify-center  p-8  sm:p-10 lg:order-2 lg:px-12 lg:py-16">
+      <p class="text-2xs font-bold uppercase tracking-[0.18em] /70">
+        Proyectos
+      </p>
+      <h2 class="mt-3 font-display text-3xl font-bold  sm:text-4xl">
+        Proyectos fortalecidos con nuestro acero
+      </h2>
+      <p class="mt-5 text-sm leading-relaxed /85">
+        Cada obra que ha contado con material de Aceros Frontera forma parte de
+        nuestro trabajo diario: desde naves industriales y edificios hasta
+        vivienda y herrería artística en Tijuana, Ensenada y Mexicali.
+      </p>
+      <Button
+        href="#contacto"
+        variant="primary"
+        size="lg"
+        icon="arrow-right"
+        iconPosition="right"
+        label="Nuestros proyectos"
+        className="mt-8 w-fit"
+      />
+    </div>
+
+    <div
+      class="proyectos-slider relative order-2 min-h-[16rem] overflow-hidden bg-ink-900 lg:order-1 lg:min-h-[42rem]"
+      data-proyectos-slider
+    >
+      <div class="proyectos-pista flex h-full" data-proyectos-pista>
+        {proyectos.map((proyecto, indice) => (
+          <div
+            class="relative flex h-full w-full shrink-0 items-center justify-center"
+            data-proyectos-diapositiva
+            aria-hidden={indice === 0 ? undefined : "true"}
+          >
+            {proyecto.imagen ? (
+              <img
+                src={proyecto.imagen}
+                alt={proyecto.alt}
+                loading={indice === 0 ? "eager" : "lazy"}
+                decoding="async"
+                class="h-full w-full object-cover"
+              />
+            ) : (
+              <span class="grid h-full min-h-[16rem] w-full place-items-center bg-ink-200 px-6 text-center">
+                <span class="font-display text-sm font-bold uppercase tracking-[0.14em] text-ink-400">
+                  Aceros Frontera
+                </span>
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        data-proyectos-anterior
+        aria-label="Proyecto anterior"
+        class="absolute left-3 top-1/2 grid size-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/85 text-ink-900 shadow-card transition-colors hover:bg-white"
+      >
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        data-proyectos-siguiente
+        aria-label="Proyecto siguiente"
+        class="absolute right-3 top-1/2 grid size-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-white/85 text-ink-900 shadow-card transition-colors hover:bg-white"
+      >
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </button>
+
+      <div class="absolute inset-x-0 bottom-3 flex justify-center gap-2" data-proyectos-puntos>
+        {proyectos.map((proyecto, indice) => (
+          <button
+            type="button"
+            data-proyectos-punto={indice}
+            aria-label={`Ir al proyecto ${indice + 1}`}
+            class="size-2 cursor-pointer rounded-full bg-white/50 transition-colors aria-[current=true]:bg-white"
+            aria-current={indice === 0 ? "true" : "false"}
+          >
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-proyectos-slider]").forEach((slider) => {
+    const pista = slider.querySelector<HTMLElement>("[data-proyectos-pista]");
+    const diapositivas = [...slider.querySelectorAll<HTMLElement>("[data-proyectos-diapositiva]")];
+    const puntos = [...slider.querySelectorAll<HTMLButtonElement>("[data-proyectos-punto]")];
+    if (!pista || diapositivas.length < 2) return;
+
+    let indice = 0;
+
+    const pintar = () => {
+      pista.style.transform = `translateX(-${indice * 100}%)`;
+      diapositivas.forEach((diapositiva, posicion) => {
+        diapositiva.setAttribute("aria-hidden", posicion === indice ? "false" : "true");
+      });
+      puntos.forEach((punto, posicion) => {
+        punto.setAttribute("aria-current", posicion === indice ? "true" : "false");
+      });
+    };
+
+    const ir = (nuevo: number) => {
+      indice = (nuevo + diapositivas.length) % diapositivas.length;
+      pintar();
+    };
+
+    slider.querySelector("[data-proyectos-anterior]")?.addEventListener("click", () => ir(indice - 1));
+    slider.querySelector("[data-proyectos-siguiente]")?.addEventListener("click", () => ir(indice + 1));
+    puntos.forEach((punto, posicion) => punto.addEventListener("click", () => ir(posicion)));
+
+    pista.style.transition = "transform 400ms ease";
+    pintar();
+  });
+</script>

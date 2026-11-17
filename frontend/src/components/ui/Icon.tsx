@@ -7,7 +7,7 @@ interface IconProps {
 
 export default function Icon({ name, className = 'size-4' }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
       <use href={`${assetUrl('/icons.svg')}#${name}`} />
     </svg>
   );

@@ -4,11 +4,19 @@ import type { PageId } from '../lib/seo';
 
 interface Props {
   page: PageId;
+  title?: string;
+  description?: string;
+  path?: string;
 }
 
-const { page } = Astro.props;
+const { page, title, description, path } = Astro.props;
 const site = seo.site;
-const data = seo.pages[page];
+const data = {
+  ...seo.pages[page],
+  title: title ?? seo.pages[page].title,
+  description: description ?? seo.pages[page].description,
+  path: path ?? seo.pages[page].path,
+};
 
 const baseUrl = Astro.site?.toString() ?? site.baseUrl;
 const siteRoot = new URL(import.meta.env.BASE_URL, baseUrl).toString();

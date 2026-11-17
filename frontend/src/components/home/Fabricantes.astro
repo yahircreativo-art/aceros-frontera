@@ -1,0 +1,105 @@
+---
+/**
+ * Figma: "Section/Fabricantes" — "Somos fabricantes" con flechas » animadas,
+ * lista de productos fabricados y tres tarjetas (Armex, Lámina, Estribos).
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+import Pictogram, { type PictogramName } from '../ui/Pictogram.astro';
+
+const productos: { titulo: string; icono: PictogramName; texto: string; imagen: string }[] = [
+  {
+    titulo: 'Armex',
+    icono: 'varilla',
+    texto: 'Armados de varilla para castillos y cadenas, en medidas estándar y especiales.',
+    imagen: assetUrl('/images/dsc06588.webp'),
+  },
+  {
+    titulo: 'Lámina',
+    icono: 'lamina',
+    texto: 'Lámina rolada y acanalada R-72 y steel deck para techos, muros y entrepisos, cortada a la medida.',
+    imagen: assetUrl('/images/dsc06679.webp'),
+  },
+  {
+    titulo: 'Estribos',
+    icono: 'malla',
+    texto: 'Estribos y anillos doblados en serie, listos para tu colado.',
+    imagen: assetUrl('/images/dsc06752.webp'),
+  },
+];
+---
+
+<section
+  id="fabricantes"
+  class="relative isolate scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10"></div>
+  <div class="container-page grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+    <div class="reveal">
+      <div class="flex flex-wrap items-center gap-5">
+        <h2 class="font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl">
+          Somos<br /><span class="text-text-accent">fabricantes</span>
+        </h2>
+        <span class="chevron-anim flex text-text-accent" aria-hidden="true">
+          {
+            [0, 1, 2, 3, 4].map(() => (
+              <svg viewBox="0 0 16 24" class="-ml-1 h-10 w-6"><path d="M2 2l10 10L2 22" fill="none" stroke="currentColor" stroke-width="4" /></svg>
+            ))
+          }
+        </span>
+      </div>
+      <p class="mt-6 max-w-md type-body-l text-text-inverse-muted">
+        Fabricamos en serie y a la medida para que tu obra no se detenga. También ofrecemos corte de
+        placa A36 de 3/16″ a 1″.
+      </p>
+      <ul class="mt-6 flex flex-col gap-2 type-label">
+        {
+          ['Armex', 'Lámina R-72 y steel deck', 'Estribos y anillos', 'Corte de placa'].map((item) => (
+            <li class="flex items-center gap-3">
+              <span class="size-2 bg-accent-primary" aria-hidden="true"></span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+      <Button
+        href={whatsappUrl('Hola, quiero cotizar una fabricación a la medida.')}
+        target="_blank"
+        variant="secondary"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="right"
+        label="Cotiza tu fabricación"
+        className="mt-10"
+      />
+    </div>
+
+    <ul class="grid gap-4 sm:grid-cols-3">
+      {
+        productos.map((producto, indice) => (
+          <li class="reveal" style={`--reveal-delay: ${indice * 100}ms`}>
+            <article class="group relative flex aspect-[3/5] flex-col justify-end overflow-hidden bg-surface-inverse-raised sm:aspect-[3/5.4]">
+              <img
+                src={producto.imagen}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                class="absolute inset-0 size-full object-cover opacity-50 grayscale transition duration-500 group-hover:scale-105 group-hover:opacity-80 group-hover:grayscale-0"
+              />
+              <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+              <div class="relative p-6">
+                <span class="grid size-12 place-items-center border border-white/20 text-text-accent transition-colors group-hover:border-accent-primary group-hover:bg-accent-primary group-hover:text-text-on-accent">
+                  <Pictogram name={producto.icono} class="size-7" />
+                </span>
+                <h3 class="mt-5 font-display text-3xl font-extrabold uppercase">{producto.titulo}</h3>
+                <p class="mt-2 type-body-s text-text-inverse-muted">{producto.texto}</p>
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

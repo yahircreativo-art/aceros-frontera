@@ -1,0 +1,66 @@
+---
+import { rutaCategoria } from "../../lib/categorias";
+import { esPromocionActiva, type Promocion } from "../../lib/destacados";
+
+interface Props {
+  promociones: Promocion[];
+  categorias: string[];
+}
+
+const { promociones, categorias } = Astro.props;
+
+/* Sección de imágenes sueltas: mismas filas de la tabla `Promociones`, pero
+   solo el arte (sin datos del producto). Cada tarjeta abre su categoría. */
+const imagenes = promociones
+  .filter((promocion) => Boolean(promocion.imagen))
+  .filter((promocion) => esPromocionActiva(promocion))
+  .map((promocion) => ({
+    ...promocion,
+    href: promocion.categoria
+      ? `${rutaCategoria(promocion.categoria, categorias)}#catalogo`
+      : "/catalogo#catalogo",
+    alt: promocion.categoria
+      ? `Promoción de ${promocion.categoria}`
+      : promocion.nombre || "Promoción destacada",
+  }));
+---
+
+{
+  imagenes.length ? (
+    <section
+      id="secciones"
+      data-secciones="promociones"
+      class="scroll-mt-44 py-2"
+      aria-label="Promociones por sección"
+    >
+      <ul
+        class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        role="list"
+      >
+        {imagenes.map((imagen) => (
+          <li>
+            <a
+              href={imagen.href}
+              aria-label={
+                imagen.categoria
+                  ? `Ver productos de la categoría ${imagen.categoria}`
+                  : "Ver todo el catálogo"
+              }
+              class="group block overflow-hidden rounded-panel "
+            >
+              <img
+                src={imagen.imagen}
+                alt={imagen.alt}
+                width="800"
+                height="400"
+                loading="lazy"
+                decoding="async"
+                class="aspect-[2/1] w-full object-cover"
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : null
+}

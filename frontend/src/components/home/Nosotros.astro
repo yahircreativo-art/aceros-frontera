@@ -1,0 +1,92 @@
+---
+/**
+ * Nosotros (referencia) + "Section/Flota y cifras" (Stat) del Figma.
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { obtenerEmpresasAliadas } from '../../lib/empresas';
+import { sucursales } from '../../data/sucursales';
+import Button from '../ui/Button.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+const cifras = [
+  { valor: '15+', etiqueta: 'Años de experiencia' },
+  { valor: String(sucursales.length), etiqueta: 'Sucursales en B.C.' },
+  { valor: `${obtenerEmpresasAliadas().length}+`, etiqueta: 'Marcas aliadas' },
+  { valor: String(new Set(sucursales.map((s) => s.ciudad)).size), etiqueta: 'Ciudades con sucursal' },
+];
+---
+
+<section
+  id="nosotros"
+  class="relative scroll-mt-44 overflow-hidden bg-surface-primary py-20 lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  
+
+  <div class="container-page relative grid items-center gap-12 lg:grid-cols-[1fr_1fr] lg:gap-20">
+    <div>
+      <SectionHeading eyebrow="Sobre nosotros" title="Su proyecto comienza" accent="con nosotros" />
+      <div class="reveal mt-6 flex max-w-xl flex-col gap-4 type-body-m text-text-secondary [--reveal-delay:100ms]">
+        <p>
+          Desde herrería artística hasta los cimientos de un nuevo edificio, en
+          <strong class="text-text-primary">Aceros Frontera</strong> encontrará los productos que usted necesita.
+        </p>
+        <p>
+          Contamos con el inventario más extenso de la región y con
+          <strong class="text-text-primary">{sucursales.length} sucursales en Baja California</strong>, siendo la
+          mejor opción en <strong class="text-text-primary">servicio, precio y calidad</strong> para la industria
+          metalmecánica y de la construcción.
+        </p>
+      </div>
+      <div class="reveal mt-8 flex flex-wrap gap-4 [--reveal-delay:200ms]">
+        <Button href="#formulario-cotizacion" variant="primary" size="md" label="Cotizar ahora" icon="arrow-right" iconPosition="right" />
+        <Button href="/sucursales" variant="tertiary" size="md" label="Ver sucursales" icon="arrow-right" iconPosition="right" />
+      </div>
+    </div>
+
+    <div class="reveal relative [--reveal-delay:150ms]">
+      <div class="grid grid-cols-6 grid-rows-6 gap-3 aspect-square">
+        <img
+          src={assetUrl('/images/dsc06636.webp')}
+          alt="Bodega de acero de Aceros Frontera"
+          loading="lazy"
+          decoding="async"
+          class="col-span-4 row-span-4 size-full object-cover"
+        />
+        <img
+          src={assetUrl('/images/dsc06679.webp')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          class="col-span-2 col-start-5 row-span-3 size-full object-cover grayscale"
+        />
+        <div class="col-span-2 col-start-5 row-span-3 row-start-4 flex flex-col justify-end bg-accent-primary p-5">
+          <p class="font-display text-2xl leading-none font-extrabold uppercase">¿Precios? ¡Nos arreglamos!</p>
+        </div>
+        <img
+          src={assetUrl('/images/dsc06771.webp')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          class="col-span-4 row-span-2 row-start-5 size-full object-cover"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="container-page relative mt-16 lg:mt-24">
+    <dl class="grid grid-cols-2 border-y border-border-default lg:grid-cols-4">
+      {
+        cifras.map((cifra, indice) => (
+          <div
+            class={`reveal flex flex-col gap-2 px-2 py-8 sm:px-6 ${indice > 0 ? 'lg:border-l lg:border-border-default' : ''} ${indice % 2 === 1 ? 'border-l border-border-default lg:border-l' : ''} ${indice > 1 ? 'border-t border-border-default lg:border-t-0' : ''}`}
+            style={`--reveal-delay: ${indice * 80}ms`}
+          >
+            <dt class="order-2 type-overline text-text-muted">{cifra.etiqueta}</dt>
+            <dd class="order-1 font-display text-6xl leading-none font-extrabold text-text-brand lg:text-7xl">{cifra.valor}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

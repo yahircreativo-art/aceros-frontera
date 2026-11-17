@@ -1,0 +1,83 @@
+---
+/**
+ * Figma: "Section/Sucursales" (Branch Card) — "Visítanos".
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { sucursales } from '../../data/sucursales';
+import Button from '../ui/Button.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+const icono = (nombre: string) => `${assetUrl('/icons.svg')}#${nombre}`;
+---
+
+<section
+  id="sucursales-home"
+  class="scroll-mt-44 bg-surface-canvas py-20 lg:scroll-mt-28 lg:py-28"
+  data-hide-on-product-detail
+>
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading
+        eyebrow="Sucursales"
+        title="Visítanos"
+        accent="en Baja California"
+        description={`${sucursales.length} sucursales en ${[...new Set(sucursales.map((s) => s.ciudad))].join(', ')}.`}
+      />
+      <Button href="/sucursales" variant="link" icon="arrow-right" iconPosition="right" label="Ver mapa de sucursales" className="reveal" />
+    </div>
+
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        sucursales.map((sucursal, indice) => (
+          <li class="reveal" style={`--reveal-delay: ${(indice % 3) * 80}ms`}>
+            <article class="group flex h-full flex-col bg-surface-primary transition-shadow duration-300 hover:shadow-menu">
+              <header class="pattern-placa relative flex items-end justify-between gap-4 overflow-hidden bg-surface-inverse px-6 pb-5 pt-10 text-text-inverse">
+                <span
+                  aria-hidden="true"
+                  class="text-outline absolute -right-2 -top-4 font-display text-8xl leading-none font-extrabold text-white/15 transition-colors group-hover:text-accent-primary/40"
+                >
+                  {String(indice + 1).padStart(2, '0')}
+                </span>
+                <div class="relative">
+                  <p class="type-overline text-text-accent">{sucursal.ciudad}</p>
+                  <h3 class="mt-1 type-h3 uppercase">{sucursal.nombre.replace(/^Sucursal\s+/i, '')}</h3>
+                </div>
+              </header>
+              <div class="h-1.5 bg-accent-primary" aria-hidden="true" />
+              <div class="flex flex-1 flex-col gap-3 p-6 type-body-s text-text-secondary">
+                <p class="flex gap-3">
+                  <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-text-brand" aria-hidden="true"><use href={icono('pin')} /></svg>
+                  <span>
+                    {sucursal.direccion}, {sucursal.colonia}
+                    {sucursal.codigoPostal ? `, C.P. ${sucursal.codigoPostal}` : ''}
+                  </span>
+                </p>
+                <p class="flex gap-3">
+                  <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-text-brand" aria-hidden="true"><use href={icono('clock')} /></svg>
+                  <span>{sucursal.horarios.map((h) => `${h.dias} ${h.horas}`).join(' · ')}</span>
+                </p>
+                {sucursal.telefonos[0] && (
+                  <p class="flex gap-3">
+                    <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-text-brand" aria-hidden="true"><use href={icono('phone')} /></svg>
+                    <a class="hover:text-text-brand" href={`tel:+52${sucursal.telefonos[0].replace(/\D/g, '')}`}>
+                      Tel. {sucursal.telefonos[0]}
+                    </a>
+                  </p>
+                )}
+                <a
+                  href={sucursal.mapaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-auto inline-flex w-fit items-center gap-2 pt-3 type-button-m text-text-brand hover:text-brand-hover"
+                >
+                  Cómo llegar
+                  <svg viewBox="0 0 24 24" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true"><use href={icono('arrow-right')} /></svg>
+                </a>
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

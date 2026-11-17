@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import Catalog from "../../components/catalog/Catalog";
+import { obtenerProductos } from "../../lib/productos";
+import { rutasCategorias } from "../../lib/categorias";
+import { siteSeo } from "../../lib/seo";
+
+export async function getStaticPaths() {
+  const productos = await obtenerProductos();
+  const categorias = [
+    ...new Set(
+      productos
+        .map((producto) => String(producto.Categoria ?? "").trim())
+        .filter(Boolean),
+    ),
+  ];
+  const rutas = rutasCategorias(categorias);
+
+  return categorias.map((categoria) => ({
+    params: { categoria: rutas.get(categoria)!.slice("/catalogo/".length) },
+    props: { categoria, categorias, productos },
+  }));
+}
+
+const { categoria, categorias, productos } = Astro.props;
+const canonicalPath = rutasCategorias(categorias).get(categoria) ?? "/catalogo";
+const title = `${categoria} | Catálogo de productos | Aceros Frontera`;
+const description = `Explora productos de ${categoria} en el catálogo de Aceros Frontera. Consulta disponibilidad y cotiza por WhatsApp en Baja California.`;
+---
+
+<Base
+  page="catalogo"
+  title={title}
+  description={description}
+  canonicalPath={canonicalPath}
+>
+  <Header productos={productos} />
+
+  <main id="contenido">
+    <section id="catalogo" class="scroll-mt-44 bg-surface-canvas pt-4 pb-16 lg:scroll-mt-28">
+      <div class="container-page">
+        <Catalog
+          client:load
+          productos={productos}
+          whatsapp={siteSeo.whatsapp}
+          categoriaInicial={categoria}
+        />
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>

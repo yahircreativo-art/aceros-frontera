@@ -1,0 +1,20 @@
+---
+/** Figma: Section Tag — etiqueta Heading/Tag con chaflán inferior derecho de 12 px. */
+interface Props {
+  label: string;
+  color?: 'amarillo' | 'verde' | 'negro';
+  class?: string;
+}
+
+const { label, color = 'amarillo', class: clase = '' } = Astro.props;
+
+const COLORES = {
+  amarillo: 'bg-accent-primary text-text-on-accent',
+  verde: 'bg-brand-primary text-text-on-brand',
+  negro: 'bg-surface-inverse text-text-accent',
+};
+---
+
+<span class={`chamfer inline-flex w-fit items-center py-2 pl-4 pr-6 type-tag [--chamfer:12px] ${COLORES[color]} ${clase}`}>
+  {label}
+</span>

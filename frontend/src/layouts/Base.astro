@@ -6,9 +6,12 @@ import { assetUrl } from '../lib/asset-url';
 
 interface Props {
   page?: PageId;
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
 }
 
-const { page = 'home' } = Astro.props;
+const { page = 'home', title, description, canonicalPath } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,16 +19,19 @@ const { page = 'home' } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <link rel="icon" type="image/png" href={assetUrl('/favicon.png')} />
 
+    {/* Google Fonts (Design System Figma): Montserrat para texto y Barlow Condensed para títulos y botones. */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Montserrat:wght@400;500;600;700&display=swap"
     />
 
-    <Seo page={page} />
+    <Seo page={page} title={title} description={description} path={canonicalPath} />
+    <slot name="head" />
   </head>
 
   <body class="bg-white text-ink-900 antialiased">
@@ -63,5 +69,31 @@ const { page = 'home' } = Astro.props;
         </svg>
       </a>
     </nav>
+    <script>
+      /* Animación de aparición (.reveal) al entrar en pantalla. */
+      const elementos = document.querySelectorAll<HTMLElement>('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        elementos.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const observador = new IntersectionObserver(
+          (entradas) => {
+            entradas.forEach((entrada) => {
+              if (entrada.isIntersecting) {
+                entrada.target.classList.add('is-visible');
+                observador.unobserve(entrada.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        const alto = window.innerHeight;
+        elementos.forEach((el) => {
+          /* Lo que ya está en pantalla al cargar se muestra sin esperar al observador. */
+          const caja = el.getBoundingClientRect();
+          if (caja.top < alto && caja.bottom > 0) el.classList.add('is-visible');
+          else observador.observe(el);
+        });
+      }
+    </script>
   </body>
 </html>

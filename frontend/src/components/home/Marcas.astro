@@ -1,0 +1,52 @@
+---
+/**
+ * Figma: "Section/Patrocinadores — Carrusel" + "Section/Marcas"
+ * Una sola cinta de logos a color, sin fondo, que se detiene al pasar el cursor.
+ */
+import { obtenerEmpresasAliadas } from '../../lib/empresas';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+const empresas = obtenerEmpresasAliadas();
+---
+
+{
+  empresas.length > 0 && (
+    <section
+      id="marcas"
+      class="scroll-mt-44 overflow-hidden bg-surface-canvas py-20 lg:scroll-mt-28 lg:py-28"
+      data-hide-on-product-detail
+    >
+      <div class="container-page flex flex-wrap items-end justify-between gap-6">
+        <SectionHeading
+          eyebrow="Alianzas"
+          title="Marcas que"
+          accent="manejamos"
+          description="Distribuidores y centro de servicio autorizado de las marcas líderes en acero, herramienta y ferretería."
+        />
+        <p class="reveal type-overline text-text-muted">{empresas.length} marcas aliadas</p>
+      </div>
+
+      <div class="mt-12 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+        <ul
+          class="marquesina-pista flex w-max items-center gap-12 hover:[animation-play-state:paused]"
+          style={`--marquesina-duracion: ${Math.max(40, empresas.length * 4)}s`}
+        >
+          {[...empresas, ...empresas].map((empresa, i) => (
+            <li
+              class="grid h-24 w-40 shrink-0 place-items-center sm:w-48"
+              aria-hidden={i >= empresas.length ? 'true' : undefined}
+            >
+              <img
+                src={empresa.imagen}
+                alt={i < empresas.length ? empresa.nombre : ''}
+                loading="lazy"
+                decoding="async"
+                class="max-h-20 w-full object-contain transition-transform duration-300 hover:scale-110"
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

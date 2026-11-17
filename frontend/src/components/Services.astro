@@ -1,60 +1,67 @@
 ---
-import { siteSeo } from '../lib/seo';
+import { siteSeo } from "../lib/seo";
+import { assetUrl } from "../lib/asset-url";
 
 interface Servicio {
   id: string;
   titulo: string;
   descripcion: string;
-  icono: string;
+  /** Foto en `public/images`. Sin imagen se muestra el placeholder de marca. */
+  imagen?: string;
 }
 
+// Los id son anclas públicas (#servicio): no cambiarlos sin revisar los enlaces.
 const servicios: Servicio[] = [
   {
-    id: 'corte-a-medida',
-    titulo: 'Corte a Medida',
+    id: "venta-y-distribucion",
+    titulo: "Venta y distribución de acero en Baja California",
     descripcion:
-      'Realizamos cortes lineales precisos en perfiles, tubos, vigas y soleras para que recibas el material en las dimensiones exactas de tu obra o taller, reduciendo mermas y tiempo.',
-    icono: 'scissors',
+      "Con más de 5 sucursales y distintos centros de distribución ubicados estratégicamente. Proveemos acero al estado completo de Baja California.",
+    imagen: assetUrl("/images/dsc06636.webp"),
   },
   {
-    id: 'mayoreo-y-menudeo',
-    titulo: 'Venta por Mayoreo y Menudeo',
+    id: "productos-a-la-medida",
+    titulo: "Productos a la medida",
     descripcion:
-      'Precios competitivos y volumen para constructoras, contratistas y talleres de herrería, así como atención personalizada y suministro al menudeo para proyectos residenciales.',
-    icono: 'building',
+      "Somos fabricantes de ARMEX, anillos para castillos, lamina para techo R-72, lamina steel deck, entre otros. Además ofrecemos servicios como corte de placa.",
+    imagen: assetUrl("/images/dsc06679.webp"),
   },
   {
-    id: 'fletes-y-entregas',
-    titulo: 'Entrega a Domicilio y en Obra',
+    id: "venta-de-pintura",
+    titulo: "Venta de pintura",
     descripcion:
-      'Contamos con logística y transporte adecuado para carga pesada y largos especiales. Entregamos puntualmente en Tijuana, Rosarito y áreas metropolitanas.',
-    icono: 'truck',
+      "Contamos con las mejores marcas de pintura en distintas presentaciones.",
+    imagen: assetUrl("/images/dsc06771.webp"),
   },
   {
-    id: 'asesoria-tecnica',
-    titulo: 'Asesoría y Estimación Técnica',
-    descripcion:
-      'Nuestro equipo te orienta sobre calibres, cédulas, capacidades de carga y normativas para que elijas el material estructural ideal al mejor costo para tu proyecto.',
-    icono: 'calculator',
+    id: "fabricacion-de-armex",
+    titulo: "Fabricación de ARMEX, castillos y anillos",
+    descripcion: "Somos fabricantes de ARMEX y anillos para castillos.",
+    imagen: assetUrl("/images/dsc06588.webp"),
   },
   {
-    id: 'doblez-y-habilitado',
-    titulo: 'Habilitado y Doblez de Acero',
+    id: "corte-de-placa",
+    titulo: "Corte de placa",
     descripcion:
-      'Servicio de doblado, estribos, habilitado de varilla y preparación preliminar de acero de refuerzo listo para armado en zapatas, losas y columnas.',
-    icono: 'tool',
+      "Ofrecemos corte de placa de aceros A36 en distintos grosores como 3/16″, 1/4″, 5/16″, 3/8″, 1/2″, 5/8″, 3/4″ y 1″",
+    imagen: assetUrl("/images/dsc06752.webp"),
   },
   {
-    id: 'pedidos-especiales',
-    titulo: 'Pedidos Especiales de Molino',
+    id: "venta-y-servicio-de-herramienta",
+    titulo: "Venta y servicio de herramienta",
     descripcion:
-      'Si necesitas perfiles fuera de medida estándar, vigas pesadas o especificaciones técnicas no convencionales, gestionamos pedidos directos de molino con tiempos confiables.',
-    icono: 'layers',
+      "Contamos con venta y servicio de reparación de maquinaria de las mejores marcas. Somos centro de servicio autorizado de Makita, Bosch y Lincoln Electric.",
+    imagen: assetUrl("/images/dsc06784.webp"),
   },
 ];
+
 ---
 
-<section id="servicios" class="scroll-mt-44 lg:scroll-mt-28 border-t border-line bg-canvas py-16 lg:py-20">
+<section
+  id="servicios"
+  class="scroll-mt-44 lg:scroll-mt-28 border-t border-line bg-canvas py-16 lg:py-20"
+  data-hide-on-product-detail
+>
   <div class="container-page">
     <div class="max-w-2xl">
       <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">
@@ -64,109 +71,74 @@ const servicios: Servicio[] = [
         Soluciones en acero y materiales para cada proyecto
       </h2>
       <p class="mt-4 text-base leading-relaxed text-ink-600">
-        En Aceros Frontera no solo proveemos material de primera calidad: ponemos a tu disposición servicios especializados para optimizar tus tiempos, reducir mermas y garantizar la resistencia de tus obras.
+        En Aceros Frontera no solo proveemos material de primera calidad:
+        ponemos a tu disposición servicios especializados para optimizar tus
+        tiempos, reducir mermas y garantizar la resistencia de tus obras.
       </p>
     </div>
 
-    <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {servicios.map((servicio) => {
-        const mensajeWhatsapp = `Hola, quiero cotizar y solicitar información sobre el servicio de ${servicio.titulo}.`;
-        const urlWhatsapp = `https://wa.me/${siteSeo.whatsapp}?text=${encodeURIComponent(mensajeWhatsapp)}`;
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        servicios.map((servicio) => {
+          const mensajeWhatsapp = `Hola, quiero cotizar y solicitar información sobre el servicio de ${servicio.titulo}.`;
+          const urlWhatsapp = `https://wa.me/${siteSeo.whatsapp}?text=${encodeURIComponent(mensajeWhatsapp)}`;
 
-        return (
-          <article class="group relative flex flex-col justify-between overflow-hidden rounded-card border border-line bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-brand-600/30 hover:shadow-lift">
-            <div>
-              <div class="mb-5 grid size-12 place-items-center rounded-panel bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                {servicio.icono === 'scissors' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="6" cy="6" r="3" />
-                    <circle cx="6" cy="18" r="3" />
-                    <line x1="20" y1="4" x2="8.12" y2="15.88" />
-                    <line x1="14.47" y1="14.48" x2="20" y2="20" />
-                    <line x1="8.12" y1="8.12" x2="12" y2="12" />
-                  </svg>
-                )}
-                {servicio.icono === 'building' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-                    <path d="M9 22v-4h6v4" />
-                    <path d="M8 6h.01" />
-                    <path d="M16 6h.01" />
-                    <path d="M12 6h.01" />
-                    <path d="M12 10h.01" />
-                    <path d="M12 14h.01" />
-                    <path d="M16 10h.01" />
-                    <path d="M16 14h.01" />
-                    <path d="M8 10h.01" />
-                    <path d="M8 14h.01" />
-                  </svg>
-                )}
-                {servicio.icono === 'truck' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
-                    <path d="M15 18H9" />
-                    <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
-                    <circle cx="17" cy="18.5" r="2.5" />
-                    <circle cx="6.5" cy="18.5" r="2.5" />
-                  </svg>
-                )}
-                {servicio.icono === 'calculator' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect width="16" height="20" x="4" y="2" rx="2" />
-                    <line x1="8" x2="16" y1="6" y2="6" />
-                    <line x1="16" x2="16" y1="14" y2="18" />
-                    <path d="M16 10h.01" />
-                    <path d="M12 10h.01" />
-                    <path d="M8 10h.01" />
-                    <path d="M12 14h.01" />
-                    <path d="M8 14h.01" />
-                    <path d="M12 18h.01" />
-                    <path d="M8 18h.01" />
-                  </svg>
-                )}
-                {servicio.icono === 'tool' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9" />
-                    <path d="M17.64 15 22 10.64" />
-                    <path d="m20.91 3.26-1.25-1.25a2 2 0 0 0-2.83 0l-1.8 1.8a2 2 0 0 0 0 2.83l.24.24-4.8 4.8 4.8 4.8 4.8-4.8.24.24a2 2 0 0 0 2.83 0l1.8-1.8a2 2 0 0 0 0-2.83z" />
-                  </svg>
-                )}
-                {servicio.icono === 'layers' && (
-                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
-                    <path d="m22 12.5-8.58 3.91a2 2 0 0 1-1.66 0L2.6 12.5" />
-                    <path d="m22 17.5-8.58 3.91a2 2 0 0 1-1.66 0L2.6 17.5" />
-                  </svg>
-                )}
-              </div>
+          return (
+            <a
+              id={servicio.id}
+              href={urlWhatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Solicitar cotización de ${servicio.titulo} por WhatsApp`}
+              class="group relative flex aspect-[3/4] scroll-mt-44 flex-col justify-end overflow-hidden bg-ink-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-400 lg:scroll-mt-32"
+            >
+              {servicio.imagen ? (
+                <img
+                  src={servicio.imagen}
+                  alt={servicio.titulo}
+                  loading="lazy"
+                  decoding="async"
+                  class="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                /* Sin imagen propia: fondo con la marca, como el placeholder de productos. */
+                <span
+                  aria-hidden="true"
+                  class="absolute inset-0 grid place-items-center bg-ink-100 px-4 text-center"
+                >
+                  <span class="font-display text-sm font-bold uppercase tracking-[0.14em] text-ink-400">
+                    Aceros Frontera
+                  </span>
+                </span>
+              )}
 
-              <h3 class="font-display text-lg font-bold text-ink-900 transition-colors group-hover:text-brand-700">
-                {servicio.titulo}
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-600">
-                {servicio.descripcion}
-              </p>
-            </div>
+              {/* Con foto el degradado queda fijo para que el texto se lea. */}
+              {servicio.imagen ? (
+                <span
+                  aria-hidden="true"
+                  class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"
+                >
+                </span>
+              ) : null}
 
-            <div class="mt-6 border-t border-line/60 pt-4">
-              <a
-                href={urlWhatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-700 transition-colors hover:text-brand-800"
-                aria-label={`Solicitar cotización de ${servicio.titulo} por WhatsApp`}
+              {/* Hover: degradado de negro abajo a transparente arriba. */}
+              <span
+                aria-hidden="true"
+                class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
               >
-                Cotizar servicio
-                <svg viewBox="0 0 24 24" class="size-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
-                </svg>
-              </a>
-            </div>
-          </article>
-        );
-      })}
+              </span>
+
+              <div class="relative z-[1] my-auto p-5 text-center">
+                <h3
+                  class={`font-display text-2xl font-bold uppercase leading-tight tracking-wide transition-colors duration-300 group-hover:text-white ${servicio.imagen ? "text-white" : "text-ink-900"}`}
+                >
+                  {servicio.titulo}
+                </h3>
+              </div>
+            </a>
+          );
+        })
+      }
     </div>
   </div>
 </section>
-

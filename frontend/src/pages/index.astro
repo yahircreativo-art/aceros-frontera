@@ -1,102 +1,52 @@
 ---
-import Base from '../layouts/Base.astro';
-import Header from '../components/Header.astro';
-import Hero from '../components/Hero.astro';
-import Footer from '../components/Footer.astro';
-import About from '../components/About.astro';
-import Services from '../components/Services.astro';
-import Contact from '../components/Contact.astro';
-import Catalog from '../components/catalog/Catalog';
-import { siteSeo } from '../lib/seo';
-import { obtenerProductos } from '../lib/productos';
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import Contact from "../components/Contact.astro";
+import HeroHome from "../components/home/HeroHome.astro";
+import Marcas from "../components/home/Marcas.astro";
+import Categorias from "../components/home/Categorias.astro";
+import Fabricantes from "../components/home/Fabricantes.astro";
+import Destacados from "../components/home/Destacados.astro";
+import Servicios from "../components/home/Servicios.astro";
+import CentroServicio from "../components/home/CentroServicio.astro";
+import Eslogan from "../components/home/Eslogan.astro";
+import Nosotros from "../components/home/Nosotros.astro";
+import Sucursales from "../components/home/Sucursales.astro";
+import BolsaTrabajo from "../components/home/BolsaTrabajo.astro";
+import CtaFinal from "../components/home/CtaFinal.astro";
+import { obtenerProductos } from "../lib/productos";
 
 // Catálogo desde Supabase si está configurado; si no, desde los .md locales.
 const productos = await obtenerProductos();
-
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-const supabaseTable = import.meta.env.SUPABASE_PRODUCTS_TABLE ?? 'productos';
-
 ---
 
 <Base page="home">
+  <link
+    slot="head"
+    rel="preload"
+    href="/images/hero-bg.webp"
+    as="image"
+    type="image/webp"
+    fetchpriority="high"
+  />
   <Header productos={productos} />
 
-  <main id="contenido">
-    <Hero />
-    <section id="catalogo" class="scroll-mt-44 lg:scroll-mt-28 pt-6 pb-16 py-16 lg:pt-8 lg:pb-20">
-      <div class="container-page">
-        <div id="catalogo-intro" class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p class="text-2xs font-bold uppercase tracking-[0.18em] text-brand-600">
-              Acero y materiales para construcción y fabricación
-            </p>
-            <h2 class="mt-2 text-3xl font-bold text-ink-900 sm:text-4xl">
-              Perfiles, tubos y piezas de acero
-            </h2>
-          </div>
-          
-        </div>
-
-        <Catalog
-          client:load
-          productos={productos}
-          whatsapp={siteSeo.whatsapp}
-          supabaseUrl={supabaseUrl}
-          supabaseKey={supabaseKey}
-          supabaseTable={supabaseTable}
-        />
-      </div>
-    </section>
-    <About />
-    <Services />
+  <main id="contenido" class="overflow-x-clip">
+    <HeroHome />
+    <Marcas />
+    <Categorias productos={productos} />
+    <Fabricantes />
+    <Destacados productos={productos} />
+    <Servicios />
+    <CentroServicio />
+    <Eslogan />
+    <Nosotros />
+    <Sucursales />
+    <BolsaTrabajo />
     <Contact />
+    <CtaFinal />
   </main>
 
   <Footer />
-
-  <script>
-    const hero = document.getElementById('inicio');
-    const catalogo = document.getElementById('catalogo');
-    const introduccionCatalogo = document.getElementById('catalogo-intro');
-    const marcas = document.getElementById('marcas');
-    const nosotros = document.getElementById('nosotros');
-    const servicios = document.getElementById('servicios');
-    const contacto = document.getElementById('contacto');
-
-    const mostrarDetalle = () => {
-      hero?.classList.add('hidden');
-      catalogo?.classList.remove('pt-6', 'pb-16', 'lg:pt-8', 'lg:pb-20');
-      catalogo?.classList.add('py-0');
-      introduccionCatalogo?.classList.add('hidden');
-      marcas?.classList.add('hidden');
-      nosotros?.classList.add('hidden');
-      servicios?.classList.add('hidden');
-      contacto?.classList.add('hidden');
-    };
-
-    const mostrarPaginaCompleta = () => {
-      hero?.classList.remove('hidden');
-      catalogo?.classList.remove('py-0');
-      catalogo?.classList.add('pt-6', 'pb-16', 'lg:pt-8', 'lg:pb-20');
-      introduccionCatalogo?.classList.remove('hidden');
-      marcas?.classList.remove('hidden');
-      nosotros?.classList.remove('hidden');
-      servicios?.classList.remove('hidden');
-      contacto?.classList.remove('hidden');
-    };
-
-    window.addEventListener('catalog-product-detail', mostrarDetalle);
-    window.addEventListener('catalog-product-close', mostrarPaginaCompleta);
-    window.addEventListener('catalog-reset', mostrarPaginaCompleta);
-
-    if (new URL(window.location.href).searchParams.has('producto')) {
-      mostrarDetalle();
-    }
-
-    window.addEventListener('popstate', () => {
-      if (new URL(window.location.href).searchParams.has('producto')) mostrarDetalle();
-      else mostrarPaginaCompleta();
-    });
-  </script>
 </Base>
