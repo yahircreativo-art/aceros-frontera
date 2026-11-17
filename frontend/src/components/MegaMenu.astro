@@ -3,17 +3,15 @@
  * Figma: "Mega Menu" — se despliega desde "Catálogo" en la barra del header.
  * Panel blanco (padding 40/64/48/64, sombra) con las familias de producto
  * (pictograma verde, título Heading/H4, enlaces Body/Body-S), enlace
- * "Ver catálogo completo" y mosaico amarillo "¿No encuentras lo que buscas?".
+ * y enlace "Ver catálogo completo".
  * Debajo, las categorías reales del catálogo en línea.
  *
  * Uso: <MegaMenu> va dentro del <header> (que es el contenedor posicionado)
  * y su botón disparador se pinta con el slot "trigger" en la barra de enlaces.
  */
-import { assetUrl, rutaInterna } from '../lib/asset-url';
+import { rutaInterna } from '../lib/asset-url';
 import { rutaCategoria } from '../lib/categorias';
-import { whatsappUrl } from '../lib/seo';
 import { familias, rutaFamilia } from '../data/familias';
-import Button from './ui/Button.astro';
 import Pictogram from './ui/Pictogram.astro';
 
 interface Props {
