@@ -64,6 +64,8 @@ export async function obtenerProductosSupabase(
 export async function obtenerCategoriasSupabase(
   configuracion: ConfiguracionSupabase,
 ): Promise<string[]> {
+  /* Sin credenciales (p. ej. un build de CI sin variables) no hay categorías que pedir. */
+  if (!configuracion.url || !configuracion.clavePublica) return [];
   const tabla = configuracion.tabla || 'MASTER_PRODUCTOS';
   if (!/^[a-zA-Z_][a-zA-Z\d_]*$/.test(tabla)) {
     throw new Error(`Nombre de tabla no válido: ${tabla}`);
