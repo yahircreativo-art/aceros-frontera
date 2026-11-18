@@ -1,0 +1,306 @@
+---
+/**
+ * PROPUESTA D · "Borde vivo" (ref. Orchid)
+ * Barra negra con un filo inferior verde→amarillo que fluye. Un halo sigue
+ * al cursor por toda la barra. "Catálogo" y "Servicios" abren un panel claro
+ * flotante con borde degradado giratorio y tarjetas con reflejo que sigue al
+ * cursor. La barra se oculta al bajar y reaparece al subir (headroom).
+ * Móvil: hoja inferior (bottom sheet) que sube desde abajo.
+ */
+import Logo from '../Logo.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { whatsappUrl, siteSeo } from '../../lib/seo';
+import { assetUrl } from '../../lib/asset-url';
+import { enlaces, servicios, prepararNav } from './nav-data';
+import type { Producto } from '../../lib/types';
+
+interface Props {
+  productos: Producto[];
+}
+const { productos } = Astro.props;
+const { familiasNav, catalogo } = prepararNav(productos);
+
+const menus = {
+  catalogo: {
+    label: 'Catálogo',
+    kicker: 'Familias de producto',
+    cards: familiasNav.slice(0, 6).map((f) => ({ href: f.href, titulo: f.titulo, desc: f.items.join(', '), icono: f.icono, foto: null as string | null })),
+    pie: { label: 'Ver catálogo completo', href: catalogo },
+  },
+  servicios: {
+    label: 'Servicios',
+    kicker: 'Lo que hacemos por ti',
+    cards: servicios.map((s) => ({ href: s.href, titulo: s.titulo, desc: s.desc, icono: null, foto: s.imagen })),
+    pie: { label: 'Cotizar un servicio', href: whatsappUrl() },
+  },
+};
+const simples = enlaces.filter((e) => !e.href.includes('#servicios'));
+---
+
+<header data-nd class="nd sticky top-0 z-40">
+  <div data-nd-bar class="nd-bar relative bg-neutral-950 text-text-inverse">
+    <span data-nd-glow class="nd-glow" aria-hidden="true"></span>
+    <div class="container-page relative flex h-16 items-center gap-6">
+      <Logo compact />
+
+      <nav aria-label="Navegación principal" class="hidden items-center gap-1 lg:flex">
+        {
+          Object.entries(menus).map(([id, m]) => (
+            <button type="button" data-nd-trigger={id} aria-expanded="false" aria-controls="nd-panel" class="nd-link group">
+              {m.label}
+              <svg viewBox="0 0 10 6" class="h-1.5 w-2.5 transition-transform duration-300 group-aria-expanded:-rotate-180" fill="none" aria-hidden="true">
+                <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          ))
+        }
+        {simples.map((e) => <a href={e.href} class="nd-link">{e.label}</a>)}
+      </nav>
+
+      <div class="ml-auto flex items-center gap-2">
+        <a href={`tel:${siteSeo.phoneHref}`} class="nd-btn nd-btn-ghost hidden md:inline-flex">
+          <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#phone`} /></svg>
+          Llamar
+        </a>
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="nd-btn nd-btn-solid">Cotizar</a>
+        <button type="button" data-nd-sheet-btn aria-expanded="false" aria-controls="nd-sheet" aria-label="Abrir menú" class="nd-dots lg:hidden">
+          <i></i><i></i><i></i>
+        </button>
+      </div>
+    </div>
+    <span class="nd-edge" aria-hidden="true"></span>
+  </div>
+
+  <!-- Panel flotante (escritorio) -->
+  <div id="nd-panel" data-nd-panel class="nd-panel hidden lg:block" aria-hidden="true">
+    <div class="nd-frame">
+      <div class="nd-surface">
+        {
+          Object.entries(menus).map(([id, m]) => (
+            <section data-nd-view={id} hidden>
+              <p class="nd-kicker">{m.kicker}</p>
+              <ul class="mt-3 grid grid-cols-3 gap-3">
+                {m.cards.map((c, i) => (
+                  <li class="nd-in" style={`--i:${i}`}>
+                    <a href={c.href} class="nd-card group" data-nd-card>
+                      <span class="nd-ico">
+                        {c.icono ? <Pictogram name={c.icono} class="size-5" /> : <img src={c.foto!} alt="" loading="lazy" class="size-full object-cover" />}
+                      </span>
+                      <span class="mt-6 block font-display text-xl font-semibold text-text-primary">{c.titulo}</span>
+                      <span class="mt-1 block line-clamp-2 type-caption text-text-muted">{c.desc}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <a href={m.pie.href} class="nd-foot nd-in" style={`--i:${m.cards.length}`}>
+                {m.pie.label}
+                <span aria-hidden="true">→</span>
+              </a>
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom sheet (móvil) -->
+  <div id="nd-sheet" data-nd-sheet class="nd-sheet lg:hidden" hidden>
+    <div data-nd-scrim class="nd-scrim"></div>
+    <div class="nd-sheet-panel" role="dialog" aria-label="Menú">
+      <span class="nd-handle" aria-hidden="true"></span>
+      <nav aria-label="Navegación principal" class="grid grid-cols-2 gap-2">
+        {[{ href: catalogo, label: 'Catálogo' }, ...enlaces].map((e, i) => (
+          <a href={e.href} class="nd-sheet-link nd-in" style={`--i:${i}`}>{e.label}</a>
+        ))}
+      </nav>
+      <p class="nd-kicker mt-6">Familias</p>
+      <ul class="mt-2 flex flex-col">
+        {familiasNav.map((f, i) => (
+          <li class="nd-in" style={`--i:${i + 5}`}>
+            <a href={f.href} class="flex items-center gap-3 border-b border-border-subtle py-3 type-label">
+              <Pictogram name={f.icono} class="size-5 text-green-600" />{f.titulo}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-nd]');
+  if (root) {
+    const bar = root.querySelector<HTMLElement>('[data-nd-bar]')!;
+    const glow = root.querySelector<HTMLElement>('[data-nd-glow]')!;
+    const panel = root.querySelector<HTMLElement>('[data-nd-panel]')!;
+    const triggers = [...root.querySelectorAll<HTMLButtonElement>('[data-nd-trigger]')];
+    const views = [...root.querySelectorAll<HTMLElement>('[data-nd-view]')];
+    let actual: string | null = null;
+    let tCerrar: number | undefined;
+
+    /* Halo que sigue al cursor */
+    bar.addEventListener('pointermove', (e) => {
+      const r = bar.getBoundingClientRect();
+      glow.style.setProperty('--gx', `${e.clientX - r.left}px`);
+      glow.style.opacity = '1';
+    });
+    bar.addEventListener('pointerleave', () => (glow.style.opacity = '0'));
+
+    const abrir = (id: string | null) => {
+      window.clearTimeout(tCerrar);
+      if (id === actual) return;
+      actual = id;
+      triggers.forEach((t) => t.setAttribute('aria-expanded', String(t.dataset.ndTrigger === id)));
+      panel.classList.toggle('is-open', !!id);
+      panel.setAttribute('aria-hidden', String(!id));
+      if (id) views.forEach((v) => (v.hidden = v.dataset.ndView !== id));
+    };
+    triggers.forEach((t) => {
+      t.addEventListener('mouseenter', () => abrir(t.dataset.ndTrigger!));
+      t.addEventListener('click', () => abrir(actual === t.dataset.ndTrigger ? null : t.dataset.ndTrigger!));
+    });
+    root.querySelectorAll('.nd-link:not([data-nd-trigger])').forEach((a) => a.addEventListener('mouseenter', () => abrir(null)));
+    root.addEventListener('mouseleave', () => (tCerrar = window.setTimeout(() => abrir(null), 280)));
+    root.addEventListener('mouseenter', () => window.clearTimeout(tCerrar));
+
+    /* Reflejo en las tarjetas */
+    root.querySelectorAll<HTMLElement>('[data-nd-card]').forEach((card) =>
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        card.style.setProperty('--my', `${e.clientY - r.top}px`);
+      }),
+    );
+
+    /* Bottom sheet */
+    const btn = root.querySelector<HTMLButtonElement>('[data-nd-sheet-btn]')!;
+    const sheet = root.querySelector<HTMLElement>('[data-nd-sheet]')!;
+    const alternarSheet = (abrirlo: boolean) => {
+      btn.setAttribute('aria-expanded', String(abrirlo));
+      btn.setAttribute('aria-label', abrirlo ? 'Cerrar menú' : 'Abrir menú');
+      document.documentElement.style.overflow = abrirlo ? 'hidden' : '';
+      if (abrirlo) { sheet.hidden = false; requestAnimationFrame(() => sheet.classList.add('is-open')); }
+      else { sheet.classList.remove('is-open'); window.setTimeout(() => (sheet.hidden = true), 400); }
+    };
+    btn.addEventListener('click', () => alternarSheet(sheet.hidden));
+    root.querySelector('[data-nd-scrim]')!.addEventListener('click', () => alternarSheet(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      abrir(null);
+      if (!sheet.hidden) alternarSheet(false);
+    });
+
+    /* Headroom: se oculta al bajar, vuelve al subir */
+    let ultimo = window.scrollY;
+    let pendiente = false;
+    window.addEventListener('scroll', () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(() => {
+        pendiente = false;
+        const y = window.scrollY;
+        const bajando = y > ultimo && y > 120;
+        if (Math.abs(y - ultimo) > 6) {
+          root.classList.toggle('is-hidden', bajando && !actual && sheet.hidden);
+          ultimo = y;
+        }
+        root.classList.toggle('is-scrolled', y > 10);
+      });
+    }, { passive: true });
+  }
+</script>
+
+<style>
+  @property --nd-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+  .nd { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); transition: transform 450ms var(--ease); }
+  .nd.is-hidden { transform: translateY(-110%); }
+  .nd.is-scrolled .nd-bar { box-shadow: 0 10px 30px rgb(0 0 0 / 30%); }
+
+  .nd-glow {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 400ms;
+    background: radial-gradient(220px 120px at var(--gx, 50%) 100%, rgb(234 192 43 / 18%), transparent 70%);
+  }
+  .nd-edge {
+    position: absolute; inset-inline: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, var(--color-green-600), var(--color-accent-primary), var(--color-green-400), var(--color-accent-primary), var(--color-green-600));
+    background-size: 200% 100%; animation: nd-flow 6s linear infinite;
+  }
+  @keyframes nd-flow { to { background-position: -200% 0; } }
+
+  .nd-link {
+    display: inline-flex; align-items: center; gap: 0.4rem; height: 2.25rem; padding: 0 0.85rem; border-radius: 0.375rem; cursor: pointer;
+    font-size: 0.875rem; font-weight: 600; color: var(--color-text-inverse-muted); transition: color 200ms, background 200ms;
+  }
+  .nd-link:hover { color: var(--color-text-inverse); background: rgb(255 255 255 / 6%); }
+  .nd-link[aria-expanded="true"] { color: var(--color-text-inverse); background: rgb(255 255 255 / 10%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%); }
+
+  .nd-btn { display: inline-flex; align-items: center; gap: 0.4rem; height: 2.25rem; padding: 0 1rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 700; transition: background 200ms, color 200ms, transform 250ms var(--ease); }
+  .nd-btn:hover { transform: translateY(-1px); }
+  .nd-btn-ghost { background: rgb(255 255 255 / 8%); color: var(--color-text-inverse); }
+  .nd-btn-ghost:hover { background: rgb(255 255 255 / 14%); }
+  .nd-btn-solid { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
+  .nd-btn-solid:hover { background: var(--color-accent-hover); }
+
+  .nd-dots { display: inline-flex; align-items: center; justify-content: center; gap: 4px; width: 2.5rem; height: 2.5rem; border-radius: 999px; cursor: pointer; background: rgb(255 255 255 / 8%); }
+  .nd-dots i { width: 5px; height: 5px; border-radius: 999px; background: currentColor; transition: transform 300ms var(--ease); }
+  .nd-dots[aria-expanded="true"] i:nth-child(1) { transform: translateX(9px); }
+  .nd-dots[aria-expanded="true"] i:nth-child(3) { transform: translateX(-9px); }
+
+  /* Panel flotante con borde degradado giratorio */
+  .nd-panel { position: absolute; inset-inline: 0; top: calc(100% + 10px); padding-inline: clamp(1rem, 4vw, 2rem); pointer-events: none; }
+  .nd-frame {
+    max-width: 62rem; margin-inline: auto; padding: 1.5px; border-radius: 1rem;
+    background: conic-gradient(from var(--nd-angle), var(--color-green-600), var(--color-accent-primary), var(--color-neutral-200) 40%, var(--color-neutral-200) 60%, var(--color-green-400), var(--color-green-600));
+    animation: nd-spin 5s linear infinite;
+    box-shadow: var(--shadow-modal);
+    opacity: 0; transform: translateY(-10px) scale(0.98); filter: blur(4px); transform-origin: top center;
+    transition: opacity 250ms, transform 400ms var(--ease), filter 300ms;
+  }
+  .nd-panel.is-open { pointer-events: auto; }
+  .nd-panel.is-open .nd-frame { opacity: 1; transform: none; filter: none; }
+  @keyframes nd-spin { to { --nd-angle: 360deg; } }
+  .nd-surface { padding: 1.25rem; border-radius: calc(1rem - 1.5px); background: var(--color-neutral-50); }
+  .nd-kicker { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-muted); }
+
+  .nd-in { opacity: 0; transform: translateY(8px); }
+  .is-open .nd-in, .nd-sheet.is-open .nd-in { opacity: 1; transform: none; transition: opacity 350ms, transform 450ms var(--ease); transition-delay: calc(60ms + var(--i) * 35ms); }
+
+  .nd-card {
+    position: relative; display: block; height: 100%; padding: 1rem; overflow: hidden; border-radius: 0.75rem;
+    background: var(--color-neutral-100); box-shadow: inset 0 0 0 1px var(--color-border-default);
+    transition: background 250ms, box-shadow 250ms, transform 300ms var(--ease);
+  }
+  .nd-card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 300ms;
+    background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), rgb(13 128 94 / 14%), transparent 70%);
+  }
+  .nd-card:hover { background: var(--color-neutral-0); box-shadow: inset 0 0 0 1px var(--color-green-300), 0 8px 24px rgb(8 18 13 / 8%); transform: translateY(-2px); }
+  .nd-card:hover::before { opacity: 1; }
+  .nd-ico { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: 0.5rem; background: var(--color-neutral-0); color: var(--color-green-700); box-shadow: inset 0 0 0 1px var(--color-border-default); transition: background 250ms, color 250ms, transform 400ms var(--ease); }
+  .nd-card:hover .nd-ico { background: var(--color-green-700); color: var(--color-accent-primary); transform: rotate(-8deg) scale(1.08); }
+
+  .nd-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding: 0.9rem 1rem; border-radius: 0.75rem; background: var(--color-neutral-950); color: var(--color-text-inverse); font-size: 0.875rem; font-weight: 600; transition: background 250ms; }
+  .nd-foot span { transition: transform 300ms var(--ease); color: var(--color-accent-primary); }
+  .nd-foot:hover { background: var(--color-green-800); }
+  .nd-foot:hover span { transform: translateX(4px); }
+
+  /* Bottom sheet */
+  .nd-sheet { position: fixed; inset: 0; z-index: 50; }
+  .nd-scrim { position: absolute; inset: 0; background: rgb(0 0 0 / 55%); opacity: 0; transition: opacity 350ms; }
+  .nd-sheet-panel {
+    position: absolute; inset-inline: 0; bottom: 0; max-height: 85svh; overflow-y: auto; padding: 0.75rem 1.25rem 2rem;
+    border-radius: 1.5rem 1.5rem 0 0; background: var(--color-neutral-0); color: var(--color-text-primary);
+    border-top: 3px solid var(--color-accent-primary);
+    transform: translateY(100%); transition: transform 450ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .nd-sheet.is-open .nd-scrim { opacity: 1; }
+  .nd-sheet.is-open .nd-sheet-panel { transform: none; }
+  .nd-handle { display: block; width: 2.5rem; height: 4px; margin: 0 auto 1rem; border-radius: 999px; background: var(--color-neutral-300); }
+  .nd-sheet-link { display: block; padding: 0.9rem 1rem; border-radius: 0.75rem; background: var(--color-neutral-100); font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; }
+  .nd-sheet-link:hover { background: var(--color-neutral-950); color: var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nd, .nd *, .nd-frame { transition-duration: 1ms !important; animation: none !important; }
+  }
+</style>

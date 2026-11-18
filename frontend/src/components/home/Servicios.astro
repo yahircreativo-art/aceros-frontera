@@ -23,7 +23,7 @@ const servicios: Servicio[] = [
     id: 'venta-y-distribucion',
     titulo: 'Venta y distribución de acero',
     descripcion:
-      'Con más de 5 sucursales y distintos centros de distribución ubicados estratégicamente, proveemos acero a todo Baja California.',
+      'Con 6 sucursales y centros de distribución en Tijuana, Mexicali y Ensenada, proveemos acero a todo Baja California.',
     imagen: assetUrl('/images/dsc06636.webp'),
   },
   {
@@ -66,7 +66,7 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
 <section
   id="servicios"
   data-servicios
-  class="relative scroll-mt-44 bg-surface-inverse py-20 text-text-inverse lg:h-[400svh] lg:scroll-mt-20 lg:py-0"
+  class="relative scroll-mt-24 bg-surface-inverse py-20 text-text-inverse lg:h-[400svh] lg:py-0"
   style={`--paneles: ${servicios.length}`}
 >
   <div
@@ -74,9 +74,8 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
   >
     <SectionHeading
       tone="dark"
-      eyebrow="Nuestros servicios"
-      title="Infraestructura"
-      accent="que respalda"
+      title="Infraestructura que respalda"
+      cota={`${servicios.length} servicios para tu obra o taller`}
       description="Cobertura, versatilidad en transformación y soporte técnico para optimizar tus tiempos y reducir mermas."
     />
 
@@ -90,7 +89,7 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
             data-servicio={indice}
             class:list={[
               { activo: indice === 0 },
-              'group relative min-h-[18rem] scroll-mt-44 overflow-hidden bg-surface-inverse lg:min-h-0 lg:scroll-mt-32',
+              'group relative min-h-[18rem] scroll-mt-24 overflow-hidden bg-surface-inverse lg:min-h-0',
             ]}
           >
             <a
@@ -109,9 +108,7 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
               />
               <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
 
-              <span class="relative font-display text-5xl leading-none font-extrabold text-text-accent">
-                {String(indice + 1).padStart(2, '0')}
-              </span>
+              <span aria-hidden="true" class="relative block h-1 w-12 bg-accent-primary" />
 
               <span
                 aria-hidden="true"
@@ -191,7 +188,8 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
     /* Abierto: el panel señalado con el cursor o, si no hay cursor encima,
        el que marca el scroll (.activo). */
     .servicios-lista > li:hover,
-    .servicios-lista:not(:hover) > li.activo {
+    .servicios-lista > li:focus-within,
+    .servicios-lista:not(:hover):not(:focus-within) > li.activo {
       flex-grow: 5;
     }
     .servicio-desc {
@@ -212,24 +210,40 @@ const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
     .servicios-lista > li .servicio-cuerpo {
       opacity: 0;
     }
-    .servicios-lista > li:hover .servicio-vertical,
-    .servicios-lista:not(:hover) > li.activo .servicio-vertical {
+    .servicios-lista > li:hover,
+    .servicios-lista > li:focus-within .servicio-vertical,
+    .servicios-lista:not(:hover):not(:focus-within) > li.activo .servicio-vertical {
       opacity: 0;
     }
-    .servicios-lista > li:hover .servicio-cuerpo,
-    .servicios-lista:not(:hover) > li.activo .servicio-cuerpo {
+    .servicios-lista > li:hover,
+    .servicios-lista > li:focus-within .servicio-cuerpo,
+    .servicios-lista:not(:hover):not(:focus-within) > li.activo .servicio-cuerpo {
       opacity: 1;
       transition-delay: 300ms;
     }
-    .servicios-lista > li:hover .servicio-desc,
-    .servicios-lista:not(:hover) > li.activo .servicio-desc {
+    .servicios-lista > li:hover,
+    .servicios-lista > li:focus-within .servicio-desc,
+    .servicios-lista:not(:hover):not(:focus-within) > li.activo .servicio-desc {
       max-height: 10rem;
       opacity: 1;
     }
     /* El panel abierto por scroll también se ve a color. */
-    .servicios-lista:not(:hover) > li.activo img {
+    .servicios-lista:not(:hover):not(:focus-within) > li.activo img {
       filter: none;
       opacity: 0.9;
+    }
+  }
+  /* Foco visible: el enlace ocupa todo el panel y el li recorta el contorno, así que se dibuja por dentro. */
+  .servicios-lista a:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px var(--color-accent-primary);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .servicios-lista > li,
+    .servicio-desc,
+    .servicio-vertical,
+    .servicio-cuerpo {
+      transition: none !important;
     }
   }
 </style>

@@ -1,0 +1,199 @@
+---
+/**
+ * HERO C · "Tarjetas flotantes" (ref. User Journey)
+ * Fondo blanco con líneas de plano. A la izquierda, titular y un campo
+ * "¿Qué necesitas cotizar?" que abre WhatsApp con el texto escrito. A la
+ * derecha, una pila de tarjetas isométricas (fotos con degradado de marca)
+ * que flotan, se inclinan con el cursor y se separan al pasar encima.
+ * Abajo, franja negra con datos clave.
+ *
+ * Uso: <HeroC />  ·  con personaje: <HeroC personaje />
+ */
+import { assetUrl } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { sucursales } from '../../data/sucursales';
+import { familias, rutaFamilia } from '../../data/familias';
+import { rutaInterna } from '../../lib/asset-url';
+
+interface Props {
+  personaje?: boolean;
+}
+const { personaje = false } = Astro.props;
+
+const tarjetas = [
+  { titulo: 'Perfiles', foto: '/images/dsc06636.webp', familia: familias[2] },
+  { titulo: 'Construcción', foto: '/images/dsc06588.webp', familia: familias[1] },
+  { titulo: 'Lámina', foto: '/images/dsc06679.webp', familia: familias[0] },
+].map((t) => ({ ...t, foto: assetUrl(t.foto), href: rutaInterna(rutaFamilia(t.familia, [])) }));
+
+const ciudades = new Set(sucursales.map((s) => s.ciudad)).size;
+const datos = [
+  { n: String(sucursales.length), t: 'Sucursales' },
+  { n: String(ciudades), t: 'Ciudades de Baja California' },
+  { n: 'Armex', t: 'Castillos y anillos de fabricación propia' },
+  { n: 'Flota', t: 'Propia, entrega en obra' },
+];
+const base = whatsappUrl('Hola, necesito cotizar: ');
+---
+
+<section id="inicio" data-hc class="hc relative isolate overflow-hidden bg-neutral-0 text-text-primary">
+  <svg aria-hidden="true" class="hc-lineas absolute inset-0 -z-10 size-full" preserveAspectRatio="none" viewBox="0 0 1200 700" fill="none">
+    <path d="M-20 520 L380 300 L760 520 L1220 260" />
+    <path d="M-20 600 L420 380 L820 600 L1220 360" />
+    <path d="M300 -10 L700 230 L1220 -20" />
+    <circle cx="380" cy="300" r="4" /><circle cx="760" cy="520" r="4" /><circle cx="700" cy="230" r="4" />
+  </svg>
+
+  <div class="container-page grid min-h-[calc(100svh-15rem)] items-center gap-10 py-14 lg:grid-cols-[1.05fr_1fr] lg:py-16">
+    <div class="relative z-10">
+      <p class="reveal type-overline text-text-brand">Aceros Frontera · Baja California</p>
+      <h1 class="reveal mt-5 font-display text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.88] font-bold [--reveal-delay:100ms]">
+        Acero para<br />cada etapa de<br /><span class="hc-subrayado">tu obra</span>
+      </h1>
+
+      <form data-hc-form data-base={base} class="reveal mt-10 flex max-w-lg items-end gap-4 [--reveal-delay:250ms]">
+        <label class="flex-1">
+          <span class="type-caption text-text-muted">¿Qué necesitas cotizar?</span>
+          <input name="q" type="text" autocomplete="off" placeholder="Ej. 20 PTR de 2” cal. 14" class="hc-input mt-1 w-full bg-transparent py-2 type-body-m outline-none" />
+        </label>
+        <button type="submit" class="hc-enviar group inline-flex shrink-0 items-center gap-2 py-2 type-button-m">
+          Cotizar
+          <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
+        </button>
+      </form>
+      <p class="reveal mt-3 type-caption text-text-muted [--reveal-delay:300ms]">Te respondemos por WhatsApp · {siteSeo.phone}</p>
+    </div>
+
+    <!-- Pila de tarjetas -->
+    <div class="reveal relative h-[26rem] sm:h-[32rem] [--reveal-delay:150ms]">
+      <div class="hc-badge absolute right-0 top-2 z-20 flex max-w-60 items-center gap-3">
+        <span class="hc-badge-ico grid size-12 shrink-0 place-items-center rounded-full">
+          <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#truck`} /></svg>
+        </span>
+        <span class="type-caption text-text-secondary">Entregamos en tu obra en Tijuana, Ensenada y Mexicali.</span>
+      </div>
+
+      <div data-hc-escena class="hc-escena absolute inset-0">
+        <div class="hc-pila">
+          {
+            tarjetas.map((t, i) => (
+              <a href={t.href} class="hc-card" style={`--i:${i}`} aria-label={`Ver ${t.titulo}`}>
+                <img src={t.foto} alt="" loading="eager" class="absolute inset-0 size-full object-cover" />
+                <span class="hc-card-velo" />
+                <span class="hc-card-txt">{t.titulo}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        personaje && (
+          <img
+            src={assetUrl('/images/personaje.webp')}
+            alt="Personaje de Aceros Frontera con los brazos cruzados"
+            width="780"
+            height="1400"
+            class="hc-personaje pointer-events-none absolute -bottom-16 right-0 z-10 h-[105%] w-auto"
+          />
+        )
+      }
+    </div>
+  </div>
+
+  <!-- Franja negra -->
+  <div class="relative bg-neutral-950 text-text-inverse">
+    <div class="container-page grid grid-cols-2 lg:grid-cols-4">
+      {datos.map((d, i) => (
+        <div class="hc-dato reveal border-white/10 py-6 pr-4 lg:[&:not(:first-child)]:border-l lg:pl-6" style={`--reveal-delay:${i * 80}ms`}>
+          <p class="font-display text-4xl font-extrabold text-accent-primary">{d.n}</p>
+          <p class="mt-1 type-caption text-text-inverse-muted">{d.t}</p>
+        </div>
+      ))}
+    </div>
+    <div class="h-1.5 bg-accent-primary" aria-hidden="true"></div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hc]');
+  if (root) {
+    /* Cotización rápida por WhatsApp */
+    const form = root.querySelector<HTMLFormElement>('[data-hc-form]')!;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const texto = (new FormData(form).get('q') as string).trim();
+      const url = texto ? `${form.dataset.base}${encodeURIComponent(texto)}` : form.dataset.base!;
+      window.open(url, '_blank', 'noopener');
+    });
+
+    /* Inclinación con el cursor */
+    const escena = root.querySelector<HTMLElement>('[data-hc-escena]')!;
+    if (window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      escena.addEventListener('pointermove', (e) => {
+        const r = escena.getBoundingClientRect();
+        escena.style.setProperty('--rx', `${((e.clientY - r.top) / r.height - 0.5) * -10}deg`);
+        escena.style.setProperty('--ry', `${((e.clientX - r.left) / r.width - 0.5) * 12}deg`);
+      });
+      escena.addEventListener('pointerleave', () => {
+        escena.style.setProperty('--rx', '0deg');
+        escena.style.setProperty('--ry', '0deg');
+      });
+    }
+  }
+</script>
+
+<style>
+  .hc-lineas path { stroke: var(--color-neutral-200); stroke-width: 1; stroke-dasharray: 1600; stroke-dashoffset: 1600; animation: hc-traza 3s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+  .hc-lineas path:nth-child(2) { animation-delay: 0.3s; }
+  .hc-lineas path:nth-child(3) { animation-delay: 0.6s; }
+  .hc-lineas circle { fill: var(--color-accent-primary); }
+  @keyframes hc-traza { to { stroke-dashoffset: 0; } }
+
+  .hc-subrayado { position: relative; white-space: nowrap; }
+  .hc-subrayado::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.08em; height: 0.16em; z-index: -1; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; animation: hc-sub 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 900ms forwards; }
+  @keyframes hc-sub { to { transform: scaleX(1); } }
+
+  .hc-input { border-bottom: 1px solid var(--color-border-field); transition: border-color 200ms; }
+  .hc-input:focus { border-bottom: 2px solid var(--color-border-focus); }
+  .hc-enviar { border-bottom: 2px solid var(--color-neutral-950); }
+  .hc-enviar:hover { color: var(--color-text-brand); border-color: var(--color-green-600); }
+
+  .hc-badge-ico { background: conic-gradient(from 200deg, var(--color-green-600), var(--color-accent-primary), var(--color-green-600)); color: var(--color-neutral-0); animation: hc-gira 6s linear infinite; }
+  .hc-badge-ico svg { animation: hc-gira 6s linear infinite reverse; }
+  @keyframes hc-gira { to { transform: rotate(360deg); } }
+
+  /* Pila isométrica */
+  .hc-escena { perspective: 1600px; display: grid; place-items: center; }
+  .hc-pila {
+    position: relative; width: min(24rem, 78%); aspect-ratio: 4 / 3;
+    transform-style: preserve-3d;
+    transform: rotateX(calc(52deg + var(--rx, 0deg))) rotateZ(calc(-38deg + var(--ry, 0deg)));
+    transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .hc-card {
+    --sep: 4.5rem;
+    position: absolute; inset: 0; overflow: hidden; border-radius: 1.25rem;
+    box-shadow: 0 30px 50px -10px rgb(8 18 13 / 40%), inset 0 0 0 1px rgb(255 255 255 / 25%);
+    transform: translateZ(calc((2 - var(--i)) * var(--sep)));
+    animation: hc-flota 6s ease-in-out infinite; animation-delay: calc(var(--i) * -1.2s);
+    transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .hc-escena:hover .hc-card { --sep: 6.5rem; }
+  .hc-card:hover .hc-card-velo { opacity: 0.55; }
+  @keyframes hc-flota { 50% { translate: 0 0 14px; } }
+  .hc-card-velo { position: absolute; inset: 0; opacity: 0.82; transition: opacity 400ms; }
+  .hc-card:nth-child(1) .hc-card-velo { background: linear-gradient(135deg, var(--color-accent-primary), rgb(234 192 43 / 30%) 60%, var(--color-green-600)); }
+  .hc-card:nth-child(2) .hc-card-velo { background: linear-gradient(135deg, var(--color-green-500), var(--color-green-800)); }
+  .hc-card:nth-child(3) .hc-card-velo { background: linear-gradient(135deg, var(--color-neutral-700), var(--color-neutral-950)); }
+  .hc-card-txt { position: absolute; left: 1.25rem; bottom: 1rem; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4vw, 3rem); line-height: 1; text-transform: uppercase; color: var(--color-neutral-0); text-shadow: 0 2px 12px rgb(0 0 0 / 25%); }
+  .hc-card:nth-child(1) .hc-card-txt { color: var(--color-neutral-1000); text-shadow: none; }
+
+  .hc-personaje { filter: drop-shadow(0 30px 30px rgb(8 18 13 / 30%)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hc *, .hc *::after { animation: none !important; transition: none !important; }
+    .hc-lineas path { stroke-dashoffset: 0; }
+    .hc-subrayado::after { transform: none; }
+  }
+</style>

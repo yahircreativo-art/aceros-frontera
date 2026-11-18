@@ -1,41 +1,31 @@
 ---
 import Base from "../layouts/Base.astro";
-import Header from "../components/Header.astro";
+import Header from "../components/navbars/NavbarC.astro";
 import Footer from "../components/Footer.astro";
-import Contact from "../components/Contact.astro";
-import HeroHome from "../components/home/HeroHome.astro";
+import Contact from "../components/contacto-propuestas/ContactoD.astro";
+import HeroHome from "../components/heros/HeroG.astro";
 import Marcas from "../components/home/Marcas.astro";
-import Categorias from "../components/home/Categorias.astro";
+import Categorias from "../components/catalogo-propuestas/CatalogoB.astro";
 import Fabricantes from "../components/home/Fabricantes.astro";
 import Bocetos from "../components/home/Bocetos.astro";
-import Destacados from "../components/home/Destacados.astro";
 import Servicios from "../components/home/Servicios.astro";
 import CentroServicio from "../components/home/CentroServicio.astro";
-import Eslogan from "../components/home/Eslogan.astro";
-import Nosotros from "../components/home/Nosotros.astro";
+import Nosotros from "../components/nosotros/NosotrosA.astro";
 import Sucursales from "../components/home/Sucursales.astro";
 import BolsaTrabajo from "../components/home/BolsaTrabajo.astro";
 import CtaFinal from "../components/home/CtaFinal.astro";
 import { obtenerProductos } from "../lib/productos";
-import { assetUrl } from "../lib/asset-url";
 
 // Catálogo desde Supabase (sin credenciales, la portada se genera sin productos).
 const productos = await obtenerProductos();
 ---
 
 <Base page="home">
-  <link
-    slot="head"
-    rel="preload"
-    href={assetUrl("/images/hero-bg.webp")}
-    as="image"
-    type="image/webp"
-    fetchpriority="high"
-  />
   <Header productos={productos} />
 
   <main id="contenido" class="overflow-x-clip">
     <HeroHome />
+    <Nosotros />
     <Fabricantes />
     <Marcas />
     <Bocetos />

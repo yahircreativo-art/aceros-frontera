@@ -1,0 +1,104 @@
+---
+/**
+ * NOSOTROS C · "Collage que se arma" (ref. Join)
+ * Sección alta con un escenario fijo (sticky). Al hacer scroll, 8 fotos que
+ * empiezan dispersas, grandes y giradas fuera de la pantalla viajan hasta
+ * formar un collage alrededor del titular; las palabras del titular se
+ * encienden una a una y al final aparecen el párrafo y el botón. Una de las
+ * fotos es el personaje sobre fondo amarillo.
+ * Todo lo mueve una sola variable --p (progreso del scroll) en CSS.
+ */
+import { textos, fotos, enlaces } from './nosotros-data';
+
+/* x, y, w, h en % del escenario; r = giro inicial */
+const piezas = [
+  { src: fotos.bodega, x: 4, y: 7, w: 21, h: 27, r: -14 },
+  { src: fotos.castillos, x: 28, y: 3, w: 15, h: 20, r: 10 },
+  { src: fotos.pintura, x: 57, y: 5, w: 13, h: 18, r: -8 },
+  { src: fotos.armex, x: 74, y: 8, w: 22, h: 27, r: 12 },
+  { src: fotos.placa, x: 3, y: 63, w: 17, h: 25, r: 9 },
+  { src: fotos.herramienta, x: 22, y: 71, w: 14, h: 20, r: -12 },
+  { src: fotos.sucursal, x: 62, y: 67, w: 17, h: 23, r: 7 },
+  { src: fotos.personaje, x: 82, y: 56, w: 14, h: 36, r: -9, personaje: true },
+];
+const palabras = 'Abastecemos cada obra de Baja California'.split(' ');
+---
+
+<section id="nosotros" data-noc class="noc relative scroll-mt-28 bg-neutral-50 text-text-primary">
+  <div class="noc-escenario sticky top-0 h-svh overflow-hidden">
+    {
+      piezas.map((p, i) => {
+        const dx = (p.x + p.w / 2 - 50) * 1.4;
+        const dy = (p.y + p.h / 2 - 50) * 1.6;
+        return (
+          <figure
+            class:list={['noc-foto', { 'noc-personaje': p.personaje }]}
+            style={`left:${p.x}%;top:${p.y}%;width:${p.w}%;height:${p.h}%;--dx:${dx.toFixed(1)}vw;--dy:${dy.toFixed(1)}vh;--r:${p.r}deg;--i:${i}`}
+          >
+            <img src={p.src} alt="" loading="lazy" decoding="async" class:list={['size-full', p.personaje ? 'object-contain object-bottom' : 'object-cover']} />
+          </figure>
+        );
+      })
+    }
+
+    <div class="noc-centro absolute inset-0 grid place-items-center px-6 text-center">
+      <div class="max-w-xl">
+        <p class="noc-tarde type-overline text-text-brand">{textos.eyebrow}</p>
+        <h2 class="mt-3 font-display text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.95] font-bold">
+          {palabras.map((w, i) => <span class="noc-palabra" style={`--w:${i}`}>{w} </span>)}
+        </h2>
+        <p class="noc-tarde mt-5 type-body-m text-text-secondary">{textos.parrafo}</p>
+        <a href={enlaces.sucursales} class="noc-tarde group mt-6 inline-flex items-center gap-2 type-button-m">
+          Conoce nuestras sucursales
+          <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { progresoScroll } from '../../lib/scroll-progreso';
+  const sec = document.querySelector<HTMLElement>('[data-noc]');
+  if (sec) progresoScroll(sec, 'fijo');
+</script>
+
+<style>
+  /* Altura extra = recorrido del scroll mientras el escenario queda fijo */
+  .noc { height: 260svh; }
+  :global(html:not(.js)) .noc { height: auto; }
+  :global(html:not(.js)) .noc-escenario { position: relative; }
+
+  /* --e: avance del armado (0 → 1 en el primer 60 % del recorrido) */
+  .noc-escenario { --e: min(1, calc(var(--p, 1) / 0.6)); --t: max(0, calc((var(--p, 1) - 0.55) / 0.3)); }
+
+  .noc-foto {
+    position: absolute; margin: 0; overflow: hidden; border-radius: 0.75rem;
+    box-shadow: 0 20px 40px -18px rgb(8 18 13 / 45%);
+    translate: calc((1 - var(--e)) * var(--dx)) calc((1 - var(--e)) * var(--dy));
+    rotate: calc((1 - var(--e)) * var(--r));
+    scale: calc(1.5 - var(--e) * 0.5 + max(0, var(--p, 1) - 0.6) * 0.15);
+    will-change: translate, rotate, scale;
+  }
+  .noc-foto img { transition: scale 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .noc-foto:hover img { scale: 1.08; }
+  .noc-personaje { background: var(--color-accent-primary); overflow: visible; }
+  .noc-personaje img { margin-top: -18%; height: 118%; }
+
+  .noc-palabra {
+    display: inline-block; white-space: pre;
+    opacity: calc(0.12 + min(1, max(0, var(--e) * 8 - 2 - var(--w))) * 0.88);
+  }
+  .noc-tarde { opacity: min(1, var(--t)); translate: 0 calc((1 - min(1, var(--t))) * 16px); }
+
+  @media (max-width: 47.99rem) {
+    .noc { height: 220svh; }
+    .noc-foto { border-radius: 0.5rem; }
+    .noc-centro { background: radial-gradient(closest-side, rgb(248 251 249 / 92%), rgb(248 251 249 / 0%)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .noc { height: auto; }
+    .noc-escenario { position: relative; --e: 1; --t: 1; }
+  }
+</style>

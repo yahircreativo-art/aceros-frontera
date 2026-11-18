@@ -1,0 +1,135 @@
+---
+/**
+ * CATÁLOGO A · "Planos por familia"
+ * Hoja de plano oscura con retícula: cada familia es una celda con su pieza
+ * dibujada en línea isométrica (varilla, ángulo, IPR, tubo, lámina, placa,
+ * tuerca). Se trazan en cascada al entrar en pantalla; al pasar el cursor la
+ * pieza se vuelve a dibujar en amarillo, la celda se ilumina y sube la lista
+ * de productos. Una línea de escaneo recorre la hoja.
+ */
+import type { Producto } from '../../lib/types';
+import { prepararFamilias, catalogoUrl, cotizarLista } from './catalogo-data';
+import PlanoLinea from './PlanoLinea.astro';
+import Cota from '../ui/Cota.astro';
+
+interface Props { productos: Producto[] }
+const familias = prepararFamilias(Astro.props.productos);
+---
+
+<section id="categorias" data-caa class="caa relative isolate scroll-mt-28 overflow-hidden bg-neutral-950 py-20 text-text-inverse lg:py-28">
+  <div aria-hidden="true" class="caa-reticula absolute inset-0 -z-10"></div>
+
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <h2 class="font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">
+          Lo que encuentras<br />en la tienda
+        </h2>
+        <Cota texto={`${familias.length} familias de producto, del perfil al tornillo`} ancho="completo" class="mt-4 text-text-accent" />
+      </div>
+      <a href={catalogoUrl} class="caa-link">Ver catálogo completo</a>
+    </div>
+
+    <ul data-caa-grid class="caa-grid mt-12 grid border-t border-l border-white/10 sm:grid-cols-2 lg:grid-cols-4">
+      {familias.map((f, i) => (
+        <li data-caa-celda class="caa-celda" style={`--i:${i}`}>
+          <a href={f.href} class="group relative flex h-full min-h-[21rem] flex-col p-5">
+            <span class="block type-body-s text-text-inverse-muted">{f.pieza}</span>
+            <span class="caa-dibujo relative mt-2 block flex-1">
+              <PlanoLinea plano={f.plano} nombre={f.pieza} class="absolute inset-0 size-full" />
+            </span>
+            <span class="relative block">
+              <span class="block font-display text-3xl leading-none font-bold uppercase">{f.corto}</span>
+              <span class="mt-1 block type-body-s text-text-inverse-muted">{f.spec}</span>
+            </span>
+            <span class="caa-items" aria-hidden="true">
+              {f.items.map((it, k) => <span style={`--k:${k}`}>{it}</span>)}
+            </span>
+            <span class="sr-only">Incluye: {f.items.join(', ')}</span>
+          </a>
+        </li>
+      ))}
+      <li class="caa-celda caa-cta" style={`--i:${familias.length}`}>
+        <a href={cotizarLista} target="_blank" rel="noopener noreferrer" class="flex h-full min-h-[21rem] flex-col justify-between p-5 text-neutral-1000">
+          <span class="type-body-s font-semibold">Corte y pedido a la medida</span>
+          <span>
+            <span class="block font-display text-4xl leading-[0.92] font-extrabold uppercase">¿No encuentras lo que buscas?</span>
+            <span class="mt-3 block type-body-s">Mándanos tu lista de materiales y te cotizamos.</span>
+            <span class="chamfer mt-6 inline-flex items-center gap-2 bg-neutral-950 px-5 py-3 type-button-s text-text-inverse [--chamfer:10px]">Cotizar por WhatsApp</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-caa]');
+  if (sec) {
+    const celdas = [...sec.querySelectorAll<HTMLElement>('[data-caa-celda]')];
+    const grid = sec.querySelector<HTMLElement>('[data-caa-grid]')!;
+    const obs = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      obs.disconnect();
+      grid.classList.add('is-visible');
+      celdas.forEach((c, i) => window.setTimeout(() => c.classList.add('is-trazado'), 200 + i * 140));
+    }, { threshold: 0.15 });
+    obs.observe(grid);
+
+    /* Volver a trazar al pasar el cursor */
+    if (window.matchMedia('(hover: hover)').matches) {
+      celdas.forEach((c) =>
+        c.addEventListener('mouseenter', () => {
+          if (!c.classList.contains('is-trazado')) return;
+          c.classList.remove('is-trazado');
+          void c.offsetWidth;
+          c.classList.add('is-trazado');
+        }),
+      );
+    }
+  }
+</script>
+
+<style>
+  .caa-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .caa-link { padding-bottom: 0.25rem; border-bottom: 2px solid var(--color-accent-primary); font-weight: 600; transition: color 200ms; }
+  .caa-link:hover { color: var(--color-accent-primary); }
+
+  .caa-celda {
+    position: relative; overflow: hidden; border-right: 1px solid rgb(255 255 255 / 10%); border-bottom: 1px solid rgb(255 255 255 / 10%);
+    color: rgb(255 255 255 / 0.9);
+    transition: background 300ms, color 300ms;
+  }
+  .caa-celda:not(.caa-cta):hover { background: rgb(255 255 255 / 0.04); color: var(--color-accent-primary); }
+  /* Esquinas de registro en hover */
+  .caa-celda:not(.caa-cta)::before {
+    content: ""; position: absolute; inset: 10px; pointer-events: none; opacity: 0; scale: 1.05;
+    background:
+      linear-gradient(var(--color-accent-primary), var(--color-accent-primary)) left top / 14px 2px no-repeat,
+      linear-gradient(var(--color-accent-primary), var(--color-accent-primary)) left top / 2px 14px no-repeat,
+      linear-gradient(var(--color-accent-primary), var(--color-accent-primary)) right bottom / 14px 2px no-repeat,
+      linear-gradient(var(--color-accent-primary), var(--color-accent-primary)) right bottom / 2px 14px no-repeat;
+    transition: opacity 300ms, scale 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .caa-celda:hover::before { opacity: 1; scale: 1; }
+  .caa-celda .text-text-inverse-muted { transition: color 300ms; }
+
+  .caa-dibujo { transition: translate 500ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .caa-celda:hover .caa-dibujo { translate: 0 -14%; scale: 0.88; }
+
+
+  .caa-items { position: absolute; inset-inline: 1.25rem; bottom: 6.25rem; display: flex; flex-wrap: wrap; gap: 0.35rem; pointer-events: none; }
+  .caa-items span { padding: 0.25rem 0.6rem; background: rgb(255 255 255 / 0.08); color: var(--color-text-inverse); font-size: 0.75rem; opacity: 0; translate: 0 10px; transition: opacity 250ms, translate 300ms; }
+  .caa-celda:hover .caa-items span { opacity: 1; translate: 0 0; transition-delay: calc(var(--k) * 40ms + 120ms); }
+
+  .caa-cta { background: var(--color-accent-primary); }
+  .caa-cta:hover { background: var(--color-accent-hover); }
+
+  .caa-celda a:focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: -6px; }
+</style>

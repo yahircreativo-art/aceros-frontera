@@ -1,0 +1,275 @@
+---
+/**
+ * HERO A · "Obra en líneas"
+ * Mismo lenguaje que los bocetos de producto (Bocetos.astro): líneas
+ * isométricas que se trazan solas. Aquí se construye en bucle un edificio
+ * con grúa → una nave industrial (con humo) → una casa, por etapas de obra
+ * (cimentación, columnas, vigas, losas, muros…). Las pestañas de abajo
+ * muestran el avance y permiten saltar de escena.
+ * Geometría en src/lib/construcciones.ts.
+ *
+ * Uso: <HeroA />  ·  con personaje: <HeroA personaje />
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { escenas, ANCHO_ESCENA, ALTO_ESCENA } from '../../lib/construcciones';
+import Button from '../ui/Button.astro';
+import SectionTag from '../ui/SectionTag.astro';
+
+interface Props {
+  personaje?: boolean;
+}
+const { personaje = false } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+---
+
+<section id="inicio" data-ha data-specs={JSON.stringify(escenas.map((e) => e.spec))} class="ha relative isolate overflow-hidden bg-surface-inverse text-text-inverse">
+  <div aria-hidden="true" class="ha-reticula absolute inset-0 -z-10"></div>
+  <div aria-hidden="true" class="absolute -left-40 top-1/3 -z-10 size-[36rem] rounded-full bg-green-700/25 blur-[120px]"></div>
+
+  <div class="container-page grid min-h-[calc(100svh-10rem)] items-center gap-12 py-16 lg:grid-cols-[1fr_1.15fr] lg:py-20">
+    <!-- Texto -->
+    <div class="relative z-10">
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <SectionTag label="Abierto al público" />
+        <p class="flex items-center gap-3 type-overline text-text-accent">
+          <span aria-hidden="true" class="h-0.5 w-10 bg-accent-primary"></span>
+          Del plano a tu obra
+        </p>
+      </div>
+      <h1 class="reveal mt-8 font-display text-[clamp(3.25rem,7.5vw,7rem)] leading-[0.86] font-extrabold uppercase [--reveal-delay:100ms]">
+        <span class="block">Hacemos</span>
+        <span class="block">posible</span>
+        <span class="block text-text-accent">tu proyecto</span>
+      </h1>
+      <p class="reveal mt-8 max-w-lg border-l-2 border-accent-primary pl-5 type-body-l text-text-inverse-muted [--reveal-delay:200ms]">
+        Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
+        menudeo, fabricación de armex y entrega en tu obra con flota propia.
+      </p>
+      <div class="reveal mt-10 flex flex-wrap gap-4 [--reveal-delay:300ms]">
+        <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+      </div>
+      <a href={`tel:${siteSeo.phoneHref}`} class="reveal mt-10 inline-flex items-center gap-3 type-label transition-colors hover:text-text-accent [--reveal-delay:400ms]">
+        <svg viewBox="0 0 24 24" class="size-5 text-text-accent" aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#phone`} /></svg>
+        {siteSeo.phone}
+      </a>
+    </div>
+
+    <!-- Plano animado -->
+    <div class="reveal relative [--reveal-delay:150ms]">
+      <div class="ha-marco relative">
+        <span class="ha-esq ha-esq-1" aria-hidden="true"></span><span class="ha-esq ha-esq-2" aria-hidden="true"></span>
+        <span class="ha-esq ha-esq-3" aria-hidden="true"></span><span class="ha-esq ha-esq-4" aria-hidden="true"></span>
+
+        <div class="flex items-center justify-between gap-4 px-4 pt-4 font-mono text-[0.6875rem] tracking-wider text-text-inverse-muted/80 sm:px-6">
+          <span>FIG_<b data-ha-num class="font-normal text-text-accent">01</b> · <span data-ha-nombre>{escenas[0].nombre.toUpperCase()}</span></span>
+          <span data-ha-spec class="hidden text-right sm:block">{escenas[0].spec}</span>
+        </div>
+
+        <svg viewBox={`0 0 ${ANCHO_ESCENA} ${ALTO_ESCENA}`} class="ha-svg block h-auto w-full" fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Animación en línea: se construye un edificio, una nave industrial y una casa">
+          <defs>
+            <linearGradient id={`ha-tinta-${uid}`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={ALTO_ESCENA}>
+              <stop offset="0" stop-color="#ffffff" />
+              <stop offset="0.75" stop-color="#e7ebe9" />
+              <stop offset="1" style="stop-color: var(--color-accent-primary)" />
+            </linearGradient>
+          </defs>
+          {
+            escenas.map((e, i) => (
+              <g data-ha-escena={i} data-duracion={e.duracion} stroke={`url(#ha-tinta-${uid})`} class:list={['ha-escena', { 'is-activa is-dibujando is-listo': i === 0 }]}>
+                {/* Pintado de atrás hacia adelante: el relleno (color del fondo) tapa las aristas ocultas. */}
+                {e.trazos.map((t) => (
+                  <path d={t.d} pathLength="1" class={t.tipo === 'cara' ? 'ha-cara' : 'ha-det'} style={`--d:${t.retraso}s`} />
+                ))}
+                {e.humo && (
+                  <g class="ha-humo" aria-hidden="true">
+                    {[0, 1, 2, 3].map((k) => (
+                      <circle cx={e.humo![0]} cy={e.humo![1]} r={7 + k * 2} style={`--k:${k}`} />
+                    ))}
+                  </g>
+                )}
+              </g>
+            ))
+          }
+        </svg>
+
+        <!-- Pestañas / avance -->
+        <div role="tablist" aria-label="Escenas" class="grid grid-cols-3 border-t border-white/10">
+          {
+            escenas.map((e, i) => (
+              <button type="button" role="tab" data-ha-tab={i} aria-selected={i === 0 ? 'true' : 'false'} class="ha-tab">
+                <span class="font-mono text-[0.6875rem] text-text-inverse-muted">{String(i + 1).padStart(2, '0')}</span>
+                <span class="type-button-s">{e.nombre}</span>
+                <span class="ha-barra" aria-hidden="true"><i></i></span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        personaje && (
+          <img
+            src={assetUrl('/images/personaje.webp')}
+            alt="Personaje de Aceros Frontera con los brazos cruzados"
+            width="780"
+            height="1400"
+            loading="eager"
+            class="ha-personaje pointer-events-none absolute -bottom-6 -left-10 z-10 hidden h-[78%] w-auto lg:block"
+          />
+        )
+      }
+    </div>
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ha]');
+  if (root) {
+    const escenas = [...root.querySelectorAll<SVGGElement>('[data-ha-escena]')];
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-ha-tab]')];
+    const num = root.querySelector<HTMLElement>('[data-ha-num]')!;
+    const nombre = root.querySelector<HTMLElement>('[data-ha-nombre]')!;
+    const spec = root.querySelector<HTMLElement>('[data-ha-spec]')!;
+    const nombres = tabs.map((t) => t.querySelector('.type-button-s')!.textContent!.toUpperCase());
+    const specs = JSON.parse(root.dataset.specs ?? '[]') as string[];
+
+    const ESPERA = 2600; // tiempo con la escena terminada
+    const BORRADO = 1500;
+    const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let token = 0;
+    let visible = true;
+    const dormir = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+
+    const reiniciar = (g: SVGGElement) => {
+      g.classList.add('is-reset');
+      g.classList.remove('is-dibujando', 'is-listo', 'is-borrando');
+      void g.getBoundingClientRect();
+      g.classList.remove('is-reset');
+    };
+
+    const mostrar = async (i: number, mio: number) => {
+      escenas.forEach((g, k) => {
+        if (k !== i) reiniciar(g);
+        g.classList.toggle('is-activa', k === i);
+      });
+      tabs.forEach((t, k) => {
+        t.setAttribute('aria-selected', String(k === i));
+        t.classList.remove('is-hecho');
+      });
+      num.textContent = String(i + 1).padStart(2, '0');
+      nombre.textContent = nombres[i];
+      spec.textContent = specs[i] ?? '';
+
+      const g = escenas[i];
+      const dur = Number(g.dataset.duracion) * 1000;
+      reiniciar(g);
+      tabs[i].style.setProperty('--t', `${dur + ESPERA}ms`);
+      requestAnimationFrame(() => {
+        g.classList.add('is-dibujando');
+        tabs[i].classList.add('is-hecho');
+      });
+      await dormir(dur);
+      if (mio !== token) return;
+      g.classList.add('is-listo');
+      await dormir(ESPERA);
+      while (!visible && mio === token) await dormir(400); // en pausa fuera de pantalla
+      if (mio !== token) return;
+      g.classList.add('is-borrando');
+      await dormir(BORRADO);
+      if (mio !== token) return;
+      mostrar((i + 1) % escenas.length, mio);
+    };
+
+    if (!sinMovimiento) {
+      tabs.forEach((t, i) => t.addEventListener('click', () => mostrar(i, ++token)));
+      new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(root);
+      mostrar(0, token);
+    } else {
+      tabs.forEach((t, i) =>
+        t.addEventListener('click', () => {
+          escenas.forEach((g, k) => g.classList.toggle('is-activa', k === i));
+          tabs.forEach((x, k) => x.setAttribute('aria-selected', String(k === i)));
+          num.textContent = String(i + 1).padStart(2, '0');
+          nombre.textContent = nombres[i];
+          spec.textContent = specs[i] ?? '';
+        }),
+      );
+      escenas[0].classList.add('is-activa');
+    }
+  }
+</script>
+
+<style>
+  .ha-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse at 70% 50%, #000 30%, transparent 80%);
+  }
+
+  .ha-marco {
+    --fondo: var(--color-neutral-950);
+    border: 1px solid rgb(255 255 255 / 10%);
+    background:
+      linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
+      var(--fondo);
+  }
+  /* El SVG en su propia capa: al trazar no se repinta el resto de la página. */
+  .ha-svg { contain: layout paint; transform: translateZ(0); }
+  .ha-esq { position: absolute; width: 14px; height: 14px; border-color: var(--color-accent-primary); }
+  .ha-esq-1 { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+  .ha-esq-2 { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+  .ha-esq-3 { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+  .ha-esq-4 { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+  /* Solo se pinta la escena activa (las demás no cuestan nada). */
+  .ha-escena:not(.is-activa) { display: none; }
+
+  /* Trazo con pathLength=1: dashoffset 1 = oculto, 0 = dibujado, -1 = borrado. */
+  .ha-cara, .ha-det { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+  .ha-cara { stroke-width: 1.5; fill: var(--fondo); fill-opacity: 0; }
+  .ha-det { stroke-width: 0.9; fill: none; }
+
+  .is-dibujando .ha-cara, .is-dibujando .ha-det {
+    stroke-dashoffset: 0; fill-opacity: 1;
+    transition: stroke-dashoffset 1.1s cubic-bezier(0.45, 0, 0.25, 1) var(--d), fill-opacity 0.5s ease var(--d);
+  }
+  .is-borrando .ha-cara, .is-borrando .ha-det {
+    stroke-dashoffset: -1; fill-opacity: 0;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.45, 0, 0.25, 1) calc(var(--d) * 0.06), fill-opacity 0.4s ease calc(0.5s + var(--d) * 0.06);
+  }
+  .is-reset .ha-cara, .is-reset .ha-det { transition: none !important; }
+
+  /* Humo de la chimenea */
+  .ha-humo circle { fill: none; stroke: rgb(255 255 255 / 45%); stroke-width: 1; opacity: 0; }
+  .is-listo:not(.is-borrando) .ha-humo circle { animation: ha-humo 2.4s ease-out infinite; animation-delay: calc(var(--k) * 0.6s); }
+  @keyframes ha-humo {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(18px, -60px) scale(1.6); }
+  }
+  .ha-humo circle { transform-box: fill-box; transform-origin: center; }
+
+  /* Pestañas con barra de avance */
+  .ha-tab { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; padding: 0.9rem 1rem 1.1rem; cursor: pointer; text-align: left; color: var(--color-text-inverse-muted); transition: color 250ms, background 250ms; }
+  .ha-tab + .ha-tab { border-left: 1px solid rgb(255 255 255 / 10%); }
+  .ha-tab:hover { background: rgb(255 255 255 / 3%); color: var(--color-text-inverse); }
+  .ha-tab[aria-selected="true"] { color: var(--color-text-inverse); }
+  .ha-barra { position: absolute; inset-inline: 0; bottom: 0; height: 3px; background: rgb(255 255 255 / 6%); }
+  .ha-barra i { position: absolute; inset: 0; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .ha-tab.is-hecho .ha-barra i { transform: scaleX(1); transition: transform var(--t, 6s) linear; }
+
+  .ha-personaje { filter: drop-shadow(0 20px 40px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px rgb(255 255 255 / 30%)); animation: ha-flota 5s ease-in-out infinite; }
+  @keyframes ha-flota { 50% { transform: translateY(-10px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ha-cara, .ha-det { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; transition: none !important; }
+    .ha-personaje, .ha-humo circle { animation: none !important; }
+  }
+</style>

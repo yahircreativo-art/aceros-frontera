@@ -120,7 +120,7 @@ export default function Catalog({ productos, categoriaInicial }: CatalogProps) {
     };
 
     const reiniciarCatalogo = () => {
-      setFiltro('todos');
+      setFiltro(categoriaInicial ?? 'todos');
       const url = new URL(window.location.href);
       url.searchParams.delete('categoria');
       window.history.replaceState({}, '', url);

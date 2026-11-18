@@ -22,22 +22,20 @@ const esBloque = (nombre: string) => LOGOS_BLOQUE.some((clave) => nombre.toLower
   empresas.length > 0 && (
     <section
       id="marcas"
-      class="scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+      class="scroll-mt-24 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:py-28"
     >
       <div class="container-page flex flex-wrap items-end justify-between gap-6">
         <SectionHeading
           tone="dark"
-          eyebrow="Alianzas"
-          title="Marcas que"
-          accent="manejamos"
-          description="Distribuidores y centro de servicio autorizado de las marcas líderes en acero, herramienta y ferretería."
+          title="Marcas que manejamos"
+          cota={`${empresas.length} marcas de acero, herramienta y ferretería`}
+          description="Pregunta por la marca que usas en tu obra o taller."
         />
-        <p class="reveal type-overline text-text-inverse-muted">{empresas.length} marcas aliadas</p>
       </div>
 
-      <div class="mt-12 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+      <div class="mt-12 overflow-hidden max-w-[1200px] mx-auto [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
         <ul
-          class="marquesina-pista flex w-max items-center gap-12 hover:[animation-play-state:paused]"
+          class="marquesina-pista flex w-max items-center gap-12 hover:[animation-play-state:paused] [:focus-within>&]:[animation-play-state:paused] active:[animation-play-state:paused]"
           style={`--marquesina-duracion: ${Math.max(40, empresas.length * 4)}s`}
         >
           {[...empresas, ...empresas].map((empresa, i) => (
@@ -51,7 +49,7 @@ const esBloque = (nombre: string) => LOGOS_BLOQUE.some((clave) => nombre.toLower
                 loading="lazy"
                 decoding="async"
                 class:list={[
-                  'max-h-32 w-full object-contain opacity-80 transition duration-300 hover:scale-110 hover:opacity-100',
+                  'max-h-24 w-full object-contain opacity-80 transition duration-300 hover:scale-110 hover:opacity-100',
                   esBloque(empresa.nombre) ? 'grayscale brightness-160 contrast-140' : 'brightness-0 invert',
                 ]}
               />

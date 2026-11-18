@@ -1,0 +1,370 @@
+---
+/**
+ * PROPUESTA C · "Mosaicos industriales" (ref. GIGA)
+ * Barra negra con etiquetas pequeñas en mayúsculas. Al pasar el cursor se
+ * abre un panel negro: mosaicos amarillos con esquina en chaflán (forma de
+ * la marca), más un carrusel de servicios con
+ * flechas. Un indicador amarillo se desliza bajo la sección activa y el
+ * contenido entra de lado según la dirección en la que te mueves.
+ * Móvil: pantalla completa con submenús que entran deslizando (drill-down).
+ */
+import Logo from '../Logo.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import HeaderSearch from '../catalog/HeaderSearch';
+import { whatsappUrl, siteSeo } from '../../lib/seo';
+import { rutaInterna } from '../../lib/asset-url';
+import { enlaces, servicios, sucursales, prepararNav } from './nav-data';
+import type { Producto } from '../../lib/types';
+
+interface Props {
+  productos: Producto[];
+}
+const { productos } = Astro.props;
+const { familiasNav, catalogo } = prepararNav(productos);
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))];
+const menus = [
+  { id: 'productos', label: 'Productos' },
+  { id: 'servicios', label: 'Servicios' },
+  { id: 'sucursales', label: 'Sucursales' },
+];
+const simples = enlaces.filter((e) => e.label === 'Nosotros' || e.label === 'Contacto');
+---
+
+<header data-nc class="nc sticky top-0 z-40">
+  <div class="relative z-10 bg-neutral-950 text-text-inverse">
+    <div class="container-page flex h-[4.5rem] items-center gap-8">
+      <Logo />
+
+      <nav aria-label="Navegación principal" data-nc-nav class="relative hidden h-full items-stretch lg:flex">
+        {
+          menus.map((m, i) => (
+            <button type="button" data-nc-trigger={m.id} data-index={i} aria-expanded="false" aria-controls="nc-panel" class="nc-link group">
+              {m.label}
+              <svg viewBox="0 0 8 5" class="h-1.5 w-2 transition-transform duration-300 group-aria-expanded:rotate-180" aria-hidden="true"><path d="M0 0h8L4 5z" fill="currentColor" /></svg>
+            </button>
+          ))
+        }
+        {simples.map((e) => <a href={e.href} class="nc-link" data-nc-plain>{e.label}</a>)}
+        <span data-nc-bar class="nc-bar" aria-hidden="true"></span>
+      </nav>
+
+      <div class="nc-search ml-auto hidden w-64 xl:block">
+        <HeaderSearch idBase="buscar-escritorio" client:idle />
+      </div>
+
+      <div class="ml-auto flex items-center gap-2 xl:ml-0">
+        <a href={`tel:${siteSeo.phoneHref}`} class="nc-btn nc-btn-ghost hidden md:inline-flex">Llamar</a>
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="nc-btn nc-btn-solid btn-chamfer hidden sm:inline-flex">Cotizar</a>
+        <button type="button" data-nc-burger aria-expanded="false" aria-controls="nc-mobile" aria-label="Abrir menú" class="nc-burger lg:hidden">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel negro (escritorio) -->
+  <div id="nc-panel" data-nc-panel class="nc-panel hidden lg:block">
+    <div class="container-page relative overflow-hidden py-8">
+      <!-- Productos -->
+      <section data-nc-view="productos" class="nc-view grid grid-cols-[1.35fr_1fr] gap-8">
+        <div>
+          <p class="nc-kicker">Familias de producto</p>
+          <ul class="mt-4 grid grid-cols-3 gap-3">
+            {familiasNav.slice(0, 6).map((f, i) => (
+              <li style={`--i:${i}`} class="nc-in">
+                <a href={f.href} class="nc-tile group">
+                  <Pictogram name={f.icono} class="nc-tile-ico size-7" />
+                  <span class="type-label">{f.titulo}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a href={catalogo} class="nc-wide nc-in mt-3" style="--i:6">
+            <span class="flex items-center gap-3 type-label">
+              <Pictogram name={familiasNav[6].icono} class="size-6 text-accent-primary" />
+              {familiasNav[6].titulo} y catálogo completo
+            </span>
+            <span class="nc-more">Ver todo <i aria-hidden="true">▸</i></span>
+          </a>
+        </div>
+
+        <div class="nc-in" style="--i:3">
+          <div class="flex items-end justify-between">
+            <p class="nc-kicker">Servicios</p>
+          </div>
+          <div class="nc-carousel chamfer relative mt-4 aspect-[16/10] overflow-hidden bg-neutral-900" data-nc-carousel>
+            {servicios.map((s, i) => (
+              <a href={s.href} class="nc-slide" data-slide={i} aria-hidden={i !== 0 ? 'true' : 'false'} tabindex={i !== 0 ? -1 : 0}>
+                <img src={s.imagen} alt="" loading="lazy" class="absolute inset-0 size-full object-cover" />
+                <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                <span class="absolute inset-x-0 bottom-0 p-5 text-text-inverse">
+                  <span class="block type-h4">{s.titulo}</span>
+                  <span class="mt-1 block type-body-s text-text-inverse-muted">{s.desc}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <button type="button" data-nc-prev class="nc-arrow" aria-label="Servicio anterior">◂</button>
+            <button type="button" data-nc-next class="nc-arrow" aria-label="Servicio siguiente">▸</button>
+            <span class="ml-auto type-caption text-text-inverse-muted tabular-nums"><b data-nc-count>01</b> / {String(servicios.length).padStart(2, '0')}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Servicios -->
+      <section data-nc-view="servicios" hidden class="nc-view grid grid-cols-3 gap-3">
+        {servicios.map((s, i) => (
+          <a href={s.href} class="nc-tile nc-in group !min-h-0 !flex-row items-center gap-4" style={`--i:${i}`}>
+            <img src={s.imagen} alt="" loading="lazy" class="size-16 shrink-0 object-cover grayscale transition group-hover:grayscale-0" />
+            <span class="flex flex-col gap-1">
+              <span class="type-label">{s.titulo}</span>
+              <span class="type-caption opacity-70">{s.desc}</span>
+            </span>
+          </a>
+        ))}
+      </section>
+
+      <!-- Sucursales -->
+      <section data-nc-view="sucursales" hidden class="nc-view grid grid-cols-3 gap-8">
+        {ciudades.map((ciudad, i) => (
+          <div class="nc-in" style={`--i:${i}`}>
+            <p class="nc-kicker">{ciudad}</p>
+            <ul class="mt-4 flex flex-col gap-3">
+              {sucursales.filter((s) => s.ciudad === ciudad).map((s) => (
+                <li>
+                  <a href={rutaInterna(`/sucursales/#${s.id}`)} class="nc-wide group !py-3">
+                    <span class="flex flex-col">
+                      <span class="type-label">{s.nombre.replace('Sucursal ', '')}</span>
+                      <span class="type-caption text-text-inverse-muted">{s.direccion}, {s.telefonos[0]}</span>
+                    </span>
+                    <span class="nc-more">Ver sucursal</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </div>
+  </div>
+
+  <!-- Móvil: drill-down -->
+  <div id="nc-mobile" data-nc-mobile class="nc-mobile lg:hidden" hidden>
+    <div class="nc-track" data-nc-track>
+      <nav aria-label="Navegación principal" class="nc-screen">
+        <div class="nc-search mb-2 xl:hidden">
+          <HeaderSearch idBase="buscar-movil" client:idle />
+        </div>
+        {menus.map((m) => (
+          <button type="button" data-nc-go={m.id} class="nc-row">{m.label}<span aria-hidden="true">›</span></button>
+        ))}
+        {simples.map((e) => <a href={e.href} class="nc-row">{e.label}<span aria-hidden="true">›</span></a>)}
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="nc-btn nc-btn-solid btn-chamfer mt-6 justify-center">Cotizar por WhatsApp</a>
+      </nav>
+      <div class="nc-screen" data-nc-sub>
+        <button type="button" data-nc-back class="nc-back">‹ Volver</button>
+        <ul data-nc-sub-list="productos" hidden class="grid grid-cols-2 gap-2">
+          {familiasNav.map((f) => (
+            <li><a href={f.href} class="nc-tile !min-h-24"><Pictogram name={f.icono} class="nc-tile-ico size-6" /><span class="type-label">{f.titulo}</span></a></li>
+          ))}
+        </ul>
+        <ul data-nc-sub-list="servicios" hidden class="flex flex-col">
+          {servicios.map((s) => <li><a href={s.href} class="nc-row">{s.titulo}<span aria-hidden="true">›</span></a></li>)}
+        </ul>
+        <ul data-nc-sub-list="sucursales" hidden class="flex flex-col">
+          {sucursales.map((s) => <li><a href={rutaInterna(`/sucursales/#${s.id}`)} class="nc-row">{s.nombre}<small>{s.ciudad}</small></a></li>)}
+          <li><a href={rutaInterna('/sucursales')} class="nc-row text-accent-primary">Ver todas<span aria-hidden="true">›</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-nc]');
+  if (root) {
+    const panel = root.querySelector<HTMLElement>('[data-nc-panel]')!;
+    const nav = root.querySelector<HTMLElement>('[data-nc-nav]')!;
+    const bar = root.querySelector<HTMLElement>('[data-nc-bar]')!;
+    const triggers = [...root.querySelectorAll<HTMLButtonElement>('[data-nc-trigger]')];
+    const views = [...root.querySelectorAll<HTMLElement>('[data-nc-view]')];
+    let actual: HTMLButtonElement | null = null;
+    let tAbrir: number | undefined;
+    let tCerrar: number | undefined;
+
+    const moverBarra = (el: HTMLElement | null) => {
+      if (!el) return bar.classList.remove('is-on');
+      bar.style.setProperty('--x', `${el.offsetLeft}px`);
+      bar.style.setProperty('--w', `${el.offsetWidth}px`);
+      bar.classList.add('is-on');
+    };
+
+    const abrir = (t: HTMLButtonElement | null) => {
+      window.clearTimeout(tCerrar);
+      if (t === actual) return;
+      const dir = actual && t ? (Number(t.dataset.index) > Number(actual.dataset.index) ? 1 : -1) : 0;
+      actual = t;
+      triggers.forEach((x) => x.setAttribute('aria-expanded', String(x === t)));
+      moverBarra(t);
+      if (!t) {
+        panel.classList.remove('is-open');
+        return;
+      }
+      panel.style.setProperty('--dir', String(dir));
+      views.forEach((v) => {
+        const visible = v.dataset.ncView === t.dataset.ncTrigger;
+        v.hidden = !visible;
+        if (visible) { v.classList.remove('is-in'); void v.offsetWidth; v.classList.add('is-in'); }
+      });
+      panel.classList.add('is-open');
+    };
+    const cerrarLuego = () => { window.clearTimeout(tAbrir); tCerrar = window.setTimeout(() => abrir(null), 250); };
+
+    triggers.forEach((t) => {
+      t.addEventListener('mouseenter', () => { window.clearTimeout(tAbrir); tAbrir = window.setTimeout(() => abrir(t), actual ? 0 : 120); });
+      t.addEventListener('click', () => abrir(actual === t ? null : t));
+    });
+    root.querySelectorAll<HTMLElement>('[data-nc-plain]').forEach((a) => a.addEventListener('mouseenter', () => abrir(null)));
+    nav.addEventListener('mouseleave', cerrarLuego);
+    panel.addEventListener('mouseleave', cerrarLuego);
+    panel.addEventListener('mouseenter', () => window.clearTimeout(tCerrar));
+    nav.addEventListener('mouseenter', () => window.clearTimeout(tCerrar));
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && abrir(null));
+
+    /* Carrusel de servicios */
+    const slides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
+    const contador = root.querySelector<HTMLElement>('[data-nc-count]')!;
+    let n = 0;
+    const ir = (d: number) => {
+      const prev = n;
+      n = (n + d + slides.length) % slides.length;
+      slides.forEach((s, i) => {
+        s.classList.toggle('is-active', i === n);
+        s.classList.toggle('is-leaving', i === prev && prev !== n);
+        s.setAttribute('aria-hidden', String(i !== n));
+        s.tabIndex = i === n ? 0 : -1;
+      });
+      root.style.setProperty('--slide-dir', String(d));
+      contador.textContent = String(n + 1).padStart(2, '0');
+    };
+    slides[0]?.classList.add('is-active');
+    root.querySelector('[data-nc-prev]')!.addEventListener('click', () => ir(-1));
+    root.querySelector('[data-nc-next]')!.addEventListener('click', () => ir(1));
+
+    /* Móvil */
+    const burger = root.querySelector<HTMLButtonElement>('[data-nc-burger]')!;
+    const movil = root.querySelector<HTMLElement>('[data-nc-mobile]')!;
+    const track = root.querySelector<HTMLElement>('[data-nc-track]')!;
+    const alternarMovil = (abrirlo: boolean) => {
+      burger.setAttribute('aria-expanded', String(abrirlo));
+      burger.setAttribute('aria-label', abrirlo ? 'Cerrar menú' : 'Abrir menú');
+      document.documentElement.style.overflow = abrirlo ? 'hidden' : '';
+      /* Con el menú abierto, el resto de la página no recibe foco ni lectores de pantalla. */
+      document.documentElement.classList.toggle('menu-abierto', abrirlo);
+      document.querySelectorAll<HTMLElement>('body > *:not(header), main, footer').forEach((el) => {
+        if (!el.contains(root)) el.inert = abrirlo;
+      });
+      if (abrirlo) { movil.hidden = false; requestAnimationFrame(() => movil.classList.add('is-open')); }
+      else { movil.classList.remove('is-open'); track.classList.remove('is-sub'); window.setTimeout(() => (movil.hidden = true), 300); }
+    };
+    burger.addEventListener('click', () => alternarMovil(movil.hidden));
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || movil.hidden) return;
+      alternarMovil(false);
+      burger.focus();
+    });
+    /* Un enlace a un ancla de la misma página cierra el menú. */
+    movil.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('a')) alternarMovil(false);
+    });
+    window.matchMedia('(min-width: 64rem)').addEventListener('change', (m) => m.matches && !movil.hidden && alternarMovil(false));
+    root.querySelectorAll<HTMLButtonElement>('[data-nc-go]').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.querySelectorAll<HTMLElement>('[data-nc-sub-list]').forEach((l) => (l.hidden = l.dataset.ncSubList !== b.dataset.ncGo));
+        track.classList.add('is-sub');
+      }),
+    );
+    root.querySelector('[data-nc-back]')!.addEventListener('click', () => track.classList.remove('is-sub'));
+  }
+</script>
+
+<style>
+  .nc { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .nc-link {
+    position: relative; display: inline-flex; align-items: center; gap: 0.45rem; padding: 0 1rem; cursor: pointer;
+    font-family: var(--font-display); font-weight: 600; font-size: 0.875rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--color-text-inverse); transition: color 200ms;
+  }
+  .nc-link:hover, .nc-link[aria-expanded="true"] { color: var(--color-text-inverse); }
+  .nc-bar { position: absolute; bottom: 0; left: 0; height: 4px; width: var(--w, 0); translate: var(--x, 0) 0; background: var(--color-accent-primary); opacity: 0; transition: translate 400ms var(--ease), width 400ms var(--ease), opacity 200ms; }
+  .nc-bar.is-on { opacity: 1; }
+
+  .nc-btn { align-items: center; gap: 0.5rem; height: 2.5rem; padding: 0 1.1rem; font-family: var(--font-display); font-weight: 700; font-size: 0.875rem; letter-spacing: 0.12em; text-transform: uppercase; transition: background 200ms, color 200ms, box-shadow 200ms; }
+  .nc-btn-ghost { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 40%); color: var(--color-text-inverse); }
+  .nc-btn-ghost:hover { box-shadow: inset 0 0 0 1px var(--color-text-inverse); background: rgb(255 255 255 / 6%); }
+  .nc-btn-solid { --btn-bg: var(--color-accent-primary); color: var(--color-neutral-1000); }
+  .nc-btn-solid:hover { --btn-bg: var(--color-accent-hover); }
+
+  .nc-burger { position: relative; width: 2.75rem; height: 2.75rem; cursor: pointer; }
+  .nc-burger span { position: absolute; left: 10px; right: 10px; height: 2px; background: var(--color-text-inverse); transition: transform 300ms var(--ease), top 300ms var(--ease); }
+  .nc-burger span:first-child { top: 17px; }
+  .nc-burger span:last-child { top: 25px; }
+  .nc-burger[aria-expanded="true"] span:first-child { top: 21px; transform: rotate(45deg); }
+  .nc-burger[aria-expanded="true"] span:last-child { top: 21px; transform: rotate(-45deg); }
+
+  /* Panel negro */
+  .nc-panel {
+    position: absolute; inset-inline: 0; top: 100%;
+    background: var(--color-neutral-950); color: var(--color-text-inverse);
+    border-bottom: 6px solid var(--color-accent-primary); box-shadow: var(--shadow-modal);
+    clip-path: inset(0 0 100% 0); visibility: hidden;
+    transition: clip-path 450ms var(--ease), visibility 0s 450ms;
+  }
+  .nc-panel.is-open { clip-path: inset(0 0 -100px 0); visibility: visible; transition: clip-path 500ms var(--ease); }
+  .nc-view.is-in .nc-in { animation: nc-in 520ms var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+  @keyframes nc-in { from { opacity: 0; transform: translate(calc(var(--dir, 0) * 40px), calc((1 - var(--dir, 0) * var(--dir, 0)) * -10px)); } }
+
+  .nc-kicker { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--color-text-inverse); }
+
+  .nc-tile {
+    --cut: 18px;
+    position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; min-height: 7.5rem; padding: 1rem;
+    background: var(--color-accent-primary); color: var(--color-neutral-1000);
+    box-shadow: inset 0 0 0 1px var(--color-accent-primary);
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+    transition: background 300ms, color 300ms, clip-path 400ms var(--ease);
+  }
+  .nc-tile:hover, .nc-tile:focus-visible { --cut: 34px; background: var(--color-accent-hover); color: var(--color-neutral-1000); box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .nc-tile :global(.nc-tile-ico) { color: var(--color-neutral-1000); transition: color 300ms, transform 400ms var(--ease); }
+  .nc-tile:hover :global(.nc-tile-ico) { transform: translateY(-3px) scale(1.1); }
+
+  .nc-wide { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: var(--color-neutral-950); color: var(--color-accent-primary); box-shadow: inset 0 0 0 1px var(--color-accent-primary); transition: box-shadow 250ms, background 250ms, color 250ms; }
+  .nc-wide:hover { box-shadow: inset 0 0 0 2px var(--color-accent-primary); background: var(--color-neutral-900); }
+  .nc-more { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  .nc-more i { display: grid; place-items: center; width: 1.4rem; height: 1.4rem; font-style: normal; font-size: 0.6rem; box-shadow: inset 0 0 0 1px currentColor; transition: background 200ms, color 200ms, transform 300ms var(--ease); }
+  .nc-wide:hover .nc-more i { background: var(--color-accent-primary); color: var(--color-neutral-1000); transform: translateX(3px); }
+
+  .nc-slide { position: absolute; inset: 0; opacity: 0; transform: translateX(calc(var(--slide-dir, 1) * 8%)); transition: opacity 500ms, transform 700ms var(--ease); }
+  .nc-slide.is-leaving { transform: translateX(calc(var(--slide-dir, 1) * -8%)); }
+  .nc-slide.is-active { opacity: 1; transform: none; z-index: 1; }
+  .nc-slide:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-accent-primary); }
+  .nc-tile:focus-visible, .nc-wide:focus-visible, .nc-row:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-accent-primary); }
+  .nc-arrow { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; cursor: pointer; font-size: 0.75rem; box-shadow: inset 0 0 0 1px var(--color-border-strong); transition: background 200ms, color 200ms; }
+  .nc-arrow:hover { background: var(--color-neutral-950); color: var(--color-accent-primary); }
+
+  /* Móvil */
+  .nc-mobile { position: fixed; inset: 4.5rem 0 0; z-index: 5; overflow: hidden; background: var(--color-neutral-950); color: var(--color-text-inverse); opacity: 0; transition: opacity 300ms; }
+  .nc-mobile.is-open { opacity: 1; }
+  .nc-track { display: flex; width: 200%; height: 100%; transition: transform 450ms var(--ease); }
+  .nc-track.is-sub { transform: translateX(-50%); }
+  .nc-screen { display: flex; flex-direction: column; width: 50%; height: 100%; overflow-y: auto; padding: 1rem clamp(1rem, 4vw, 2rem) 2rem; }
+  .nc-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 1.1rem 0; border-bottom: 1px solid rgb(255 255 255 / 10%); font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; text-transform: uppercase; text-align: left; cursor: pointer; }
+  .nc-row span, .nc-row small { color: var(--color-accent-primary); font-size: 0.9rem; }
+  .nc-back { align-self: flex-start; margin-bottom: 0.75rem; padding: 0.5rem 0; cursor: pointer; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent-primary); }
+  .nc-screen .nc-tile { background: var(--color-accent-primary); color: var(--color-neutral-1000); box-shadow: inset 0 0 0 1px var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nc *, .nc-panel { transition-duration: 1ms !important; animation: none !important; }
+  }
+</style>

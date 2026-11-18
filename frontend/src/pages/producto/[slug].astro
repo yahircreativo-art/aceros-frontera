@@ -4,7 +4,7 @@
  * información, cotización por WhatsApp y productos relacionados.
  */
 import Base from '../../layouts/Base.astro';
-import Header from '../../components/Header.astro';
+import Header from '../../components/navbars/NavbarC.astro';
 import Footer from '../../components/Footer.astro';
 import ProductCard from '../../components/catalog/ProductCard';
 import Button from '../../components/ui/Button.astro';
@@ -14,7 +14,7 @@ import { rutaCategoria } from '../../lib/categorias';
 import { assetUrl, rutaInterna } from '../../lib/asset-url';
 import { normalizar } from '../../lib/format';
 import { rutaProducto, sinSkuFinal, slugProducto } from '../../lib/rutas-producto';
-import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { ciudadesSeo, nombreLegible, recortarTexto, siteSeo, whatsappUrl } from '../../lib/seo';
 import type { Producto } from '../../lib/types';
 
 export async function getStaticPaths() {
@@ -51,15 +51,51 @@ const relacionados = productos
   .slice(0, 4);
 
 const mensaje = `Hola, quiero cotizar el producto: ${nombre}${sku ? ` (SKU: ${sku})` : ''}.`;
-const title = `${nombre} | ${categoria || 'Catálogo'} | Aceros Frontera`;
-const description = (
-  mostrarCorta
-    ? descripcionCorta
-    : descripcion || `${nombre} en Aceros Frontera. Cotiza por WhatsApp en Baja California.`
-).slice(0, 155);
+/* SEO: título de 60 caracteres o menos y descripción de 140–155 con las ciudades con sucursal. */
+const legible = nombreLegible(nombre);
+const sufijo = ' | Aceros Frontera';
+const title = recortarTexto(legible, 60 - sufijo.length) + sufijo;
+const base = mostrarCorta ? descripcionCorta : descripcion;
+const plantilla = `${legible}${categoria ? ` de ${categoria.toLocaleLowerCase('es-MX')}` : ''}${sku ? ` (clave ${sku})` : ''}. Cotiza por WhatsApp en Aceros Frontera, ${ciudadesSeo}.`;
+const cierre = ` Cotiza por WhatsApp en Aceros Frontera, ${ciudadesSeo}.`;
+const description = recortarTexto(
+  !base || base.length < 70 ? plantilla : base.length < 120 ? `${base.replace(/[.\s]+$/, '')}.${cierre}` : base,
+  155,
+);
+
+const sitio = Astro.site ?? new URL(siteSeo.baseUrl);
+const absoluta = (ruta: string) => new URL(rutaInterna(ruta.replace(/\/?$/, '/')), sitio).toString();
+const urlProducto = absoluta(rutaProducto(producto));
+const extraLd = [
+  {
+    '@type': 'Product',
+    '@id': `${urlProducto}#producto`,
+    name: legible,
+    url: urlProducto,
+    ...(sku ? { sku } : {}),
+    ...(producto.Imagen ? { image: producto.Imagen } : {}),
+    ...(categoria ? { category: categoria } : {}),
+    description: recortarTexto(descripcion || descripcionCorta || plantilla, 500),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: 'Catálogo', item: absoluta('/catalogo') },
+      ...(categoria ? [{ name: categoria, item: absoluta(rutaDeCategoria) }] : []),
+      { name: legible, item: urlProducto },
+    ].map((paso, i) => ({ '@type': 'ListItem', position: i + 1, ...paso })),
+  },
+];
 ---
 
-<Base page="catalogo" title={title} description={description} canonicalPath={rutaProducto(producto)}>
+<Base
+  page="producto"
+  title={title}
+  description={description}
+  canonicalPath={rutaProducto(producto)}
+  image={producto.Imagen ?? undefined}
+  extraLd={extraLd}
+>
   <Header productos={productos} />
 
   <main id="contenido" class="bg-surface-canvas pb-16">

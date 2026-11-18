@@ -22,27 +22,25 @@ const flecha =
 const razones = [
   {
     icono: 'shield-check',
-    titulo: 'Marcas certificadas',
-    texto: 'Distribuidores autorizados con respaldo directo de fábrica.',
+    titulo: 'Centro de servicio autorizado',
+    texto: 'Venta y reparación de herramienta Makita, Bosch y Lincoln Electric.',
   },
   {
     icono: 'truck',
-    titulo: 'Entrega en tu obra',
-    texto: 'Flota propia para llevar el material a Tijuana, Mexicali y Ensenada.',
+    titulo: 'Servicio a domicilio',
+    texto: 'Pregunta por la entrega de tu material en Tijuana, Mexicali y Ensenada.',
   },
   {
     icono: 'clock',
-    titulo: 'Respuesta el mismo día',
-    texto: 'Cotizaciones y surtido en horario extendido, de lunes a sábado.',
+    titulo: 'Seis sucursales',
+    texto: 'Lunes a viernes de 7:30 a 17:30 y sábado de 7:30 a 14:00.',
   },
 ];
 ---
 
-<div id="formulario-cotizacion" class="scroll-mt-44 lg:scroll-mt-28">
+<div id="formulario-cotizacion" class="scroll-mt-24">
   <SectionHeading
-    eyebrow="Cotización"
-    title="Cuéntanos qué"
-    accent="material necesitas"
+    title="Cuéntanos qué material necesitas"
     description="Completa los datos y continuamos tu solicitud por WhatsApp."
   />
 
@@ -116,7 +114,7 @@ const razones = [
       <div class="flex gap-3 border-l-4 border-feedback-info-text bg-feedback-info-surface p-4" role="note">
         <svg viewBox="0 0 24 24" class="mt-0.5 size-5 shrink-0 text-feedback-info-text" aria-hidden="true"><use href={icono('clock')} /></svg>
         <p class="type-body-s text-feedback-info-text">
-          <strong class="type-label">Te respondemos hoy.</strong> Las solicitudes en horario de atención se cotizan el mismo día.
+          <strong class="type-label">Seguimos por WhatsApp.</strong> Al enviar se abre WhatsApp con tu solicitud lista para mandar.
         </p>
       </div>
 
@@ -143,7 +141,7 @@ const razones = [
 </div>
 
 <script>
-  import { siteSeo } from '../../lib/seo';
+  import { whatsappUrl } from '../../lib/seo';
 
   const form = document.querySelector<HTMLFormElement>('#formulario-whatsapp');
 
@@ -185,6 +183,6 @@ const razones = [
       .filter(Boolean)
       .join('\n');
 
-    window.open(`https://wa.me/${siteSeo.whatsapp}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+    window.open(whatsappUrl(mensaje), '_blank', 'noopener');
   });
 </script>

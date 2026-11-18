@@ -37,7 +37,7 @@ export default function ProductCard({ producto, href }: ProductCardProps) {
         {producto.Imagen && !imgError ? (
           <img
             src={producto.Imagen}
-            alt=""
+            alt={producto.Nombre ?? ""}
             width="800"
             height="600"
             loading="lazy"

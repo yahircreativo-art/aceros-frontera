@@ -1,0 +1,136 @@
+---
+/**
+ * NOSOTROS B · "Texto + mosaico" (ref. Empowering Communities)
+ * Fondo claro. A la izquierda, texto con una lista cuyas palomitas se
+ * dibujan una por una. A la derecha, mosaico de 3 fotos que se destapan
+ * desde una esquina al entrar en pantalla, con parallax interno al hacer
+ * scroll. Al pasar el cursor, la foto señalada crece y las demás ceden
+ * espacio (la rejilla se reacomoda). Una tarjeta flotante con la cifra de
+ * sucursales aparece con rebote.
+ */
+import { textos, puntos, fotos, enlaces, sucursales } from './nosotros-data';
+import Button from '../ui/Button.astro';
+
+const tiles = [
+  { src: fotos.bodega, alt: 'Bodega de acero de Aceros Frontera', clase: 'nob-t1', desde: 'nob-desde-izq' },
+  { src: fotos.armex, alt: 'Armex de fabricación propia', clase: 'nob-t2', desde: 'nob-desde-der' },
+  { src: fotos.placa, alt: 'Corte de placa a la medida', clase: 'nob-t3', desde: 'nob-desde-abajo' },
+];
+---
+
+<section id="nosotros" data-nob class="nob relative scroll-mt-28 overflow-hidden bg-neutral-0 py-20 lg:py-28">
+  <div class="container-page grid items-center gap-14 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
+    <div data-nob-texto class="nob-texto">
+      <p class="nob-in type-overline text-text-muted" style="--i:0">{textos.eyebrow}</p>
+      <h2 class="nob-in mt-3 type-h1" style="--i:1">Su proyecto <span class="text-text-brand">comienza</span> con nosotros</h2>
+      <p class="nob-in mt-6 max-w-lg type-body-m text-text-secondary" style="--i:2">{textos.parrafo}</p>
+
+      <ul class="mt-8 flex flex-col gap-4">
+        {
+          puntos.map((p, i) => (
+            <li class="nob-in flex items-start gap-3 type-body-s text-text-primary" style={`--i:${i + 3}`}>
+              <svg viewBox="0 0 24 24" class="nob-check mt-0.5 size-5 shrink-0" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M7.5 12.5l3 3 6-6.5" />
+              </svg>
+              {p}
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="nob-in mt-10 flex flex-wrap gap-4" style="--i:8">
+        <Button href={enlaces.cotizar} target="_blank" variant="primary" size="md" label="Cotizar ahora" icon="arrow-right" iconPosition="right" />
+        <Button href={enlaces.sucursales} variant="tertiary" size="md" label="Ver sucursales" icon="arrow-right" iconPosition="right" />
+      </div>
+    </div>
+
+    <div class="relative">
+      <div data-nob-mosaico class="nob-mosaico">
+        {
+          tiles.map((t) => (
+            <figure class:list={['nob-tile', t.clase, t.desde]} data-nob-tile>
+              <img src={t.src} alt={t.alt} loading="lazy" decoding="async" class="nob-img size-full object-cover" />
+            </figure>
+          ))
+        }
+      </div>
+
+      <div class="nob-badge absolute -bottom-6 -left-4 flex items-center gap-4 rounded-2xl bg-neutral-950 px-5 py-4 text-text-inverse shadow-modal sm:-left-8">
+        <span class="font-display text-5xl leading-none font-extrabold text-accent-primary" data-cuenta={sucursales.length}>{sucursales.length}</span>
+        <span class="type-label leading-tight">Sucursales en<br />Baja California</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { alAparecer, contar, progresoScroll } from '../../lib/scroll-progreso';
+
+  const sec = document.querySelector<HTMLElement>('[data-nob]');
+  if (sec) {
+    alAparecer([sec.querySelector('[data-nob-texto]')!], 0.2);
+    alAparecer([sec.querySelector('[data-nob-mosaico]')!], 0.2, () => {
+      sec.classList.add('is-visible');
+      const n = sec.querySelector<HTMLElement>('[data-cuenta]');
+      if (n) window.setTimeout(() => contar(n, 1000), 900);
+    });
+    progresoScroll(sec, 'paso');
+
+    /* Rejilla que se reacomoda hacia la foto señalada */
+    const mosaico = sec.querySelector<HTMLElement>('[data-nob-mosaico]')!;
+    sec.querySelectorAll<HTMLElement>('[data-nob-tile]').forEach((t, i) => {
+      t.addEventListener('mouseenter', () => (mosaico.dataset.foco = String(i + 1)));
+    });
+    mosaico.addEventListener('mouseleave', () => delete mosaico.dataset.foco);
+  }
+</script>
+
+<style>
+  /* Texto escalonado */
+  .nob-in { opacity: 0; transform: translateY(18px); }
+  .nob-texto:global(.is-visible) .nob-in { opacity: 1; transform: none; transition: opacity 600ms, transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i) * 80ms); }
+
+  .nob-check circle { fill: var(--color-green-50); stroke: var(--color-green-600); stroke-width: 1.5; }
+  .nob-check path { stroke: var(--color-green-700); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; }
+  .nob-texto:global(.is-visible) .nob-check path { stroke-dashoffset: 0; transition: stroke-dashoffset 500ms cubic-bezier(0.65, 0, 0.35, 1); transition-delay: calc(var(--i) * 80ms + 300ms); }
+
+  /* Mosaico: 2 arriba + 1 ancha abajo; la rejilla cede espacio a la foto señalada */
+  .nob-mosaico {
+    display: grid; gap: 0.75rem; aspect-ratio: 5 / 4;
+    grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+    grid-template-areas: "a b" "c c";
+    transition: grid-template-columns 700ms cubic-bezier(0.2, 0.8, 0.2, 1), grid-template-rows 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .nob-mosaico[data-foco="1"] { grid-template-columns: 1.6fr 1fr; grid-template-rows: 1.35fr 1fr; }
+  .nob-mosaico[data-foco="2"] { grid-template-columns: 1fr 1.6fr; grid-template-rows: 1.35fr 1fr; }
+  .nob-mosaico[data-foco="3"] { grid-template-rows: 1fr 1.6fr; }
+  .nob-t1 { grid-area: a; }
+  .nob-t2 { grid-area: b; }
+  .nob-t3 { grid-area: c; }
+
+  .nob-tile { position: relative; overflow: hidden; border-radius: 1rem; margin: 0; transition: clip-path 1100ms cubic-bezier(0.7, 0, 0.2, 1); }
+  .nob-desde-izq { clip-path: inset(0 100% 100% 0 round 1rem); }
+  .nob-desde-der { clip-path: inset(0 0 100% 100% round 1rem); transition-delay: 150ms; }
+  .nob-desde-abajo { clip-path: inset(100% 0 0 0 round 1rem); transition-delay: 300ms; }
+  .nob:global(.is-visible) .nob-tile { clip-path: inset(0 0 0 0 round 1rem); }
+
+  /* Imagen: entra ampliada y luego hace parallax con el scroll */
+  .nob-img { scale: 1.35; translate: 0 calc((0.5 - var(--p, 0.5)) * 40px); transition: scale 1400ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 500ms; }
+  .nob:global(.is-visible) .nob-img { scale: 1.12; }
+  .nob-tile:hover .nob-img { scale: 1.2; }
+
+  .nob-badge { opacity: 0; scale: 0.6; transform-origin: left bottom; transition: opacity 400ms 800ms, scale 700ms cubic-bezier(0.34, 1.5, 0.5, 1) 800ms; }
+  .nob:global(.is-visible) .nob-badge { opacity: 1; scale: 1; }
+
+  :global(html:not(.js)) .nob-in, :global(html:not(.js)) .nob-badge { opacity: 1; transform: none; scale: 1; }
+  :global(html:not(.js)) .nob-tile { clip-path: none; }
+  :global(html:not(.js)) .nob-check path { stroke-dashoffset: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nob-in, .nob-badge { opacity: 1 !important; transform: none !important; scale: 1 !important; transition: none !important; }
+    .nob-tile { clip-path: none !important; }
+    .nob-check path { stroke-dashoffset: 0 !important; }
+    .nob-img { translate: none !important; }
+  }
+</style>

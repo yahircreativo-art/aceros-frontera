@@ -1,0 +1,197 @@
+---
+/**
+ * CONTACTO C · "Mapa vivo de sucursales"
+ * Izquierda: lista de sucursales agrupadas por ciudad con un punto verde/rojo
+ * de abierto/cerrado calculado en vivo (hora de Tijuana). Derecha: mapa
+ * de Google que cambia con una cortina diagonal al elegir sucursal, más una
+ * tarjeta flotante con dirección, teléfono y "Cómo llegar".
+ * Un mini mapa SVG de Baja California marca la sucursal elegida con un pulso.
+ */
+import { sucursalesCliente, ciudades, icono, siteSeo, whatsappUrl } from './contacto-data';
+
+/* Posición aproximada de cada sucursal en el mini mapa (proyección lineal). */
+const lon = [-117.2, -115.2], lat = [32.75, 31.6];
+const px = (s: { lng: number; lat: number }) => ({
+  x: ((s.lng - lon[0]) / (lon[1] - lon[0])) * 200,
+  y: ((s.lat - lat[0]) / (lat[1] - lat[0])) * 130,
+});
+const primera = sucursalesCliente[0];
+---
+
+<section id="contacto" data-coc class="coc scroll-mt-28 bg-neutral-0 py-20 lg:py-28">
+  <script type="application/json" data-coc-datos set:html={JSON.stringify(sucursalesCliente)} />
+
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="type-overline text-text-brand">Visítanos</p>
+        <h2 class="mt-3 type-h1">{sucursalesCliente.length} sucursales, <span class="text-text-brand">una cerca de ti</span></h2>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="coc-btn coc-btn-wa">
+          <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('whatsapp')} /></svg> WhatsApp
+        </a>
+        <a href={`tel:${siteSeo.phoneHref}`} class="coc-btn">
+          <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('phone')} /></svg> {siteSeo.phone}
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-10 grid gap-6 lg:grid-cols-[22rem_1fr]">
+      <!-- Lista -->
+      <div class="flex flex-col gap-6">
+        {ciudades.map((c) => (
+          <div>
+            <p class="mb-2 type-overline text-text-muted">{c}</p>
+            <ul class="flex flex-col gap-2">
+              {sucursalesCliente.filter((s) => s.ciudad === c).map((s) => (
+                <li>
+                  <button type="button" data-coc-suc={s.id} aria-pressed={s.id === primera.id ? 'true' : 'false'} class="coc-item">
+                    <span class="coc-dot" data-coc-dot={s.id} aria-hidden="true"></span>
+                    <span class="min-w-0 flex-1 text-left">
+                      <span class="block type-label">{s.nombre}</span>
+                      <span data-coc-estado={s.id} class="block truncate type-caption text-text-muted">{s.direccion}</span>
+                    </span>
+                    <span class="coc-flecha" aria-hidden="true">→</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <!-- Mapa -->
+      <div class="relative min-h-[28rem] overflow-hidden rounded-3xl bg-neutral-100 lg:min-h-[36rem]">
+        <div data-coc-mapas class="absolute inset-0">
+          <iframe data-coc-iframe title={`Mapa: ${primera.nombre}`} src={primera.mapa} loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="absolute inset-0 size-full border-0"></iframe>
+        </div>
+
+        <!-- Mini mapa -->
+        <svg viewBox="-10 -10 220 150" class="coc-mini pointer-events-none absolute left-4 top-4 w-36 sm:w-44" aria-hidden="true">
+          <path d="M0 0 L200 4 L196 40 L170 70 L120 110 L60 130 L20 120 L8 70 Z" class="coc-tierra" />
+          {sucursalesCliente.map((s) => {
+            const p = px(s);
+            return (
+              <g data-coc-pin={s.id} class:list={['coc-pin', { 'is-on': s.id === primera.id }]} transform={`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`}>
+                <circle r="9" class="coc-pulso" />
+                <circle r="4" />
+              </g>
+            );
+          })}
+        </svg>
+
+        <!-- Tarjeta -->
+        <div data-coc-card class="coc-card absolute inset-x-4 bottom-4 rounded-2xl bg-neutral-950 p-5 text-text-inverse sm:inset-x-auto sm:right-4 sm:w-80">
+          <p data-coc-c="estado" class="type-caption text-text-accent">&nbsp;</p>
+          <p data-coc-c="nombre" class="mt-1 font-display text-3xl leading-none font-bold">{primera.nombre}</p>
+          <p data-coc-c="direccion" class="mt-2 type-body-s text-text-inverse-muted">{primera.direccion}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <a data-coc-c="ruta" href={primera.ruta} target="_blank" rel="noopener noreferrer" class="coc-mini-btn bg-accent-primary text-neutral-1000">Cómo llegar ↗</a>
+            <a data-coc-c="tel" href={primera.tel} class="coc-mini-btn ring-1 ring-white/25">{primera.telefono}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { estado } from '../../lib/horario';
+  import type { SucursalCliente } from './contacto-data';
+
+  const sec = document.querySelector<HTMLElement>('[data-coc]');
+  if (sec) {
+    const sucs = JSON.parse(sec.querySelector('[data-coc-datos]')!.textContent!) as SucursalCliente[];
+    const botones = [...sec.querySelectorAll<HTMLButtonElement>('[data-coc-suc]')];
+    const mapas = sec.querySelector<HTMLElement>('[data-coc-mapas]')!;
+    const card = sec.querySelector<HTMLElement>('[data-coc-card]')!;
+    const c = (k: string) => card.querySelector<HTMLElement>(`[data-coc-c="${k}"]`)!;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let actual = sucs[0].id;
+
+    /* Estado abierto/cerrado en vivo (se refresca cada minuto) */
+    const refrescar = () => {
+      sucs.forEach((s) => {
+        const e = estado(s.horarios);
+        sec.querySelector(`[data-coc-dot="${s.id}"]`)!.classList.toggle('is-abierta', e.abierta);
+        sec.querySelector(`[data-coc-estado="${s.id}"]`)!.textContent = e.texto;
+        if (s.id === actual) c('estado').textContent = e.texto;
+      });
+    };
+    refrescar();
+    window.setInterval(refrescar, 60_000);
+
+    const elegir = (id: string) => {
+      if (id === actual) return;
+      actual = id;
+      const s = sucs.find((x) => x.id === id)!;
+      botones.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cocSuc === id)));
+      sec.querySelectorAll('[data-coc-pin]').forEach((p) => p.classList.toggle('is-on', (p as HTMLElement).dataset.cocPin === id));
+
+      /* Nuevo iframe encima con cortina; el anterior se retira al terminar */
+      const nuevo = document.createElement('iframe');
+      nuevo.title = `Mapa: ${s.nombre}`;
+      nuevo.src = s.mapa;
+      nuevo.loading = 'lazy';
+      nuevo.referrerPolicy = 'no-referrer-when-downgrade';
+      nuevo.className = 'absolute inset-0 size-full border-0 coc-entra';
+      mapas.append(nuevo);
+      const limpiar = () => [...mapas.children].slice(0, -1).forEach((n) => n.remove());
+      if (quieto) limpiar();
+      else nuevo.addEventListener('animationend', limpiar, { once: true });
+
+      /* Tarjeta: sale, cambia datos, entra */
+      card.classList.add('is-cambio');
+      window.setTimeout(() => {
+        c('nombre').textContent = s.nombre;
+        c('direccion').textContent = s.direccion;
+        c('estado').textContent = estado(s.horarios).texto;
+        c('ruta').setAttribute('href', s.ruta);
+        c('tel').setAttribute('href', s.tel);
+        c('tel').textContent = s.telefono;
+        card.classList.remove('is-cambio');
+      }, quieto ? 0 : 220);
+    };
+    botones.forEach((b) => b.addEventListener('click', () => elegir(b.dataset.cocSuc!)));
+  }
+</script>
+
+<style>
+  .coc-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 999px; font-weight: 600; box-shadow: inset 0 0 0 1px var(--color-border-default); transition: background 200ms, color 200ms, transform 250ms; }
+  .coc-btn:hover { transform: translateY(-2px); background: var(--color-neutral-950); color: var(--color-text-inverse); }
+  .coc-btn-wa { background: var(--color-brand-primary); color: var(--color-text-on-brand); box-shadow: none; }
+
+  .coc-item {
+    display: flex; width: 100%; align-items: center; gap: 0.85rem; padding: 0.9rem 1rem; border-radius: 1rem; cursor: pointer;
+    background: var(--color-neutral-100); transition: background 300ms, color 300ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .coc-item:hover { transform: translateX(4px); }
+  .coc-item[aria-pressed="true"] { background: var(--color-green-800); color: var(--color-text-inverse); transform: translateX(8px); }
+  .coc-item[aria-pressed="true"] .text-text-muted { color: var(--color-text-inverse-muted); }
+  .coc-flecha { opacity: 0; translate: -6px 0; transition: opacity 250ms, translate 250ms; }
+  .coc-item:hover .coc-flecha, .coc-item[aria-pressed="true"] .coc-flecha { opacity: 1; translate: 0 0; }
+  .coc-dot { width: 10px; height: 10px; flex-shrink: 0; border-radius: 999px; background: var(--color-error-500); }
+  .coc-dot:global(.is-abierta) { background: var(--color-success-500); animation: coc-late 2s infinite; }
+  @keyframes coc-late { 0% { box-shadow: 0 0 0 0 rgb(75 185 103 / 55%); } 100% { box-shadow: 0 0 0 10px rgb(75 185 103 / 0%); } }
+
+  .coc-mapas :global(.coc-entra), [data-coc-mapas] :global(.coc-entra) { animation: coc-cortina 800ms cubic-bezier(0.7, 0, 0.2, 1) both; }
+  @keyframes coc-cortina { from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); } to { clip-path: polygon(0 0, 130% 0, 100% 100%, 0 100%); } }
+
+  .coc-mini { padding: 0.5rem; border-radius: 1rem; background: rgb(255 255 255 / 90%); box-shadow: 0 10px 30px -12px rgb(8 18 13 / 40%); }
+  .coc-tierra { fill: var(--color-green-100); stroke: var(--color-green-600); stroke-width: 1.5; }
+  .coc-pin { fill: var(--color-neutral-500); transition: fill 300ms; }
+  .coc-pin .coc-pulso { fill: none; opacity: 0; }
+  .coc-pin.is-on { fill: var(--color-green-700); }
+  .coc-pin.is-on .coc-pulso { fill: var(--color-green-600); transform-box: fill-box; transform-origin: center; animation: coc-pulso 1.6s infinite; }
+  @keyframes coc-pulso { from { opacity: 0.5; scale: 0.4; } to { opacity: 0; scale: 1.8; } }
+
+  .coc-card { box-shadow: 0 30px 60px -20px rgb(0 0 0 / 50%); transition: opacity 220ms, translate 220ms; }
+  .coc-card.is-cambio { opacity: 0; translate: 0 12px; }
+  .coc-mini-btn { padding: 0.5rem 0.9rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; transition: transform 200ms; }
+  .coc-mini-btn:hover { transform: scale(1.05); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .coc *, .coc-card { animation: none !important; transition: none !important; }
+  }
+</style>

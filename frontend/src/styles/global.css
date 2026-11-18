@@ -629,6 +629,36 @@ html:not(.js) .reveal {
   }
 }
 
+/* Máquina de escribir (src/lib/maquina-escribir.ts) ------------------------- */
+/* Con JS, el texto espera oculto a que el script lo prepare (máx. 3 s por si
+   el script fallara). */
+html.js [data-escribe] {
+  visibility: hidden;
+  animation: escribe-seguro 0s 3s forwards;
+}
+html.js .escribe-listo [data-escribe] {
+  visibility: visible;
+  animation: none;
+}
+@keyframes escribe-seguro {
+  to { visibility: visible; }
+}
+.escribe-palabra { white-space: nowrap; }
+.escribe-letra { opacity: 0; }
+.escribe-letra.is-on { opacity: 1; }
+/* Botones: la caja se despliega de izquierda a derecha y luego se teclea. */
+.escribe-listo [data-escribe="boton"] {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.escribe-listo [data-escribe="boton"].escribe-visto { clip-path: inset(0 0 0 0); }
+.escribe-listo [data-escribe="boton"].escribe-fin { clip-path: none; }
+.escribe-listo [data-escribe="boton"] svg { opacity: 0; transform: translateX(-6px); transition: opacity 150ms, transform 180ms; }
+.escribe-listo [data-escribe="boton"].escribe-fin svg { opacity: 1; transform: none; }
+/* Párrafo: la línea amarilla crece mientras se escribe. */
+.escribe-listo [data-escribe="parrafo"] { border-left-color: transparent; transition: border-color 200ms; }
+.escribe-listo [data-escribe="parrafo"].escribe-visto { border-left-color: var(--color-accent-primary); }
+
 /* Contenedor estándar del sitio */
 @utility container-page {
   width: 100%;

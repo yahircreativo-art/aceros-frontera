@@ -3,7 +3,7 @@
  * Las usan el mega menú del header y los mosaicos de la portada.
  */
 import { normalizar } from '../lib/format';
-import { rutaCategoria } from '../lib/categorias';
+import { rutaCategoria, slugCategoria } from '../lib/categorias';
 
 export type FamiliaPictograma =
   | 'lamina' | 'varilla' | 'angulo' | 'placa' | 'viga' | 'tubos' | 'tornillo';
@@ -29,13 +29,23 @@ export const familias: Familia[] = [
   { titulo: 'Ferretería', corto: 'Ferretería', icono: 'tornillo', items: ['Pintura y accesorios', 'Tornillería', 'Figuras y herrajes', 'Cerraduras', 'Soldadura'], buscar: ['ferreteria'] },
 ];
 
-/**
- * Ruta (sin base) de la categoría del catálogo que corresponde a la familia;
- * si el catálogo en línea no la tiene, el catálogo completo.
- */
-export function rutaFamilia(familia: Familia, categoriasSitio: readonly string[]): string {
-  const encontrada = categoriasSitio.find((categoria) =>
+/** Identificador de la página fija de la familia: "Perfiles comerciales" → "perfiles-comerciales". */
+export function slugFamilia(familia: Familia): string {
+  return slugCategoria(familia.titulo);
+}
+
+/** Categoría del catálogo en línea (Supabase) que corresponde a la familia, si existe. */
+export function categoriaDeFamilia(familia: Familia, categoriasSitio: readonly string[]): string | undefined {
+  return categoriasSitio.find((categoria) =>
     familia.buscar.some((nombre) => normalizar(categoria).includes(normalizar(nombre))),
   );
-  return encontrada ? rutaCategoria(encontrada, categoriasSitio) : '/catalogo';
+}
+
+/**
+ * Ruta (sin base) de la familia: su categoría del catálogo en línea si existe;
+ * si no, su página fija /acero/<familia>/ (src/pages/acero/[familia].astro).
+ */
+export function rutaFamilia(familia: Familia, categoriasSitio: readonly string[]): string {
+  const encontrada = categoriaDeFamilia(familia, categoriasSitio);
+  return encontrada ? rutaCategoria(encontrada, categoriasSitio) : `/acero/${slugFamilia(familia)}/`;
 }

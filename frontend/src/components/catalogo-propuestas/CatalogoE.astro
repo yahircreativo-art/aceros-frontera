@@ -1,0 +1,151 @@
+---
+/**
+ * CATÁLOGO E · "Vitrina del catálogo en línea"
+ * Usa los productos reales (Supabase) que tienen foto: pestañas con las
+ * categorías del catálogo y su número de productos; al cambiar, las fotos
+ * salen y las nuevas entran en cascada con un pequeño rebote. Al pasar el
+ * cursor la tarjeta se levanta y la foto hace zoom. Una cinta con las
+ * familias de acero corre arriba como marquesina.
+ * Si no hay productos (sin conexión a Supabase), muestra solo las familias.
+ */
+import type { Producto } from '../../lib/types';
+import Pictogram from '../ui/Pictogram.astro';
+import { prepararFamilias, prepararCategorias, catalogoUrl, cotizarLista } from './catalogo-data';
+
+interface Props { productos: Producto[] }
+const { productos } = Astro.props;
+const familias = prepararFamilias(productos);
+const categorias = prepararCategorias(productos, 8).slice(0, 6);
+---
+
+<section id="categorias" data-cae class="cae scroll-mt-28 overflow-hidden bg-neutral-100 py-20 lg:py-28">
+  <!-- Marquesina de familias -->
+  
+
+  <div class="container-page mt-14">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="type-overline text-text-brand">Catálogo en línea</p>
+        <h2 class="mt-3 type-h1">Lo que encuentras <span class="text-text-brand">en la tienda</span></h2>
+      </div>
+      <a href={catalogoUrl} class="cae-btn bg-neutral-950 text-text-inverse">Ver catálogo completo →</a>
+    </div>
+
+    {categorias.length > 0 ? (
+      <>
+        <div role="tablist" aria-label="Categorías" class="cae-tabs mt-10 flex gap-2 overflow-x-auto pb-2">
+          {categorias.map((c, i) => (
+            <button type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-cae-tab={i} class="cae-tab">
+              {c.nombre} <span class="cae-cuenta">{c.total}</span>
+            </button>
+          ))}
+        </div>
+
+        {categorias.map((c, i) => (
+          <div role="tabpanel" data-cae-panel={i} hidden={i !== 0} class="mt-8">
+            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+              {c.productos.map((p, k) => (
+                <li class="cae-prod" style={`--k:${k}`}>
+                  <a href={c.href} class="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-0">
+                    <span class="relative block aspect-square overflow-hidden bg-white p-4">
+                      <img src={p.imagen} alt={p.nombre} loading="lazy" decoding="async" class="size-full object-contain transition-transform duration-500 group-hover:scale-110" />
+                    </span>
+                    <span class="flex flex-1 items-end justify-between gap-2 border-t border-neutral-950/5 p-3">
+                      <span class="line-clamp-2 type-body-s font-semibold">{p.nombre}</span>
+                      <span class="cae-mas" aria-hidden="true">↗</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <a href={c.href} class="mt-6 inline-flex type-button-s underline decoration-accent-primary decoration-2 underline-offset-4">Ver los {c.total} productos de {c.nombre} →</a>
+          </div>
+        ))}
+      </>
+    ) : (
+      <ul class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {familias.map((f, k) => (
+          <li class="cae-prod is-on" style={`--k:${k}`}>
+            <a href={f.href} class="flex flex-col gap-4 rounded-2xl bg-neutral-0 p-5 hover:bg-accent-primary">
+              <Pictogram name={f.icono} class="size-10" />
+              <span class="type-h4">{f.titulo}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-green-800 p-6 text-text-inverse sm:p-8">
+      <p class="font-display text-3xl font-extrabold uppercase">¿Buscas acero estructural o a la medida?</p>
+      <a href={cotizarLista} target="_blank" rel="noopener noreferrer" class="cae-btn bg-accent-primary text-neutral-1000">Cotiza por WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-cae]');
+  if (sec) {
+    const tabs = [...sec.querySelectorAll<HTMLButtonElement>('[data-cae-tab]')];
+    const paneles = [...sec.querySelectorAll<HTMLElement>('[data-cae-panel]')];
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activa = 0;
+
+    const entrar = (panel: HTMLElement) => {
+      panel.querySelectorAll('.cae-prod').forEach((p) => p.classList.remove('is-on'));
+      void panel.offsetWidth;
+      panel.querySelectorAll('.cae-prod').forEach((p) => p.classList.add('is-on'));
+    };
+    const ir = (i: number) => {
+      if (i === activa) return;
+      const viejo = paneles[activa];
+      activa = i;
+      tabs.forEach((b, k) => b.setAttribute('aria-selected', String(k === i)));
+      const cambiar = () => {
+        paneles.forEach((p, k) => (p.hidden = k !== i));
+        entrar(paneles[i]);
+      };
+      if (quieto) return cambiar();
+      viejo.classList.add('is-sale');
+      window.setTimeout(() => { viejo.classList.remove('is-sale'); cambiar(); }, 220);
+    };
+    tabs.forEach((b, i) => b.addEventListener('click', () => ir(i)));
+
+    const primero = paneles[0];
+    if (primero) {
+      new IntersectionObserver(([e], o) => {
+        if (!e.isIntersecting) return;
+        o.disconnect();
+        entrar(primero);
+      }, { threshold: 0.2 }).observe(primero);
+    }
+  }
+</script>
+
+<style>
+  .cae-cinta { width: 104%; margin-left: -2%; box-shadow: 0 10px 30px -15px rgb(8 18 13 / 40%); }
+  .cae-pista { animation: cae-corre 35s linear infinite; }
+  @keyframes cae-corre { to { transform: translateX(calc(-50% - 1.25rem)); } }
+
+  .cae-btn { display: inline-flex; padding: 0.85rem 1.4rem; border-radius: 999px; font-weight: 600; transition: transform 250ms, background 250ms, color 250ms; }
+  .cae-btn:hover { transform: translateY(-2px) scale(1.02); }
+
+  .cae-tabs { scrollbar-width: none; }
+  .cae-tab { display: inline-flex; align-items: center; gap: 0.5rem; flex-shrink: 0; padding: 0.6rem 1rem; border-radius: 999px; cursor: pointer; white-space: nowrap; font-weight: 600; font-size: 0.9375rem; background: var(--color-neutral-0); transition: background 250ms, color 250ms, transform 200ms; }
+  .cae-tab:hover { transform: translateY(-1px); }
+  .cae-tab[aria-selected="true"] { background: var(--color-neutral-950); color: var(--color-text-inverse); }
+  .cae-cuenta { padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--color-neutral-100); color: var(--color-text-secondary); font-size: 0.75rem; transition: background 250ms, color 250ms; }
+  .cae-tab[aria-selected="true"] .cae-cuenta { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
+
+  :global(html.js) .cae-prod { opacity: 0; translate: 0 24px; scale: 0.94; }
+  :global(html.js) .cae-prod:global(.is-on) { opacity: 1; translate: 0 0; scale: 1; transition: opacity 400ms calc(var(--k) * 55ms), translate 600ms cubic-bezier(0.34, 1.35, 0.5, 1) calc(var(--k) * 55ms), scale 600ms cubic-bezier(0.34, 1.35, 0.5, 1) calc(var(--k) * 55ms); }
+  :global(html.js) [data-cae-panel]:global(.is-sale) .cae-prod { opacity: 0; translate: 0 -12px; transition: opacity 200ms, translate 200ms; }
+  .cae-prod a { box-shadow: 0 1px 0 rgb(8 18 13 / 6%); transition: transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 350ms; }
+  .cae-prod a:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -18px rgb(8 18 13 / 35%); }
+  .cae-mas { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 999px; background: var(--color-neutral-100); transition: background 250ms, rotate 300ms; }
+  .group:hover .cae-mas { background: var(--color-accent-primary); rotate: 45deg; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cae-pista { animation: none; }
+    :global(html.js) .cae-prod { opacity: 1 !important; translate: none !important; scale: 1 !important; }
+  }
+</style>

@@ -12,20 +12,18 @@ import PlanoDibujo from './PlanoDibujo.astro';
 import Texto from './PlanoTexto.astro';
 
 const [ipr, ptr, angulo, monten, tubo, lamina] = piezasPlano;
-const fig = (n: number) => `FIG_${String(n).padStart(2, '0')}`;
 const cotizar = (nombre: string) => whatsappUrl(`Hola, quiero cotizar ${nombre}.`);
 
 /* Clases compartidas de las celdas. */
 const celda = 'relative border-r border-b border-white/10';
 const celdaDibujoAncha = `${celda} h-72 sm:h-96 lg:col-span-2 lg:h-[27rem]`;
 const celdaTexto = `${celda} group flex min-h-56 flex-col justify-end p-6 transition-colors hover:bg-white/[0.03] sm:p-8`;
-const etiquetaFig = 'absolute top-4 left-4 z-10 font-mono text-[0.6875rem] tracking-wider text-text-inverse-muted/70';
 const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc(100%-2rem)]';
 ---
 
 <section
   id="planos"
-  class="planos relative isolate scroll-mt-44 bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  class="planos relative isolate scroll-mt-24 bg-surface-inverse py-20 text-text-inverse lg:py-28"
 >
   <div aria-hidden="true" class="planos-reticula absolute inset-0 -z-10"></div>
 
@@ -34,9 +32,8 @@ const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc
       <!-- Intro -->
       <div class={`${celda} flex flex-col justify-between gap-10 p-6 sm:p-8 lg:p-10`}>
         <div>
-          <p class="type-overline text-text-accent">Planos de producto</p>
-          <h2 class="mt-4 font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl">
-            El perfil<br />exacto para<br /><span class="text-text-accent">tu obra</span>
+          <h2 class="font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl">
+            El perfil<br />exacto para<br />tu obra
           </h2>
           <p class="mt-6 type-body-m text-text-inverse-muted">
             Perfiles estructurales, tubería y lámina con las medidas que tu proyecto necesita, del plano a
@@ -45,28 +42,27 @@ const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc
         </div>
         <a
           href={rutaInterna('/catalogo')}
-          class="inline-flex w-fit items-center gap-2 type-button-s text-text-inverse hover:text-text-accent"
+          class="inline-flex w-fit items-center gap-2 border-b-2 border-accent-primary pb-1 type-button-s text-text-inverse hover:text-text-accent"
         >
-          Ver catálogo <span aria-hidden="true">↗</span>
+          Ver catálogo
         </a>
       </div>
 
       <!-- FIG 01 · IPR -->
       <div class={celdaDibujoAncha}>
-        <span class={etiquetaFig}>{fig(1)}</span>
         <PlanoDibujo plano={ipr.plano} nombre={ipr.nombre} indice={0} class={dibujo} />
-        <p class="absolute bottom-4 left-4 type-overline text-text-inverse-muted">
-          <span class="text-text-inverse">{ipr.nombre}</span> · {ipr.spec}
+        <p class="absolute bottom-4 left-4 flex flex-col type-body-s text-text-inverse-muted">
+          <span class="type-label text-text-inverse">{ipr.nombre}</span>
+          <span>{ipr.spec.replace(/ · /g, ', ')}</span>
         </p>
       </div>
 
       <!-- FIG 02 · PTR -->
       <div class="flex flex-col lg:contents">
         <div class={celdaDibujoAncha}>
-          <span class={etiquetaFig}>{fig(2)}</span>
           <PlanoDibujo plano={ptr.plano} nombre={ptr.nombre} indice={1} class={dibujo} />
         </div>
-        <a href={cotizar(ptr.nombre)} target="_blank" rel="noopener" class={celdaTexto}>
+        <a href={cotizar(ptr.nombre)} target="_blank" rel="noopener noreferrer" class={celdaTexto}>
           <Texto pieza={ptr} />
         </a>
       </div>
@@ -77,11 +73,10 @@ const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc
           <a
             href={cotizar(pieza.nombre)}
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
             class={`${celda} group flex flex-col transition-colors hover:bg-white/[0.03]`}
           >
             <div class="relative h-64">
-              <span class={etiquetaFig}>{fig(3 + i)}</span>
               <PlanoDibujo plano={pieza.plano} nombre={pieza.nombre} indice={2 + i} class={dibujo} />
             </div>
             <div class="relative flex flex-1 flex-col justify-end px-6 pb-6 sm:px-8 sm:pb-8">
@@ -95,21 +90,19 @@ const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc
       <a
         href={whatsappUrl('Hola, necesito cotizar un perfil o una medida especial.')}
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         class={`${celda} flex min-h-56 flex-col justify-end bg-accent-primary p-6 text-text-on-accent transition-colors hover:bg-accent-hover sm:p-8`}
       >
-        <span class="absolute top-5 right-5 text-lg" aria-hidden="true">↗</span>
         <span class="font-display text-4xl leading-[0.95] font-extrabold uppercase">¿Otra medida?</span>
-        <span class="mt-3 type-body-s">Cortamos y fabricamos a la medida. Cotiza por WhatsApp y te respondemos hoy.</span>
+        <span class="mt-3 type-body-s">Cortamos y fabricamos a la medida. Mándanos la medida por WhatsApp.</span>
       </a>
 
       <!-- FIG 05 · Tubo (texto a la izquierda en escritorio) -->
       <div class="flex flex-col lg:contents">
-        <a href={cotizar(tubo.nombre)} target="_blank" rel="noopener" class={`${celdaTexto} order-2 lg:order-none`}>
+        <a href={cotizar(tubo.nombre)} target="_blank" rel="noopener noreferrer" class={`${celdaTexto} order-2 lg:order-none`}>
           <Texto pieza={tubo} />
         </a>
         <div class={celdaDibujoAncha}>
-          <span class={etiquetaFig}>{fig(5)}</span>
           <PlanoDibujo plano={tubo.plano} nombre={tubo.nombre} indice={4} class={dibujo} />
         </div>
       </div>
@@ -117,10 +110,9 @@ const dibujo = 'absolute inset-x-4 top-10 bottom-4 h-[calc(100%-3.5rem)] w-[calc
       <!-- FIG 06 · Lámina -->
       <div class="flex flex-col lg:contents">
         <div class={celdaDibujoAncha}>
-          <span class={etiquetaFig}>{fig(6)}</span>
           <PlanoDibujo plano={lamina.plano} nombre={lamina.nombre} indice={5} class={dibujo} />
         </div>
-        <a href={cotizar(lamina.nombre)} target="_blank" rel="noopener" class={celdaTexto}>
+        <a href={cotizar(lamina.nombre)} target="_blank" rel="noopener noreferrer" class={celdaTexto}>
           <Texto pieza={lamina} />
         </a>
       </div>

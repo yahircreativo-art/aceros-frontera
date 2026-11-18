@@ -11,23 +11,6 @@ export interface Vacante {
   jornada: string;
 }
 
-export const vacantes: Vacante[] = [
-  {
-    puesto: 'Jefe de almacén',
-    descripcion: 'Coordina entradas, salidas e inventario del almacén.',
-    ciudad: 'Tijuana',
-    jornada: 'Tiempo completo',
-  },
-  {
-    puesto: 'Chofer de reparto',
-    descripcion: 'Entrega de material en obra con unidades de la empresa.',
-    ciudad: 'Tijuana',
-    jornada: 'Tiempo completo',
-  },
-  {
-    puesto: 'Vendedor de mostrador',
-    descripcion: 'Atención a clientes, cotizaciones y cierre de ventas.',
-    ciudad: 'Mexicali',
-    jornada: 'Tiempo completo',
-  },
-];
+/* Sin vacantes publicadas (acerosfrontera.com no tiene ninguna). Agrega aquí las reales:
+   { puesto: 'Vendedor de mostrador', descripcion: '…', ciudad: 'Tijuana', jornada: 'Tiempo completo' } */
+export const vacantes: Vacante[] = [];

@@ -7,7 +7,7 @@
  * Textos e imágenes en src/data/nosotros.ts.
  */
 import Base from '../layouts/Base.astro';
-import Header from '../components/Header.astro';
+import Header from '../components/navbars/NavbarC.astro';
 import Footer from '../components/Footer.astro';
 import Cotizacion from '../components/contacto/Cotizacion.astro';
 import { assetUrl, rutaInterna } from '../lib/asset-url';
@@ -15,7 +15,6 @@ import { obtenerProductos } from '../lib/productos';
 import { historia, tarjetas } from '../data/nosotros';
 
 const productos = await obtenerProductos();
-const flecha = `${assetUrl('/icons.svg')}#arrow-right`;
 ---
 
 <Base page="nosotros">

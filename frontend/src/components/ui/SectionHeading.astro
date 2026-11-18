@@ -1,12 +1,21 @@
 ---
 /**
- * Encabezado de sección (Figma: Eyebrow Body/Overline + Title Heading/H2).
- * `accent` pinta en amarillo la última parte del título, como la referencia.
+ * Encabezado de sección con la dirección "plano de taller":
+ * titular de un solo color y, si hay un dato real que dar, una <Cota> debajo
+ * (en lugar de la etiqueta en mayúsculas de arriba).
+ *
+ * `accent` se conserva por compatibilidad: se une al título con el mismo color.
+ * `eyebrow` ya no se muestra (se dejó de usar la etiqueta sobre el título).
  */
+import Cota from './Cota.astro';
+
 interface Props {
+  /** @deprecated Ya no se muestra; usa `cota` con un dato real. */
   eyebrow?: string;
   title: string;
   accent?: string;
+  /** Dato real y medible bajo el titular, p. ej. "6 sucursales en Tijuana, Mexicali y Ensenada". */
+  cota?: string;
   description?: string;
   tone?: 'light' | 'dark';
   align?: 'left' | 'center';
@@ -14,35 +23,19 @@ interface Props {
   id?: string;
 }
 
-const {
-  eyebrow,
-  title,
-  accent,
-  description,
-  tone = 'light',
-  align = 'left',
-  class: clase = '',
-  id,
-} = Astro.props;
+const { title, accent, cota, description, tone = 'light', align = 'left', class: clase = '', id } = Astro.props;
 
 const oscuro = tone === 'dark';
 ---
 
 <div class={`reveal max-w-3xl ${align === 'center' ? 'mx-auto text-center' : ''} ${clase}`}>
-  {
-    eyebrow && (
-      <p class={`flex items-center gap-3 type-overline ${align === 'center' ? 'justify-center' : ''} ${oscuro ? 'text-text-accent' : 'text-text-brand'}`}>
-        <span aria-hidden="true" class={`h-0.5 w-10 ${oscuro ? 'bg-accent-primary' : 'bg-brand-primary'}`} />
-        {eyebrow}
-      </p>
-    )}
   <h2
     id={id}
-    class={`mt-3 font-display text-4xl leading-[0.95] font-extrabold uppercase sm:text-5xl lg:text-6xl ${oscuro ? 'text-text-inverse' : 'text-text-primary'}`}
+    class={`font-display text-4xl leading-[0.95] font-extrabold uppercase sm:text-5xl lg:text-6xl ${oscuro ? 'text-text-inverse' : 'text-text-primary'}`}
   >
-    {title}
-    {accent && <span class={oscuro ? 'text-text-accent' : 'text-text-brand'}> {accent}</span>}
+    {accent ? `${title} ${accent}` : title}
   </h2>
+  {cota && <Cota texto={cota} class={`mt-4 ${align === 'center' ? 'mx-auto' : ''} ${oscuro ? 'text-text-accent' : 'text-text-brand'}`} />}
   {
     description && (
       <p class={`mt-4 type-body-l ${oscuro ? 'text-text-inverse-muted' : 'text-text-secondary'}`}>{description}</p>

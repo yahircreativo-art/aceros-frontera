@@ -3,11 +3,25 @@ import Button from '../ui/Button';
 import Icon from '../ui/Icon';
 import { normalizar } from '../../lib/format';
 import { rutaInterna } from '../../lib/asset-url';
-import { rutaProducto } from '../../lib/rutas-producto';
-import type { Producto } from '../../lib/types';
 
-interface HeaderSearchProps {
-  productos: Producto[];
+/** Entrada del índice ligero generado por src/pages/buscar.json.ts. */
+interface ProductoIndice {
+  n: string;
+  s: string;
+  c: string;
+  r: string;
+}
+
+/* Una sola descarga por visita, compartida si hay más de un buscador en la página. */
+let indicePendiente: Promise<ProductoIndice[]> | null = null;
+function cargarIndice(): Promise<ProductoIndice[]> {
+  indicePendiente ??= fetch(rutaInterna('/buscar.json'))
+    .then((r) => (r.ok ? r.json() : []))
+    .catch(() => {
+      indicePendiente = null;
+      return [];
+    });
+  return indicePendiente;
 }
 
 /**
@@ -15,8 +29,23 @@ interface HeaderSearchProps {
  * Campo blanco con borde inferior (border/field → border/focus de 2 px al
  * enfocar), botón de búsqueda amarillo de 48 px y esquinas de 4 px.
  */
-export default function HeaderSearch({ productos }: HeaderSearchProps) {
-  const [productosActuales, setProductosActuales] = useState(productos);
+interface HeaderSearchProps {
+  /** Prefijo de ids cuando hay más de un buscador en la página (escritorio y menú móvil). */
+  idBase?: string;
+}
+
+export default function HeaderSearch({ idBase = 'buscar' }: HeaderSearchProps) {
+  const [productosActuales, setProductosActuales] = useState<ProductoIndice[]>([]);
+  const [cargado, setCargado] = useState(false);
+  const [listo, setListo] = useState(false);
+  const pedirIndice = () => {
+    if (cargado) return;
+    setCargado(true);
+    cargarIndice().then((indice) => {
+      setProductosActuales(indice);
+      setListo(true);
+    });
+  };
   const [consulta, setConsulta] = useState('');
   const [enfocado, setEnfocado] = useState(false);
   const [indiceSugerencia, setIndiceSugerencia] = useState(-1);
@@ -33,10 +62,6 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
       setIndiceSugerencia(-1);
     };
 
-    const actualizarProductos = (evento: Event) => {
-      setProductosActuales((evento as CustomEvent<Producto[]>).detail);
-    };
-
     const detectarRegreso = (evento: MouseEvent) => {
       if ((evento.target as Element).closest('a[href="#inicio"]')) {
         window.dispatchEvent(new Event('catalog-reset'));
@@ -46,13 +71,11 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     const reiniciarAlRegresar = () => window.dispatchEvent(new Event('catalog-reset'));
 
     window.addEventListener('catalog-search', sincronizarBusqueda);
-    window.addEventListener('catalog-products-updated', actualizarProductos);
     window.addEventListener('catalog-reset', reiniciarBusqueda);
     document.addEventListener('click', detectarRegreso);
     window.addEventListener('popstate', reiniciarAlRegresar);
     return () => {
       window.removeEventListener('catalog-search', sincronizarBusqueda);
-      window.removeEventListener('catalog-products-updated', actualizarProductos);
       window.removeEventListener('catalog-reset', reiniciarBusqueda);
       document.removeEventListener('click', detectarRegreso);
       window.removeEventListener('popstate', reiniciarAlRegresar);
@@ -66,18 +89,18 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
     return productosActuales
       .filter((producto) => {
         const texto = normalizar(
-          [producto.Nombre, producto.SKU, producto.Categoria].filter(Boolean).join(' '),
+          [producto.n, producto.s, producto.c].filter(Boolean).join(' '),
         );
         return terminos.every((termino) => texto.includes(termino));
       })
       .slice(0, 6);
   }, [consulta, productosActuales]);
 
-  const seleccionarProducto = (producto: Producto) => {
-    setConsulta(producto.Nombre ?? '');
+  const seleccionarProducto = (producto: ProductoIndice) => {
+    setConsulta(producto.n);
     setEnfocado(false);
     setIndiceSugerencia(-1);
-    window.location.href = rutaInterna(rutaProducto(producto));
+    window.location.href = rutaInterna(producto.r);
   };
 
   const sugerenciasAbiertas = enfocado && consulta.trim().length > 0;
@@ -91,16 +114,18 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
       <form
         role="search"
         onSubmit={(evento) => {
-          /* El buscador no toca el catálogo: solo muestra sus sugerencias. */
+          /* Enter o la lupa abren la sugerencia activa o, si no hay, la primera. */
           evento.preventDefault();
-          setEnfocado(false);
+          const elegida = sugerencias[sugerenciaActiva >= 0 ? sugerenciaActiva : 0];
+          if (elegida) seleccionarProducto(elegida);
+          else setEnfocado(true);
         }}
         className="group/search flex h-10 overflow-hidden"
       >
-        <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-primary px-3 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus">
-          <label className="sr-only" htmlFor="buscar-navbar">Buscar productos</label>
+        <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-primary px-3 group-focus-within/search:border-b-2 group-focus-within/search:border-border-focus has-[input:focus-visible]:shadow-[inset_0_0_0_2px_var(--color-border-focus)]">
+          <label className="sr-only" htmlFor={`${idBase}-navbar`}>Buscar productos</label>
           <input
-            id="buscar-navbar"
+            id={`${idBase}-navbar`}
             type="text"
             role="combobox"
             value={consulta}
@@ -108,7 +133,11 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
               setConsulta(evento.target.value);
               setIndiceSugerencia(-1);
             }}
-            onFocus={() => setEnfocado(true)}
+            onFocus={() => {
+              pedirIndice();
+              setEnfocado(true);
+            }}
+            onPointerEnter={pedirIndice}
             onBlur={() =>
               window.setTimeout(() => {
                 setEnfocado(false);
@@ -126,9 +155,6 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
                 setIndiceSugerencia((indice) =>
                   indice <= 0 ? sugerencias.length - 1 : indice - 1,
                 );
-              } else if (evento.key === 'Enter' && sugerenciaActiva >= 0) {
-                evento.preventDefault();
-                seleccionarProducto(sugerencias[sugerenciaActiva]);
               } else if (evento.key === 'Escape') {
                 setEnfocado(false);
                 setIndiceSugerencia(-1);
@@ -138,9 +164,9 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
             autoComplete="off"
             aria-autocomplete="list"
             aria-expanded={sugerenciasAbiertas}
-            aria-controls={sugerenciasAbiertas ? 'sugerencias-productos' : undefined}
+            aria-controls={sugerenciasAbiertas ? `${idBase}-sugerencias` : undefined}
             aria-activedescendant={
-              sugerenciaActiva >= 0 ? `sugerencia-producto-${sugerenciaActiva}` : undefined
+              sugerenciaActiva >= 0 ? `${idBase}-sugerencia-${sugerenciaActiva}` : undefined
             }
             className="h-full min-w-0 flex-1 bg-transparent type-body-s text-text-primary outline-none placeholder:text-text-muted focus-visible:outline-none"
           />
@@ -172,17 +198,17 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
 
       {sugerenciasAbiertas ? (
         <ul
-          id="sugerencias-productos"
+          id={`${idBase}-sugerencias`}
           role="listbox"
           aria-label="Productos sugeridos"
           className="absolute inset-x-0 top-full z-50 mt-1 max-h-80 lg:left-auto lg:w-[26rem] overflow-y-auto border border-border-default bg-surface-elevated py-2 text-text-primary shadow-menu"
         >
           {sugerencias.length ? (
             sugerencias.map((producto, indice) => (
-              <li key={producto.ID ?? producto.SKU} role="presentation">
+              <li key={producto.r} role="presentation">
                 <button
                   type="button"
-                  id={`sugerencia-producto-${indice}`}
+                  id={`${idBase}-sugerencia-${indice}`}
                   role="option"
                   aria-selected={indice === sugerenciaActiva}
                   tabIndex={-1}
@@ -192,12 +218,12 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
                 >
                   <Icon name="search" className="size-4 shrink-0 text-text-muted" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate type-label text-text-primary">{producto.Nombre}</span>
-                    {producto.SKU || producto.Categoria ? (
+                    <span className="block truncate type-label text-text-primary">{producto.n}</span>
+                    {producto.s || producto.c ? (
                       <span className="block truncate type-caption text-text-muted">
-                        {[producto.Categoria, producto.SKU ? `SKU ${producto.SKU}` : null]
+                        {[producto.c, producto.s ? `SKU ${producto.s}` : null]
                           .filter(Boolean)
-                          .join(' · ')}
+                          .join(', ')}
                       </span>
                     ) : null}
                   </span>
@@ -205,7 +231,9 @@ export default function HeaderSearch({ productos }: HeaderSearchProps) {
               </li>
             ))
           ) : (
-            <li className="px-4 py-3 type-body-s text-text-muted">Sin sugerencias para tu búsqueda.</li>
+            <li className="px-4 py-3 type-body-s text-text-muted">
+              {!listo ? 'Cargando productos…' : 'Sin resultados. Prueba con otra palabra o con la clave del producto.'}
+            </li>
           )}
         </ul>
       ) : null}

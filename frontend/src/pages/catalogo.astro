@@ -1,12 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
-import Header from "../components/Header.astro";
+import Header from "../components/navbars/NavbarC.astro";
 import Footer from "../components/Footer.astro";
 import Catalog from "../components/catalog/Catalog";
 import PromocionesDestacadas from "../components/catalog/PromocionesDestacadas";
 import CategoriasCatalogo from "../components/catalog/CategoriasCatalogo.astro";
 import SeccionesPromociones from "../components/catalog/SeccionesPromociones.astro";
-import { obtenerProductos } from "../lib/productos";
+import { obtenerProductos, paraTarjetas } from "../lib/productos";
 import { esBanner, obtenerPromociones } from "../lib/destacados";
 
 const productos = await obtenerProductos();
@@ -21,7 +21,6 @@ const supabaseUrl = (import.meta.env.SUPABASE_URL ?? '').trim();
 const supabaseKey = (import.meta.env.SUPABASE_ANON_KEY ?? '').trim();
 const supabaseDestacadosTable =
   import.meta.env.SUPABASE_DESTACADOS_TABLE ?? "Promociones";
-const supabaseProductsTable = "MASTER_PRODUCTOS";
 const supabasePromosBucket =
   import.meta.env.SUPABASE_PROMOS_BUCKET ?? "Productos-imagenes";
 ---
@@ -30,10 +29,11 @@ const supabasePromosBucket =
   <Header productos={productos} />
 
   <main id="contenido">
+    <h1 class="sr-only">Catálogo de acero, ferretería y pintura en Tijuana, Mexicali y Ensenada</h1>
     {/* Publicidades a todo el ancho y, dentro de la misma franja, las categorías. */}
     <section
       id="destacados"
-      class="scroll-mt-44 lg:scroll-mt-28"
+      class="scroll-mt-24"
     >
       {promocionesBanner.length ? (
         <PromocionesDestacadas
@@ -51,12 +51,7 @@ const supabasePromosBucket =
       <div
         class={`container-page relative ${promocionesBanner.length ? "-mt-12 lg:-mt-18" : ""}`}
       >
-        <CategoriasCatalogo
-          productos={productos}
-          supabaseUrl={supabaseUrl}
-          supabaseKey={supabaseKey}
-          supabaseTabla={supabaseProductsTable}
-        />
+        <CategoriasCatalogo />
       </div>
     </section>
 
@@ -69,12 +64,12 @@ const supabasePromosBucket =
 
     <section
       id="catalogo"
-      class="scroll-mt-44 bg-surface-canvas pt-4 lg:scroll-mt-28 pb-16"
+      class="scroll-mt-24 bg-surface-canvas pt-4 pb-16"
     >
       <div class="container-page">
         <Catalog
           client:idle
-          productos={productos}
+          productos={paraTarjetas(productos)}
         />
       </div>
     </section>

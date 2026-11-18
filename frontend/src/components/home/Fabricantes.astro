@@ -62,7 +62,7 @@ const total = String(productos.length).padStart(2, '0');
 <section
   id="fabricantes"
   data-fabricantes
-  class="relative isolate scroll-mt-44 overflow-clip bg-surface-inverse py-20 text-text-inverse lg:h-[450svh] lg:scroll-mt-20 lg:py-0"
+  class="relative isolate scroll-mt-24 overflow-clip bg-surface-inverse py-20 text-text-inverse lg:h-[450svh] lg:py-0"
 >
   <div
     class="container-page grid gap-12 lg:sticky lg:top-20 lg:h-[calc(100svh-5rem)] lg:grid-cols-[0.8fr_1.2fr] lg:items-center"
@@ -70,7 +70,7 @@ const total = String(productos.length).padStart(2, '0');
     <div class="reveal">
       <div class="flex flex-wrap items-center gap-5">
         <h2 class="font-display text-5xl leading-[0.9] font-extrabold uppercase sm:text-6xl">
-          Somos<br /><span class="text-text-accent">fabricantes</span>
+          Somos<br />fabricantes
         </h2>
         <span class="chevron-anim flex text-text-accent" aria-hidden="true">
           {
@@ -82,12 +82,12 @@ const total = String(productos.length).padStart(2, '0');
       </div>
 
       <!-- Texto dinámico: describe la tarjeta activa -->
-      <div class="mt-6 grid max-w-md border-l-2 border-accent-primary pl-5" aria-live="polite">
+      <div class="mt-6 grid max-w-md border-l-2 border-accent-primary pl-5">
         {
           productos.map((producto, indice) => (
             <div class:list={['fab-texto [grid-area:1/1]', { activo: indice === 0 }]} data-fab-texto={indice}>
-              <p class="type-overline text-text-accent">
-                {String(indice + 1).padStart(2, '0')} / {total}
+              <p class="type-label text-text-accent">
+                {indice + 1} de {total}
               </p>
               <h3 class="mt-1 font-display text-3xl font-extrabold uppercase">{producto.titulo}</h3>
               <p class="mt-2 type-body-m text-text-inverse">{producto.texto}</p>
@@ -270,6 +270,10 @@ const total = String(productos.length).padStart(2, '0');
   }
   .fab-card.activo {
     outline-color: var(--color-accent-primary);
+  }
+  .fab-card:focus-visible {
+    outline: 3px solid var(--color-border-focus);
+    outline-offset: -3px;
   }
 
   /* Texto de la izquierda: solo se ve el del producto activo. */

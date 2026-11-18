@@ -1,0 +1,163 @@
+---
+/**
+ * HERO B · "Titular gigante" (ref. Running Festival)
+ * Fondo claro. Titular enorme que entra línea por línea desde una máscara;
+ * el personaje sube desde abajo y queda por delante del texto, con anillos
+ * concéntricos que laten detrás. Al mover el cursor, texto y personaje se
+ * desplazan en sentidos opuestos (parallax). Sin personaje, el círculo
+ * muestra una foto de la sucursal.
+ *
+ * Uso: <HeroB />  ·  sin personaje: <HeroB personaje={false} />
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  personaje?: boolean;
+}
+const { personaje = true } = Astro.props;
+const lineas = ['Hacemos', 'posible tu', 'proyecto'];
+---
+
+<section id="inicio" data-hb class="hb relative isolate overflow-hidden bg-neutral-100 text-text-primary">
+  <!-- Anillos -->
+  <div aria-hidden="true" class="hb-anillos absolute -z-10 hidden md:block" data-hb-capa="-1">
+    {[0, 1, 2, 3].map((k) => <span style={`--k:${k}`}></span>)}
+  </div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] flex-col justify-center py-14 lg:py-20">
+    <h1 data-hb-capa="0.6" class="hb-titulo relative z-0 font-display font-extrabold uppercase leading-[0.84] tracking-[-0.01em]">
+      {lineas.map((l, i) => (
+        <span class="hb-linea block overflow-hidden" style={`--i:${i}`}>
+          <span class:list={['block', { 'text-green-700': i === 2 }]}>{l}</span>
+        </span>
+      ))}
+    </h1>
+
+    <div class="hb-pie relative z-20 mt-10 grid max-w-md gap-6 lg:mt-14">
+      <p class="type-body-l text-text-secondary">
+        Acero, ferretería y herramienta en un solo lugar. Mayoreo y menudeo con entrega en tu obra.
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar ahora" />
+        <a href={rutaInterna('/catalogo')} class="group inline-flex items-center gap-3 type-button-m">
+          <span class="grid size-12 place-items-center rounded-full border border-neutral-950 transition-colors group-hover:bg-neutral-950 group-hover:text-accent-primary">→</span>
+          Ver catálogo
+        </a>
+      </div>
+    </div>
+
+    <!-- Personaje / foto -->
+    <div class="hb-figura pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-[46%] md:block" data-hb-capa="-1.2">
+      {
+        personaje ? (
+          <img
+            src={assetUrl('/images/personaje.webp')}
+            alt="Personaje de Aceros Frontera con los brazos cruzados"
+            width="780"
+            height="1400"
+            loading="eager"
+            fetchpriority="high"
+            class="hb-personaje absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2"
+          />
+        ) : (
+          <div class="hb-foto absolute left-1/2 top-1/2 aspect-square w-[78%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full">
+            <img src={assetUrl('/images/hero-bg.webp')} alt="" class="size-full object-cover" loading="eager" fetchpriority="high" />
+          </div>
+        )
+      }
+    </div>
+
+    <!-- Etiqueta giratoria -->
+    <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="hb-sello absolute bottom-10 right-[clamp(1rem,4vw,2rem)] z-20 hidden size-28 place-items-center lg:grid" aria-label="Cotiza hoy por WhatsApp">
+      <svg viewBox="0 0 100 100" class="absolute inset-0 size-full" aria-hidden="true">
+        <defs><path id="hb-circ" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0" /></defs>
+        <text><textPath href="#hb-circ">COTIZA HOY · ENTREGA EN OBRA · </textPath></text>
+      </svg>
+      <span class="grid size-12 place-items-center rounded-full bg-accent-primary text-xl text-neutral-1000">↗</span>
+    </a>
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hb]');
+  if (root) {
+    requestAnimationFrame(() => root.classList.add('is-in'));
+    const capas = [...root.querySelectorAll<HTMLElement>('[data-hb-capa]')];
+    const fino = window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (fino) {
+      let tx = 0, ty = 0, x = 0, y = 0, anim = 0;
+      const paso = () => {
+        x += (tx - x) * 0.08;
+        y += (ty - y) * 0.08;
+        capas.forEach((c) => {
+          const f = Number(c.dataset.hbCapa);
+          c.style.setProperty('--px', `${(x * f).toFixed(2)}px`);
+          c.style.setProperty('--py', `${(y * f).toFixed(2)}px`);
+        });
+        anim = Math.abs(tx - x) + Math.abs(ty - y) > 0.1 ? requestAnimationFrame(paso) : 0;
+      };
+      root.addEventListener('pointermove', (e) => {
+        const r = root.getBoundingClientRect();
+        tx = ((e.clientX - r.left) / r.width - 0.5) * 24;
+        ty = ((e.clientY - r.top) / r.height - 0.5) * 16;
+        if (!anim) anim = requestAnimationFrame(paso);
+      });
+    }
+  }
+</script>
+
+<style>
+  [data-hb-capa] { translate: var(--px, 0) var(--py, 0); }
+
+  .hb-titulo { font-size: clamp(3.5rem, 12.5vw, 11.5rem); }
+  .hb-linea > span { transform: translateY(105%); transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(150ms + var(--i) * 110ms); }
+  .is-in .hb-linea > span { transform: none; }
+  html:not(.js) .hb-linea > span,
+  html:not(.js) .hb-pie { transform: none; opacity: 1; }
+  html:not(.js) .hb-personaje { transform: translate(-50%, 0); opacity: 1; }
+  html:not(.js) .hb-foto { clip-path: circle(50% at 50% 50%); }
+  html:not(.js) .hb-anillos span:first-child { scale: 1; }
+
+  .hb-pie { opacity: 0; transform: translateY(20px); transition: opacity 700ms 600ms, transform 800ms 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .is-in .hb-pie { opacity: 1; transform: none; }
+
+  .hb-personaje {
+    filter: drop-shadow(0 30px 40px rgb(8 18 13 / 25%));
+    transform: translate(-50%, 40%); opacity: 0;
+    transition: transform 1100ms cubic-bezier(0.34, 1.4, 0.5, 1) 350ms, opacity 400ms 350ms;
+  }
+  .is-in .hb-personaje { transform: translate(-50%, 0); opacity: 1; }
+  .hb-foto { clip-path: circle(0% at 50% 50%); transition: clip-path 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) 300ms; box-shadow: 0 0 0 12px var(--color-accent-primary); }
+  .is-in .hb-foto { clip-path: circle(50% at 50% 50%); }
+
+  /* Anillos que laten detrás del personaje */
+  .hb-anillos { right: 23%; top: 52%; width: 0; height: 0; }
+  @media (max-width: 47.99rem) { .hb-anillos { right: 50%; top: 30%; } }
+  .hb-anillos span {
+    position: absolute; left: 50%; top: 50%; width: calc(16rem + var(--k) * 9rem); aspect-ratio: 1; border-radius: 50%;
+    translate: -50% -50%; border: 1px solid rgb(8 18 13 / 12%);
+  }
+  .hb-anillos span:first-child { background: var(--color-accent-primary); border: 0; }
+  .hb-anillos span:nth-child(2) { border-color: rgb(13 128 94 / 35%); border-width: 2px; }
+  .hb-anillos span:not(:first-child) { animation: hb-pulso 4s ease-out infinite; animation-delay: calc(var(--k) * 0.5s); }
+  @keyframes hb-pulso { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 1.06; opacity: 0.5; } }
+  .hb-anillos span:first-child { scale: 0; transition: scale 900ms cubic-bezier(0.34, 1.4, 0.5, 1) 200ms; }
+  .is-in .hb-anillos span:first-child { scale: 1; }
+
+  .hb-sello svg { animation: hb-gira 14s linear infinite; }
+  .hb-sello text { font: 700 10.5px var(--font-display); letter-spacing: 0.18em; fill: var(--color-neutral-950); }
+  .hb-sello:hover span { transform: rotate(45deg); }
+  .hb-sello span { transition: transform 300ms; }
+  @keyframes hb-gira { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hb *, .hb-personaje { transition: none !important; animation: none !important; }
+    .hb-linea > span, .hb-pie { transform: none !important; opacity: 1 !important; }
+    .hb-personaje { transform: translate(-50%, 0) !important; opacity: 1 !important; }
+    .hb-anillos span:first-child { scale: 1 !important; }
+  }
+</style>

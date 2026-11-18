@@ -1,0 +1,124 @@
+---
+/**
+ * NOSOTROS A · "Cifras en tarjetas" (ref. Why Choose Us)
+ * Fondo negro, encabezado centrado y 4 tarjetas de foto con una cifra real
+ * (sucursales, ciudades, familias, marcas). Al entrar en pantalla suben
+ * escalonadas y las cifras cuentan. La tarjeta activa se ensancha (acordeón)
+ * y muestra su descripción; rota sola cada pocos segundos y responde al
+ * cursor. Las fotos hacen zoom suave con el scroll.
+ */
+import { cifras, textos, enlaces } from './nosotros-data';
+
+const descripciones = [
+  'Distribuyendo acero en Baja California, de la herrería artística a los cimientos de un edificio.',
+  'Tres en Tijuana, una en Mexicali y dos en Ensenada, con servicio a domicilio.',
+  'Perfiles, vigas, tubería, lámina, placa, malla, pintura, herramienta y ferretería.',
+  'Centro de servicio autorizado de Makita, Bosch y Lincoln Electric.',
+];
+---
+
+<section id="nosotros" data-na-sec class="noa relative scroll-mt-28 overflow-hidden bg-neutral-950 py-20 text-text-inverse lg:py-28">
+  <div aria-hidden="true" class="pattern-diamante absolute inset-0"></div>
+
+  <div class="container-page relative">
+    <div class="grid gap-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-end">
+      <h2 class="max-w-[14ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">Por qué comprar tu acero aquí</h2>
+      <p class="type-body-m text-text-inverse-muted">{textos.parrafo}</p>
+    </div>
+
+    <ul data-noa-lista class="noa-lista mt-14 flex gap-3 lg:h-[26rem]">
+      {
+        cifras.map((c, i) => (
+          <li data-noa-card class:list={['noa-card chamfer [--chamfer:28px]', { 'is-activa': i === 0 }]} style={`--i:${i}`} tabindex="0">
+            <img src={c.foto} alt="" loading="lazy" decoding="async" class="noa-foto absolute inset-0 size-full object-cover" />
+            <span class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/5" />
+            <div class="relative mt-auto">
+              <p class="font-display text-6xl leading-none font-extrabold">
+                <span data-cuenta={c.n}>{c.n}</span>{c.sufijo}
+              </p>
+              <p class="mt-1 type-label">{c.texto}</p>
+              <p class="noa-desc type-body-s text-text-inverse-muted">{descripciones[i]}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a href={enlaces.sucursales} class="noa-link mt-10 inline-block type-button-m">Ver direcciones y horarios de las sucursales</a>
+  </div>
+</section>
+
+<script>
+  import { alAparecer, contar, progresoScroll } from '../../lib/scroll-progreso';
+
+  const sec = document.querySelector<HTMLElement>('[data-na-sec]');
+  if (sec) {
+    const lista = sec.querySelector<HTMLElement>('[data-noa-lista]')!;
+    const cards = [...sec.querySelectorAll<HTMLElement>('[data-noa-card]')];
+
+    alAparecer([lista], 0.25, () => sec.querySelectorAll<HTMLElement>('[data-cuenta]').forEach((el) => contar(el)));
+    progresoScroll(sec, 'paso');
+
+    /* Acordeón: activa por cursor/foco y rota sola */
+    let activa = 0;
+    let pausa = false;
+    const activar = (i: number) => {
+      activa = i;
+      cards.forEach((c, k) => c.classList.toggle('is-activa', k === i));
+    };
+    cards.forEach((c, i) => {
+      c.addEventListener('mouseenter', () => activar(i));
+      c.addEventListener('focus', () => activar(i));
+    });
+    lista.addEventListener('mouseenter', () => (pausa = true));
+    lista.addEventListener('mouseleave', () => (pausa = false));
+    /* Con el teclado dentro, la rotación no mueve la tarjeta enfocada. */
+    lista.addEventListener('focusin', () => (pausa = true));
+    lista.addEventListener('focusout', (e) => !lista.contains(e.relatedTarget as Node) && (pausa = false));
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      window.setInterval(() => !pausa && activar((activa + 1) % cards.length), 3500);
+  }
+</script>
+
+<style>
+  .noa-link { padding-bottom: 0.3rem; border-bottom: 3px solid var(--color-accent-primary); transition: color 200ms; }
+  .noa-link:hover { color: var(--color-accent-primary); }
+
+  .noa-card {
+    position: relative; display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; padding: 1.5rem;
+    overflow: hidden; cursor: pointer; outline: none;
+    transition: flex-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* Entrada escalonada */
+    opacity: 0; translate: 0 60px;
+  }
+  .noa-lista:global(.is-visible) .noa-card {
+    opacity: 1; translate: 0 0;
+    transition: flex-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 600ms, translate 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: 0s, calc(var(--i) * 110ms), calc(var(--i) * 110ms);
+  }
+  .noa-card.is-activa { flex-grow: 2.2; }
+
+  /* Zoom de la foto con el scroll + al activarse */
+  .noa-foto { scale: calc(1.18 - var(--p, 0) * 0.14); transition: filter 600ms; filter: grayscale(0.6) brightness(0.8); }
+  .is-activa .noa-foto { filter: none; }
+
+  .noa-desc { max-height: 0; overflow: hidden; max-width: 28rem; opacity: 0; margin-top: 0; transition: max-height 600ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 400ms, margin 600ms; }
+  .is-activa .noa-desc { max-height: 6rem; opacity: 1; margin-top: 0.75rem; transition-delay: 0s, 250ms, 0s; }
+  /* El recorte en chaflán corta el contorno de foco: lo dibujamos por dentro */
+  .noa-card:focus-visible { box-shadow: inset 0 0 0 3px var(--color-accent-primary); }
+
+  /* Celular: carrusel horizontal */
+  @media (max-width: 63.99rem) {
+    .noa-lista { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.5rem; scrollbar-width: none; }
+    .noa-card { flex: 0 0 78%; height: 24rem; scroll-snap-align: center; }
+    .noa-card.is-activa { flex-grow: 0; }
+    .noa-desc { max-height: 6rem; opacity: 1; margin-top: 0.75rem; }
+    .noa-foto { filter: none; }
+  }
+
+  :global(html:not(.js)) .noa-card { opacity: 1; translate: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .noa-card { opacity: 1 !important; translate: none !important; }
+  }
+</style>

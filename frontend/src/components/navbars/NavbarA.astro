@@ -1,0 +1,333 @@
+---
+/**
+ * PROPUESTA A · "Panel dividido" (ref. Chesapeake)
+ * Barra verde profundo. "Productos" y "Servicios" abren un panel a todo lo
+ * ancho en 3 columnas: texto + CTA · lista numerada 01–07 · tarjeta con foto
+ * que cambia según el elemento señalado. La franja amarilla inferior funciona
+ * como barra de progreso del scroll y la barra se compacta al bajar.
+ * Lupa → despliega el buscador. Móvil: cajón lateral con acordeón.
+ */
+import Logo from '../Logo.astro';
+import HeaderSearch from '../catalog/HeaderSearch';
+import { whatsappUrl } from '../../lib/seo';
+import { enlaces, servicios, prepararNav } from './nav-data';
+import type { Producto } from '../../lib/types';
+
+interface Props {
+  productos: Producto[];
+}
+const { productos } = Astro.props;
+const { familiasNav, catalogo } = prepararNav(productos);
+
+const vistas = {
+  productos: {
+    titulo: 'Encuentra el acero para tu proyecto',
+    texto: 'Inventario amplio de perfiles, lámina, tubería y estructurales, con medidas difíciles de encontrar y corte a la medida.',
+    cta: { label: 'Explorar catálogo', href: catalogo },
+    items: familiasNav.map((f) => ({ label: f.titulo, href: f.href, foto: f.foto, sub: f.items.slice(0, 3).join(' · ') })),
+  },
+  servicios: {
+    titulo: 'Más que vender acero',
+    texto: 'Fabricamos, cortamos y entregamos. Te acompañamos desde la cotización hasta la obra.',
+    cta: { label: 'Cotizar por WhatsApp', href: whatsappUrl() },
+    items: servicios.map((s) => ({ label: s.titulo, href: s.href, foto: s.imagen, sub: s.desc })),
+  },
+};
+const otros = enlaces.filter((e) => !e.href.includes('#servicios'));
+---
+
+<header data-na class="na sticky top-0 z-40 bg-green-950 text-text-inverse">
+  <div class="na-bar container-page flex items-center gap-6">
+    <div class="na-logo"><Logo /></div>
+
+    <nav aria-label="Navegación principal" class="ml-auto hidden items-center gap-1 lg:flex">
+      {
+        (['productos', 'servicios'] as const).map((v) => (
+          <button type="button" data-na-trigger={v} aria-expanded="false" aria-controls="na-panel" class="na-link group">
+            <span>{v === 'productos' ? 'Productos' : 'Servicios'}</span>
+            <svg viewBox="0 0 10 6" class="h-1.5 w-2.5 transition-transform duration-300 group-aria-expanded:rotate-180" fill="none" aria-hidden="true">
+              <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        ))
+      }
+      {otros.map((e) => <a href={e.href} class="na-link">{e.label}</a>)}
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2 lg:ml-4">
+      <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="na-cta btn-chamfer hidden sm:inline-flex">
+        <span>Cotizar</span>
+      </a>
+      <button type="button" data-na-search-btn aria-expanded="false" aria-controls="na-search" aria-label="Buscar productos" class="na-icon">
+        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+        </svg>
+      </button>
+      <button type="button" data-na-burger aria-expanded="false" aria-controls="na-drawer" aria-label="Abrir menú" class="na-icon lg:hidden">
+        <span class="na-burger" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Buscador desplegable -->
+  <div id="na-search" data-na-search class="na-collapse">
+    <div class="overflow-hidden">
+      <div class="container-page py-4"><HeaderSearch client:idle /></div>
+    </div>
+  </div>
+
+  <!-- Panel de 3 columnas -->
+  <div id="na-panel" data-na-panel class="na-collapse" role="region" aria-label="Menú de productos y servicios">
+    <div class="overflow-hidden">
+      {
+        Object.entries(vistas).map(([clave, vista]) => (
+          <div data-na-view={clave} hidden class="na-view container-page grid grid-cols-[1fr_1.1fr_1fr] border-t border-white/10">
+            <div class="na-col flex flex-col gap-5 border-r border-white/10 py-10 pr-10">
+              <h2 class="type-h2 max-w-[14ch]">{vista.titulo}</h2>
+              <p class="type-body-s text-text-inverse-muted">{vista.texto}</p>
+              <a href={vista.cta.href} class="na-cta btn-chamfer mt-auto self-start">{vista.cta.label}</a>
+            </div>
+            <ol class="na-col flex flex-col border-r border-white/10 px-10 py-8">
+              {vista.items.map((it, i) => (
+                <li class="na-item" style={`--i:${i}`}>
+                  <a href={it.href} data-na-item data-foto={it.foto} data-label={it.label} class="group flex items-baseline gap-5 py-2">
+                    <span class="type-overline text-accent-primary/70 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                    <span class="na-item-label type-h4 uppercase">{it.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <div class="na-col py-8 pl-10">
+              <a href={vista.items[0].href} data-na-card class="na-card chamfer group relative block h-full min-h-64 overflow-hidden">
+                <img data-na-card-img src={vista.items[0].foto} alt="" class="absolute inset-0 size-full object-cover" loading="lazy" />
+                <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                <span class="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-6">
+                  <span data-na-card-title class="type-h3 uppercase">{vista.items[0].label}</span>
+                  <span class="type-button-s inline-flex items-center gap-2 text-accent-primary">
+                    Ver más
+                    <svg viewBox="0 0 12 12" class="size-3 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M3 2l6 4-6 4z" fill="currentColor" /></svg>
+                  </span>
+                </span>
+              </a>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- Franja amarilla = progreso de scroll -->
+  <div class="relative h-1.5 bg-accent-primary/25" aria-hidden="true">
+    <div data-na-progress class="absolute inset-0 origin-left bg-accent-primary" style="transform: scaleX(0)"></div>
+  </div>
+
+  <!-- Cajón móvil -->
+  <div id="na-drawer" data-na-drawer class="na-drawer lg:hidden" hidden>
+    <div data-na-scrim class="absolute inset-0 bg-black/60"></div>
+    <nav aria-label="Navegación principal" class="na-drawer-panel absolute inset-y-0 right-0 flex w-[min(24rem,88vw)] flex-col overflow-y-auto bg-green-950 px-6 pb-8 pt-20">
+      <details class="na-acc border-b border-white/10" style="--i:0">
+        <summary class="flex cursor-pointer items-center justify-between py-4 type-h4 uppercase">Productos <span class="text-accent-primary">+</span></summary>
+        <ol class="flex flex-col gap-2 pb-4">
+          {familiasNav.map((f, i) => (
+            <li><a href={f.href} class="flex gap-3 type-body-s text-text-inverse-muted hover:text-text-inverse"><span class="text-accent-primary">{String(i + 1).padStart(2, '0')}</span>{f.titulo}</a></li>
+          ))}
+        </ol>
+      </details>
+      {enlaces.map((e, i) => (
+        <a href={e.href} class="na-acc border-b border-white/10 py-4 type-h4 uppercase hover:text-accent-primary" style={`--i:${i + 1}`}>{e.label}</a>
+      ))}
+      <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="na-cta btn-chamfer mt-8 justify-center">Cotizar por WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-na]');
+  if (root) {
+    const panel = root.querySelector<HTMLElement>('[data-na-panel]')!;
+    const triggers = [...root.querySelectorAll<HTMLButtonElement>('[data-na-trigger]')];
+    const views = [...root.querySelectorAll<HTMLElement>('[data-na-view]')];
+    let actual: string | null = null;
+    let cierre: number | undefined;
+
+    const abrir = (vista: string | null) => {
+      window.clearTimeout(cierre);
+      actual = vista;
+      triggers.forEach((t) => t.setAttribute('aria-expanded', String(t.dataset.naTrigger === vista)));
+      if (vista) {
+        views.forEach((v) => (v.hidden = v.dataset.naView !== vista));
+        panel.classList.add('is-open');
+      } else {
+        panel.classList.remove('is-open');
+      }
+    };
+    triggers.forEach((t) => {
+      t.addEventListener('click', () => abrir(actual === t.dataset.naTrigger ? null : t.dataset.naTrigger!));
+      t.addEventListener('mouseenter', () => actual && abrir(t.dataset.naTrigger!));
+    });
+    root.addEventListener('mouseleave', () => {
+      if (actual) cierre = window.setTimeout(() => abrir(null), 350);
+    });
+    root.addEventListener('mouseenter', () => window.clearTimeout(cierre));
+
+    /* Tarjeta con foto: cambia con fundido según el elemento señalado. */
+    views.forEach((view) => {
+      const img = view.querySelector<HTMLImageElement>('[data-na-card-img]')!;
+      const titulo = view.querySelector<HTMLElement>('[data-na-card-title]')!;
+      const card = view.querySelector<HTMLAnchorElement>('[data-na-card]')!;
+      view.querySelectorAll<HTMLAnchorElement>('[data-na-item]').forEach((item) => {
+        const mostrar = () => {
+          if (img.src.endsWith(item.dataset.foto!)) return;
+          card.classList.add('is-swapping');
+          window.setTimeout(() => {
+            img.src = item.dataset.foto!;
+            titulo.textContent = item.dataset.label!;
+            card.href = item.href;
+            card.classList.remove('is-swapping');
+          }, 160);
+        };
+        item.addEventListener('mouseenter', mostrar);
+        item.addEventListener('focus', mostrar);
+      });
+    });
+
+    /* Buscador */
+    const searchBtn = root.querySelector<HTMLButtonElement>('[data-na-search-btn]')!;
+    const search = root.querySelector<HTMLElement>('[data-na-search]')!;
+    searchBtn.addEventListener('click', () => {
+      const abierto = search.classList.toggle('is-open');
+      searchBtn.setAttribute('aria-expanded', String(abierto));
+      search.classList.remove('is-settled');
+      if (abierto) window.setTimeout(() => search.classList.contains('is-open') && search.classList.add('is-settled'), 440);
+      if (abierto) {
+        abrir(null);
+        window.setTimeout(() => search.querySelector<HTMLInputElement>('input')?.focus(), 250);
+      }
+    });
+
+    /* Cajón móvil */
+    const burger = root.querySelector<HTMLButtonElement>('[data-na-burger]')!;
+    const drawer = root.querySelector<HTMLElement>('[data-na-drawer]')!;
+    const alternarDrawer = (abrirlo: boolean) => {
+      burger.setAttribute('aria-expanded', String(abrirlo));
+      burger.setAttribute('aria-label', abrirlo ? 'Cerrar menú' : 'Abrir menú');
+      if (abrirlo) {
+        drawer.hidden = false;
+        requestAnimationFrame(() => drawer.classList.add('is-open'));
+      } else {
+        drawer.classList.remove('is-open');
+        window.setTimeout(() => (drawer.hidden = true), 350);
+      }
+      document.documentElement.style.overflow = abrirlo ? 'hidden' : '';
+    };
+    burger.addEventListener('click', () => alternarDrawer(drawer.hidden));
+    root.querySelector('[data-na-scrim]')!.addEventListener('click', () => alternarDrawer(false));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      abrir(null);
+      if (!drawer.hidden) alternarDrawer(false);
+    });
+    document.addEventListener('mousedown', (e) => {
+      if (actual && !root.contains(e.target as Node)) abrir(null);
+    });
+
+    /* Scroll: barra compacta + progreso */
+    const progreso = root.querySelector<HTMLElement>('[data-na-progress]')!;
+    let pendiente = false;
+    const alScroll = () => {
+      pendiente = false;
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      root.classList.toggle('is-compact', y > 40);
+      progreso.style.transform = `scaleX(${max > 0 ? Math.min(y / max, 1) : 0})`;
+    };
+    window.addEventListener('scroll', () => {
+      if (!pendiente) { pendiente = true; requestAnimationFrame(alScroll); }
+    }, { passive: true });
+    alScroll();
+  }
+</script>
+
+<style>
+  .na-bar { height: 5rem; transition: height 300ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na.is-compact .na-bar { height: 4rem; }
+  .na-logo { transform-origin: left center; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na.is-compact .na-logo { transform: scale(0.82); }
+  .na.is-compact { box-shadow: 0 12px 32px rgb(0 0 0 / 35%); }
+
+  .na-link {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 0.9rem; cursor: pointer;
+    font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: color 200ms;
+  }
+  .na-link::after {
+    content: ""; position: absolute; left: 0.9rem; right: 0.9rem; bottom: 0.2rem; height: 2px;
+    background: var(--color-accent-primary);
+    transform: scaleX(0); transform-origin: right; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .na-link:hover, .na-link[aria-expanded="true"] { color: var(--color-accent-primary); }
+  .na-link:hover::after, .na-link[aria-expanded="true"]::after { transform: scaleX(1); transform-origin: left; }
+
+  .na-cta {
+    --btn-bg: var(--color-accent-primary);
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.7rem 1.4rem; color: var(--color-text-on-accent);
+    font-family: var(--font-display); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .na-cta:hover { --btn-bg: var(--color-accent-hover); }
+
+  .na-icon { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; cursor: pointer; transition: color 200ms; }
+  .na-icon:hover { color: var(--color-accent-primary); }
+
+  .na-burger { position: relative; width: 22px; height: 16px; }
+  .na-burger i { position: absolute; left: 0; width: 100%; height: 2px; background: currentColor; transition: transform 300ms, opacity 200ms, top 300ms; }
+  .na-burger i:nth-child(1) { top: 0; }
+  .na-burger i:nth-child(2) { top: 7px; }
+  .na-burger i:nth-child(3) { top: 14px; }
+  [aria-expanded="true"] > .na-burger i:nth-child(1) { top: 7px; transform: rotate(45deg); }
+  [aria-expanded="true"] > .na-burger i:nth-child(2) { opacity: 0; }
+  [aria-expanded="true"] > .na-burger i:nth-child(3) { top: 7px; transform: rotate(-45deg); }
+
+  /* Colapsables (grid 0fr → 1fr) */
+  .na-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 420ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na-collapse.is-open { grid-template-rows: 1fr; }
+  .na-collapse.is-settled > div { overflow: visible; }
+  .na-collapse:not(.is-open) { visibility: hidden; transition: grid-template-rows 420ms cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s 420ms; }
+  #na-panel.na-collapse { position: absolute; inset-inline: 0; top: 100%; background: var(--color-green-950); }
+  #na-panel.is-open { box-shadow: 0 24px 64px rgb(0 0 0 / 45%); }
+  @media (max-width: 63.99rem) { #na-panel { display: none; } }
+
+  .na-view .na-col { opacity: 0; transform: translateY(-10px); transition: opacity 400ms, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .is-open .na-view .na-col { opacity: 1; transform: none; }
+  .is-open .na-view .na-col:nth-child(2) { transition-delay: 60ms; }
+  .is-open .na-view .na-col:nth-child(3) { transition-delay: 120ms; }
+
+  .na-item { opacity: 0; transform: translateX(-12px); transition: opacity 350ms, transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(100ms + var(--i) * 40ms); }
+  .is-open .na-item { opacity: 1; transform: none; }
+  .na-item-label { transition: color 200ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na-item a:hover .na-item-label, .na-item a:focus-visible .na-item-label { color: var(--color-accent-primary); transform: translateX(6px); }
+
+  .na-card img { transition: opacity 160ms, transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na-card:hover img { transform: scale(1.05); }
+  .na-card.is-swapping img { opacity: 0; transform: scale(1.04); }
+  .na-card [data-na-card-title] { transition: opacity 160ms; }
+  .na-card.is-swapping [data-na-card-title] { opacity: 0; }
+
+  /* Cajón móvil */
+  .na-drawer { position: fixed; inset: 0; z-index: 30; }
+  .na-drawer > div { opacity: 0; transition: opacity 300ms; }
+  .na-drawer-panel { transform: translateX(100%); transition: transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .na-drawer.is-open > div { opacity: 1; }
+  .na-drawer.is-open .na-drawer-panel { transform: none; }
+  .na-acc { opacity: 0; transform: translateX(24px); transition: opacity 300ms, transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(120ms + var(--i) * 50ms); }
+  .na-drawer.is-open .na-acc { opacity: 1; transform: none; }
+  .na-bar { position: relative; z-index: 31; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .na *, .na *::before, .na *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  }
+</style>

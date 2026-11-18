@@ -1,0 +1,71 @@
+---
+/**
+ * Boceto isométrico de línea para las propuestas de Catálogo.
+ * - El color de las líneas es el color de texto (currentColor).
+ * - Fondo transparente (máscara), sirve sobre cualquier fondo.
+ * - Se traza cuando él o un ancestro tiene la clase .is-trazado; si se
+ *   quita y se vuelve a poner, se vuelve a dibujar.
+ */
+import { ANCHO, ALTO, type Plano } from '../../lib/planos';
+
+interface Props {
+  plano: Plano;
+  nombre: string;
+  class?: string;
+  /** Mostrar cota y notas. */
+  notas?: boolean;
+}
+
+const { plano, nombre, class: clase = '', notas = true } = Astro.props;
+const id = `pl-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<svg viewBox={`0 0 ${ANCHO} ${ALTO}`} class:list={['pl', clase]} fill="none" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label={`Boceto de ${nombre}`}>
+  <mask id={id} maskUnits="userSpaceOnUse" x="-50" y="-50" width={ANCHO + 100} height={ALTO + 100}>
+    <g class="pl-pieza">
+      {plano.caras.map((c, i) => (
+        <path d={c.d} class={`pl-${c.tipo}`} fill-rule="evenodd" pathLength={c.tipo === 'liso' ? undefined : 1} style={`--o:${i}`} />
+      ))}
+    </g>
+  </mask>
+  <rect class="pl-lineas" x="-50" y="-50" width={ANCHO + 100} height={ALTO + 100} mask={`url(#${id})`} />
+  {notas && (
+    <g class="pl-extra">
+      <path d={plano.cota.d} class="pl-cota" />
+      <text x={plano.cota.x} y={plano.cota.y} transform={`rotate(${plano.cota.angulo} ${plano.cota.x} ${plano.cota.y})`} text-anchor="middle" dominant-baseline="middle">{plano.cota.texto}</text>
+      {plano.notas.map((n) => (
+        <g>
+          <path d={n.d} />
+          <circle cx={n.ox} cy={n.oy} r="2.5" />
+          <text x={n.x} y={n.y} text-anchor={n.lado === 'derecha' ? 'start' : 'middle'} dominant-baseline={n.lado === 'arriba' ? 'auto' : n.lado === 'derecha' ? 'middle' : 'hanging'}>{n.texto}</text>
+        </g>
+      ))}
+    </g>
+  )}
+</svg>
+
+<style is:global>
+  .pl { overflow: visible; }
+  .pl-lineas { fill: currentColor; }
+  .pl-pieza path { stroke: #fff; stroke-width: 1.5; fill: #000; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+  .pl-pieza .pl-liso { stroke: #000; stroke-width: 0.8; stroke-dasharray: none; }
+  .pl-pieza .pl-silueta { fill: none; }
+  .is-trazado .pl-pieza path, .pl.is-trazado .pl-pieza path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s cubic-bezier(0.65, 0, 0.35, 1) calc(0.1s + var(--o) * 0.025s);
+  }
+  .is-trazado .pl-pieza .pl-silueta, .pl.is-trazado .pl-pieza .pl-silueta { transition-delay: 0.35s; }
+  .pl-extra { opacity: 0; color: inherit; }
+  .pl-extra path { stroke: currentColor; stroke-width: 0.9; opacity: 0.6; }
+  .pl-extra .pl-cota { stroke-dasharray: 3 3; }
+  .pl-extra circle { fill: currentColor; }
+  .pl-extra text { fill: currentColor; opacity: 0.7; font: 600 10px var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; }
+  .is-trazado .pl-extra, .pl.is-trazado .pl-extra { opacity: 1; transition: opacity 0.5s ease 1s; }
+
+  html:not(.js) .pl-pieza path { stroke-dashoffset: 0; }
+  html:not(.js) .pl-extra { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .pl-pieza path { stroke-dashoffset: 0 !important; transition: none !important; }
+    .pl-extra { opacity: 1 !important; transition: none !important; }
+  }
+</style>

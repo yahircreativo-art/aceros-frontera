@@ -1,0 +1,219 @@
+---
+/**
+ * HERO G · "Obra en cámara"
+ * Como el Hero F (la obra en grande, tenue, detrás del texto), pero con una
+ * cámara virtual: cada escena tiene sus propias tomas (arranca de cerca y
+ * abajo, gira alrededor de la obra, sube y se aleja) mientras se construye.
+ * Parece 3D pero no lo es: son las mismas líneas SVG, re-proyectadas en cada
+ * cuadro (src/lib/obra-camara.ts). El cursor gira la cámara unos grados.
+ *
+ * Sin JavaScript o con "reducir movimiento" se ve el edificio quieto.
+ *
+ * Uso: <HeroG />
+ *   intensidad: opacidad de las líneas (0–1). Por defecto 0.32.
+ *   personaje:  muestra al personaje a la derecha.
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import { escenas, escenasCamara, ANCHO_ESCENA, ALTO_ESCENA } from '../../lib/construcciones';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { sucursales } from '../../data/sucursales';
+
+interface Props {
+  intensidad?: number;
+  personaje?: boolean;
+}
+const { intensidad = 0.32, personaje = false } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+const estatica = escenas[0];
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))];
+/* Dice en texto visible qué vendemos y dónde (lo que el eslogan no dice). */
+const cobertura = `Acero y ferretería en ${ciudades.slice(0, -1).join(', ')} y ${ciudades.at(-1)}`;
+---
+
+<section
+  id="inicio"
+  data-hg
+  class="hg relative isolate overflow-hidden bg-neutral-950 text-text-inverse"
+  style={`--hg-intensidad:${intensidad}`}
+>
+  <script type="application/json" data-hg-datos set:html={JSON.stringify(escenasCamara)} />
+
+  <!-- Fondo -->
+  <div aria-hidden="true" class="hg-reticula absolute inset-0 -z-30"></div>
+
+  <!-- Versión quieta (sin JS / movimiento reducido) -->
+  <svg data-hg-estatica viewBox={`0 0 ${ANCHO_ESCENA} ${ALTO_ESCENA}`} class="hg-estatica absolute -z-20" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {estatica.trazos.map((t) => <path d={t.d} class={t.tipo === 'cara' ? 'obra-cara' : 'obra-det'} />)}
+  </svg>
+
+  <!-- Lienzo de la cámara (lo llena el script) -->
+  <svg data-hg-lienzo class="hg-lienzo absolute inset-0 -z-20 size-full" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke={`url(#hg-tinta-${uid})`} aria-hidden="true">
+    <defs>
+      <linearGradient id={`hg-tinta-${uid}`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="800">
+        <stop offset="0" stop-color="#ffffff" />
+        <stop offset="0.82" stop-color="#dfe5e2" />
+        <stop offset="1" style="stop-color: var(--color-accent-primary)" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div aria-hidden="true" class="hg-velo absolute inset-0 -z-10"></div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+    <div data-hg-texto class="relative z-10 w-full min-w-0 max-w-3xl">
+      <div class="w-fit max-w-full">
+      <h1
+        class="font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase"
+        style="text-shadow: 0 4px 30px rgb(0 0 0 / 60%)"
+      >
+        <span class="block">Hacemos</span>{' '}
+        <span class="block">posible</span>{' '}
+        <span class="block">tu proyecto</span>
+      </h1>
+      <Cota texto={cobertura} ancho="completo" class="hg-cota mt-5 text-text-accent" />
+      </div>
+
+      <p data-escribe="parrafo" class="mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-inverse">
+        Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
+        menudeo, fabricación de armex, corte de placa y servicio a domicilio.
+      </p>
+
+      <div class="mt-10 flex flex-wrap gap-4">
+        <Button data-escribe="boton" href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button data-escribe="boton" href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+      </div>
+    </div>
+
+    {
+      personaje && (
+        <img
+          src={assetUrl('/images/personaje.webp')}
+          alt="Personaje de Aceros Frontera con los brazos cruzados"
+          width="780"
+          height="1400"
+          loading="eager"
+          class="hg-personaje pointer-events-none absolute bottom-0 right-[clamp(1rem,4vw,2rem)] z-10 hidden h-[85%] w-auto lg:block"
+        />
+      )
+    }
+
+    <!-- Cajetín del plano: qué obra se está dibujando y cuál sigue -->
+    <div class="hg-cajetin absolute bottom-6 right-[clamp(1rem,4vw,2rem)] z-20 hidden sm:grid">
+      <span class="hg-celda"><small>Obra</small><b data-hg-nombre>{escenasCamara[0].nombre}</b></span>
+      <span class="hg-celda"><small>Plano</small><b><span data-hg-num>1</span> de {escenasCamara.length}</b></span>
+      <span class="hg-celda hg-celda-ir">
+        {escenasCamara.map((e, i) => (
+          <button type="button" data-hg-ir={i} class="hg-punto" aria-label={`Ver ${e.nombre}`}><i></i></button>
+        ))}
+      </span>
+    </div>
+  </div>
+
+</section>
+
+<script>
+  import { iniciarObra } from '../../lib/obra-camara';
+  import { escribir } from '../../lib/maquina-escribir';
+
+  /* Texto que se escribe solo (párrafo → botones). El título se ve desde el primer instante. */
+  const texto = document.querySelector<HTMLElement>('[data-hg-texto]');
+  if (texto) window.setTimeout(() => escribir(texto), 60);
+  import type { EscenaCamara } from '../../lib/construcciones';
+
+  const root = document.querySelector<HTMLElement>('[data-hg]');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root && !quieto) {
+    const escenas = JSON.parse(root.querySelector('[data-hg-datos]')!.textContent!) as EscenaCamara[];
+    const lienzo = root.querySelector<SVGSVGElement>('[data-hg-lienzo]')!;
+    const num = root.querySelector<HTMLElement>('[data-hg-num]')!;
+    const nombre = root.querySelector<HTMLElement>('[data-hg-nombre]')!;
+    const puntos = [...root.querySelectorAll<HTMLButtonElement>('[data-hg-ir]')];
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+
+    root.classList.add('is-camara');
+    const obra = iniciarObra({
+      svg: lienzo,
+      escenas,
+      centroX: () => (escritorio.matches ? 0.7 : 0.5),
+      /* En celular la obra va mucho más grande (puede salirse de la pantalla). */
+      escala: () => (escritorio.matches ? 1 : 2.2),
+      alCambiar: (i) => {
+        num.textContent = String(i + 1);
+        nombre.textContent = escenas[i].nombre;
+        puntos.forEach((p, k) => {
+          p.classList.toggle('is-on', k === i);
+          p.classList.toggle('is-hecho', k < i);
+        });
+      },
+      alAvanzar: (i, p) => puntos[i]?.style.setProperty('--p', p.toFixed(3)),
+    });
+    puntos.forEach((p, i) => p.addEventListener('click', () => obra.ir(i)));
+
+    /* Fuera de pantalla no se calcula nada */
+    new IntersectionObserver(([e]) => obra.pausar(!e.isIntersecting)).observe(root);
+  }
+</script>
+
+<style>
+  .hg-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .hg-estatica, .hg-lienzo { --fondo: var(--color-neutral-950); opacity: var(--hg-intensidad, 0.32); }
+  .hg-estatica { right: -4%; bottom: -2%; height: 112%; width: auto; aspect-ratio: 600 / 470; stroke: #fff; }
+  @media (max-width: 63.99rem) { .hg-estatica { right: 50%; height: 90%; bottom: 0; transform: translateX(50%); } }
+  .hg.is-camara .hg-estatica { display: none; }
+  .hg-lienzo { display: none; contain: strict; transform: translateZ(0); }
+  .hg.is-camara .hg-lienzo { display: block; }
+
+  /* Las rutas las crea el script: estilos globales dentro de este hero. */
+  .hg :global(.obra-cara), .hg :global(.obra-det) { stroke-dasharray: 1 1; }
+  .hg :global(.obra-cara) { stroke-width: 1.3; fill: var(--fondo); }
+  .hg :global(.obra-det) { stroke-width: 0.8; fill: none; }
+  .hg-estatica :global(.obra-cara), .hg-estatica :global(.obra-det) { stroke-dasharray: none; }
+
+  .hg :global(.obra-humo circle) { fill: none; stroke: #fff; stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .hg :global(.obra-humo.is-on circle) { animation: hg-humo 2.4s ease-out infinite; animation-delay: calc(var(--k) * 0.6s); }
+  @keyframes hg-humo {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(18px, -60px) scale(1.6); }
+  }
+
+  .hg-velo {
+    background:
+      linear-gradient(90deg, rgb(11 13 12 / 92%) 0%, rgb(11 13 12 / 72%) 38%, rgb(11 13 12 / 15%) 70%, transparent 100%),
+      linear-gradient(0deg, rgb(11 13 12 / 70%) 0%, transparent 30%);
+  }
+  @media (max-width: 63.99rem) {
+    .hg-velo { background: linear-gradient(180deg, rgb(11 13 12 / 70%) 0%, rgb(11 13 12 / 50%) 55%, rgb(11 13 12 / 30%) 100%); }
+    .hg-lienzo { opacity: calc(var(--hg-intensidad, 0.32) * 1.4); }
+  }
+
+  .hg-punto { position: relative; display: block; width: 1.75rem; height: 12px; cursor: pointer; }
+  .hg-punto::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 3px; translate: 0 -50%; background: rgb(255 255 255 / 15%); }
+  .hg-punto i { position: absolute; inset-inline: 0; top: 50%; height: 3px; translate: 0 -50%; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .hg-punto.is-on i { transform: scaleX(var(--p, 0)); }
+  .hg-punto.is-hecho i { transform: scaleX(1); }
+
+  .hg-personaje { filter: drop-shadow(0 20px 40px rgb(0 0 0 / 60%)); }
+
+  /* La cota aparece cuando el titular termina de escribirse */
+  :global(html.js) .hg-cota { opacity: 0; animation: hg-cota 500ms ease 700ms forwards; }
+  @keyframes hg-cota { from { opacity: 0; clip-path: inset(0 50% 0 50%); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+  /* Cajetín: el recuadro de datos de un plano técnico */
+  .hg-cajetin { grid-template-columns: auto auto auto; border: 1px solid rgb(255 255 255 / 25%); background: rgb(11 13 12 / 70%); color: var(--color-text-inverse); }
+  .hg-celda { display: flex; flex-direction: column; justify-content: center; gap: 0.1rem; padding: 0.5rem 0.9rem; font-size: 0.8125rem; line-height: 1.2; }
+  .hg-celda + .hg-celda { border-left: 1px solid rgb(255 255 255 / 25%); }
+  .hg-celda small { font-size: 0.6875rem; color: var(--color-text-inverse-muted); }
+  .hg-celda b { font-weight: 600; min-width: 7.5rem; }
+  .hg-celda:nth-child(2) b { min-width: 0; }
+  .hg-celda-ir { flex-direction: row; align-items: center; gap: 0.35rem; }
+  @media (prefers-reduced-motion: reduce) { :global(html.js) .hg-cota { opacity: 1; animation: none; } }
+</style>

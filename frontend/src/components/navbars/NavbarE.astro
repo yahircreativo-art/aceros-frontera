@@ -1,0 +1,305 @@
+---
+/**
+ * PROPUESTA E · "Logo al centro + cinta"
+ * Arriba, una cinta verde con avisos en marquesina que se recoge al bajar.
+ * Barra negra simétrica: enlaces a la izquierda, logo al centro, enlaces y
+ * Cotizar a la derecha. Los enlaces "ruedan" al pasar el cursor.
+ * "Catálogo" abre pestañas verticales: un bloque amarillo se desliza entre
+ * las familias y el lado derecho cambia con fundido (subfamilias + foto +
+ * pictograma gigante de fondo). Móvil: pantalla completa que se revela en
+ * círculo desde el botón de menú.
+ */
+import Logo from '../Logo.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { whatsappUrl, siteSeo } from '../../lib/seo';
+import { enlaces, sucursales, prepararNav } from './nav-data';
+import type { Producto } from '../../lib/types';
+
+interface Props {
+  productos: Producto[];
+}
+const { productos } = Astro.props;
+const { familiasNav, catalogo } = prepararNav(productos);
+
+const [nosotros, servicios, sucursalesLink, contacto] = enlaces;
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))].join(' · ');
+const avisos = [
+  `Sucursales en ${ciudades}`,
+  'Corte de placa a la medida',
+  'Entregas en obra',
+  `Llámanos ${siteSeo.phone}`,
+  'Armex, castillos y anillos de fabricación propia',
+];
+---
+
+<header data-ne class="ne sticky top-0 z-40 text-text-inverse">
+  <!-- Cinta -->
+  <div class="ne-ticker bg-green-700" aria-label="Avisos">
+    <div class="overflow-hidden">
+      <div class="ne-track flex w-max gap-10 py-2">
+        {[0, 1].map((copia) => (
+          <ul class="flex shrink-0 gap-10" aria-hidden={copia === 1 ? 'true' : undefined}>
+            {avisos.map((a) => (
+              <li class="flex items-center gap-10 whitespace-nowrap type-caption uppercase tracking-[0.12em]">
+                {a}<span class="text-accent-primary" aria-hidden="true">◆</span>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra -->
+  <div class="ne-bar relative">
+    <div class="container-page grid h-[4.5rem] grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <nav aria-label="Navegación principal" class="hidden items-center gap-7 lg:flex">
+        <button type="button" data-ne-trigger aria-expanded="false" aria-controls="ne-mega" class="ne-link">
+          <span class="ne-roll" data-text="Catálogo"><span>Catálogo</span></span>
+          <span class="ne-plus" aria-hidden="true"></span>
+        </button>
+        {[servicios, nosotros].map((e) => (
+          <a href={e.href} class="ne-link"><span class="ne-roll" data-text={e.label}><span>{e.label}</span></span></a>
+        ))}
+      </nav>
+
+      <div class="col-start-1 justify-self-start lg:col-start-2 lg:justify-self-center"><Logo /></div>
+
+      <div class="col-start-3 flex items-center justify-end gap-7">
+        {[sucursalesLink, contacto].map((e) => (
+          <a href={e.href} class="ne-link hidden lg:inline-flex"><span class="ne-roll" data-text={e.label}><span>{e.label}</span></span></a>
+        ))}
+        <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="ne-cta btn-chamfer">
+          <span class="ne-roll" data-text="Cotizar"><span>Cotizar</span></span>
+        </a>
+        <button type="button" data-ne-burger aria-expanded="false" aria-controls="ne-full" aria-label="Abrir menú" class="ne-burger lg:hidden">
+          <i></i><i></i><i></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="h-1.5 bg-accent-primary" aria-hidden="true"></div>
+
+  <!-- Mega con pestañas verticales -->
+  <div id="ne-mega" data-ne-mega class="ne-mega hidden lg:block" aria-hidden="true">
+    <div class="container-page grid grid-cols-[17rem_1fr] gap-10 py-10">
+      <div role="tablist" aria-orientation="vertical" aria-label="Familias" class="relative flex flex-col">
+        <span data-ne-marker class="ne-marker" aria-hidden="true"></span>
+        {familiasNav.map((f, i) => (
+          <button type="button" role="tab" data-ne-tab={i} aria-selected={i === 0 ? 'true' : 'false'} class="ne-tab">
+            <span class="tabular-nums opacity-60">{String(i + 1).padStart(2, '0')}</span>
+            {f.titulo}
+          </button>
+        ))}
+        <a href={catalogo} class="mt-4 inline-flex items-center gap-2 px-4 type-button-s text-accent-primary hover:text-accent-hover">Catálogo completo →</a>
+      </div>
+
+      <div class="relative min-h-80">
+        {familiasNav.map((f, i) => (
+          <div role="tabpanel" data-ne-pane={i} class:list={['ne-pane grid grid-cols-[1fr_16rem] gap-8', { 'is-active': i === 0 }]}>
+            <Pictogram name={f.icono} class="ne-watermark" />
+            <div class="relative">
+              <p class="type-overline text-accent-primary">{String(i + 1).padStart(2, '0')} / Familia</p>
+              <h3 class="mt-2 type-h1">{f.titulo}</h3>
+              <ul class="mt-6 grid grid-cols-2 gap-x-6">
+                {f.items.map((item, j) => (
+                  <li class="ne-sub" style={`--i:${j}`}>
+                    <a href={f.href} class="group flex items-center justify-between border-b border-white/10 py-3 type-label text-text-inverse-muted transition-colors hover:text-text-inverse">
+                      {item}
+                      <span class="translate-x-[-6px] text-accent-primary opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <a href={f.href} class="ne-photo chamfer group relative block overflow-hidden" aria-label={`Ver ${f.titulo}`}>
+              <img src={f.foto} alt="" loading="lazy" class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 type-button-s">Ver {f.corto} →</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pantalla completa (móvil) -->
+  <div id="ne-full" data-ne-full class="ne-full lg:hidden" hidden>
+    <nav aria-label="Navegación principal" class="container-page flex min-h-full flex-col pb-10 pt-6">
+      <ul class="flex flex-col">
+        {[{ href: catalogo, label: 'Catálogo' }, ...enlaces].map((e, i) => (
+          <li class="ne-full-item" style={`--i:${i}`}>
+            <a href={e.href} class="flex items-baseline gap-4 border-b border-white/10 py-3">
+              <span class="type-overline text-accent-primary">{String(i + 1).padStart(2, '0')}</span>
+              <span class="font-display text-5xl font-extrabold uppercase leading-none">{e.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="ne-full-item mt-auto flex flex-col gap-1 pt-10 type-body-s text-text-inverse-muted" style="--i:6">
+        <a href={`tel:${siteSeo.phoneHref}`} class="text-text-inverse">{siteSeo.phone}</a>
+        <span>{ciudades}</span>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ne]');
+  if (root) {
+    const trigger = root.querySelector<HTMLButtonElement>('[data-ne-trigger]')!;
+    const mega = root.querySelector<HTMLElement>('[data-ne-mega]')!;
+    let tCerrar: number | undefined;
+
+    const alternarMega = (abrir: boolean) => {
+      window.clearTimeout(tCerrar);
+      trigger.setAttribute('aria-expanded', String(abrir));
+      mega.classList.toggle('is-open', abrir);
+      mega.setAttribute('aria-hidden', String(!abrir));
+      if (abrir) requestAnimationFrame(() => moverMarcador(tabs.find((t) => t.getAttribute('aria-selected') === 'true')!));
+    };
+    trigger.addEventListener('click', () => alternarMega(!mega.classList.contains('is-open')));
+    trigger.addEventListener('mouseenter', () => alternarMega(true));
+    root.addEventListener('mouseleave', () => (tCerrar = window.setTimeout(() => alternarMega(false), 300)));
+    root.addEventListener('mouseenter', () => window.clearTimeout(tCerrar));
+    document.addEventListener('mousedown', (e) => {
+      if (mega.classList.contains('is-open') && !root.contains(e.target as Node)) alternarMega(false);
+    });
+
+    /* Pestañas verticales con marcador deslizante */
+    const marker = root.querySelector<HTMLElement>('[data-ne-marker]')!;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-ne-tab]')];
+    const panes = [...root.querySelectorAll<HTMLElement>('[data-ne-pane]')];
+    const moverMarcador = (t: HTMLElement) => {
+      marker.style.setProperty('--y', `${t.offsetTop}px`);
+      marker.style.setProperty('--h', `${t.offsetHeight}px`);
+    };
+    const activar = (t: HTMLButtonElement) => {
+      if (t.getAttribute('aria-selected') === 'true') return;
+      tabs.forEach((x) => x.setAttribute('aria-selected', String(x === t)));
+      panes.forEach((p) => p.classList.toggle('is-active', p.dataset.nePane === t.dataset.neTab));
+      moverMarcador(t);
+    };
+    tabs.forEach((t) => {
+      t.addEventListener('mouseenter', () => activar(t));
+      t.addEventListener('click', () => activar(t));
+      t.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        const sig = tabs[(tabs.indexOf(t) + d + tabs.length) % tabs.length];
+        sig.focus();
+        activar(sig);
+      });
+    });
+
+    /* Pantalla completa con revelado circular */
+    const burger = root.querySelector<HTMLButtonElement>('[data-ne-burger]')!;
+    const full = root.querySelector<HTMLElement>('[data-ne-full]')!;
+    const alternarFull = (abrir: boolean) => {
+      const r = burger.getBoundingClientRect();
+      full.style.setProperty('--cx', `${r.left + r.width / 2}px`);
+      full.style.setProperty('--cy', `${r.top + r.height / 2}px`);
+      burger.setAttribute('aria-expanded', String(abrir));
+      burger.setAttribute('aria-label', abrir ? 'Cerrar menú' : 'Abrir menú');
+      document.documentElement.style.overflow = abrir ? 'hidden' : '';
+      if (abrir) { full.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => full.classList.add('is-open'))); }
+      else { full.classList.remove('is-open'); window.setTimeout(() => (full.hidden = true), 550); }
+    };
+    burger.addEventListener('click', () => alternarFull(full.hidden));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      alternarMega(false);
+      if (!full.hidden) alternarFull(false);
+    });
+
+    /* Scroll: se recoge la cinta y la barra se vuelve translúcida */
+    let pendiente = false;
+    window.addEventListener('scroll', () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(() => {
+        pendiente = false;
+        root.classList.toggle('is-scrolled', window.scrollY > 30);
+      });
+    }, { passive: true });
+  }
+</script>
+
+<style>
+  .ne { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+  .ne-ticker { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 400ms var(--ease); }
+  .ne.is-scrolled .ne-ticker { grid-template-rows: 0fr; }
+  .ne-track { animation: ne-marquee 32s linear infinite; }
+  .ne-ticker:hover .ne-track { animation-play-state: paused; }
+  @keyframes ne-marquee { to { transform: translateX(calc(-50% - 1.25rem)); } }
+
+  .ne-bar { background: var(--color-neutral-950); transition: background 400ms, backdrop-filter 400ms; }
+  .ne.is-scrolled .ne-bar { background: rgb(11 13 12 / 82%); backdrop-filter: blur(14px) saturate(140%); }
+
+  /* Texto que rueda */
+  .ne-link { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .ne-roll { position: relative; display: inline-block; overflow: hidden; line-height: 1.3; }
+  .ne-roll > span { display: inline-block; transition: transform 450ms var(--ease); }
+  .ne-roll::after { content: attr(data-text); position: absolute; left: 0; top: 100%; color: var(--color-accent-primary); transition: transform 450ms var(--ease); }
+  :is(.ne-link, .ne-cta):hover .ne-roll > span,
+  :is(.ne-link, .ne-cta):focus-visible .ne-roll > span,
+  .ne-link[aria-expanded="true"] .ne-roll > span { transform: translateY(-100%); }
+  :is(.ne-link, .ne-cta):hover .ne-roll::after,
+  :is(.ne-link, .ne-cta):focus-visible .ne-roll::after,
+  .ne-link[aria-expanded="true"] .ne-roll::after { transform: translateY(-100%); }
+
+  .ne-plus { position: relative; width: 10px; height: 10px; }
+  .ne-plus::before, .ne-plus::after { content: ""; position: absolute; inset: 4px 0; background: var(--color-accent-primary); transition: transform 350ms var(--ease); }
+  .ne-plus::after { transform: rotate(90deg); }
+  [aria-expanded="true"] .ne-plus::after { transform: rotate(0deg); }
+  [aria-expanded="true"] .ne-plus::before { transform: rotate(180deg); }
+
+  .ne-cta { --btn-bg: var(--color-accent-primary); display: inline-flex; align-items: center; height: 2.75rem; padding: 0 1.4rem; color: var(--color-neutral-1000); font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ne-cta .ne-roll::after { color: var(--color-neutral-1000); }
+  .ne-cta:hover { --btn-bg: var(--color-neutral-0); }
+
+  .ne-burger { display: inline-flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 5px; width: 2.75rem; height: 2.75rem; cursor: pointer; }
+  .ne-burger i { display: block; height: 2px; background: currentColor; transition: width 350ms var(--ease), transform 350ms var(--ease), opacity 200ms; }
+  .ne-burger i:nth-child(1) { width: 24px; }
+  .ne-burger i:nth-child(2) { width: 16px; }
+  .ne-burger i:nth-child(3) { width: 20px; }
+  .ne-burger:hover i { width: 24px; }
+  .ne-burger[aria-expanded="true"] i:nth-child(1) { width: 24px; transform: translateY(7px) rotate(45deg); }
+  .ne-burger[aria-expanded="true"] i:nth-child(2) { opacity: 0; }
+  .ne-burger[aria-expanded="true"] i:nth-child(3) { width: 24px; transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mega */
+  .ne-mega {
+    position: absolute; inset-inline: 0; top: 100%; background: var(--color-neutral-950); box-shadow: 0 30px 60px rgb(0 0 0 / 45%);
+    clip-path: inset(0 0 100% 0); visibility: hidden; transition: clip-path 500ms var(--ease), visibility 0s 500ms;
+  }
+  .ne-mega.is-open { clip-path: inset(0 0 -80px 0); visibility: visible; transition: clip-path 550ms var(--ease); }
+  .ne-marker { position: absolute; left: 0; right: 0; top: 0; height: var(--h, 0); transform: translateY(var(--y, 0)); background: var(--color-accent-primary); transition: transform 400ms var(--ease), height 400ms var(--ease); }
+  .ne-tab { position: relative; display: flex; gap: 0.9rem; padding: 0.75rem 1rem; cursor: pointer; text-align: left; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; text-transform: uppercase; color: var(--color-text-inverse-muted); transition: color 300ms, padding 300ms var(--ease); }
+  .ne-tab:hover { color: var(--color-text-inverse); }
+  .ne-tab[aria-selected="true"] { color: var(--color-neutral-1000); padding-left: 1.4rem; }
+
+  .ne-pane { position: absolute; inset: 0; opacity: 0; visibility: hidden; transform: translateY(12px); transition: opacity 300ms, transform 450ms var(--ease), visibility 0s 300ms; }
+  .ne-pane.is-active { position: relative; opacity: 1; visibility: visible; transform: none; transition: opacity 400ms 80ms, transform 500ms 80ms var(--ease); }
+  .ne-pane :global(.ne-watermark) { position: absolute; right: 17rem; top: -1rem; width: 14rem; height: 14rem; color: rgb(255 255 255 / 4%); stroke-width: 1; transform: rotate(-8deg); transition: transform 900ms var(--ease); pointer-events: none; }
+  .ne-pane.is-active :global(.ne-watermark) { transform: rotate(0deg) scale(1.05); }
+  .ne-sub { opacity: 0; transform: translateY(6px); }
+  .ne-pane.is-active .ne-sub { opacity: 1; transform: none; transition: opacity 350ms, transform 450ms var(--ease); transition-delay: calc(140ms + var(--i) * 40ms); }
+  .ne-photo { min-height: 18rem; }
+
+  /* Pantalla completa */
+  .ne-full {
+    position: fixed; inset: 0; top: 0; z-index: -1; overflow-y: auto; padding-top: 7rem; background: var(--color-green-950);
+    clip-path: circle(0 at var(--cx, 100%) var(--cy, 0)); transition: clip-path 550ms cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .ne-full.is-open { clip-path: circle(150% at var(--cx, 100%) var(--cy, 0)); }
+  .ne-full-item { opacity: 0; transform: translateY(24px); }
+  .ne-full.is-open .ne-full-item { opacity: 1; transform: none; transition: opacity 400ms, transform 600ms var(--ease); transition-delay: calc(200ms + var(--i) * 60ms); }
+  .ne-full a:hover span:last-child { color: var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ne *, .ne *::before, .ne *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; animation: none !important; }
+  }
+</style>

@@ -1,4 +1,3 @@
-import.meta.env;
 import type { Producto } from './types';
 
 export interface ConfiguracionSupabase {
@@ -6,6 +5,20 @@ export interface ConfiguracionSupabase {
   clavePublica: string;
   tabla: string;
 }
+
+/* PostgREST devuelve como máximo 1000 filas por petición: se pide por bloques hasta vaciar la tabla. */
+const BLOQUE = 1000;
+const MAX_BLOQUES = 50;
+
+type FilaSupabase = {
+  ID?: string | number | null;
+  SKU?: string | number | null;
+  Nombre?: string | null;
+  Categorías?: string | null;
+  Imágenes?: string | null;
+  'Descripción corta'?: string | null;
+  'Descripción'?: string | null;
+};
 
 export async function obtenerProductosSupabase(
   configuracion: ConfiguracionSupabase,
@@ -15,42 +28,40 @@ export async function obtenerProductosSupabase(
     throw new Error(`Nombre de tabla no válido: ${tabla}`);
   }
 
-  const url = new URL(`${configuracion.url.replace(/\/+$/, '')}/rest/v1/${tabla}`);
-  url.searchParams.set(
-    'select',
-    'ID,SKU,Nombre,"Categorías","Imágenes","Descripción corta","Descripción"',
-  );
-  url.searchParams.set('order', 'ID.asc');
-  url.searchParams.set('limit', '500');
+  const filas: FilaSupabase[] = [];
+  for (let i = 0; i < MAX_BLOQUES; i++) {
+    const url = new URL(`${configuracion.url.replace(/\/+$/, '')}/rest/v1/${tabla}`);
+    url.searchParams.set(
+      'select',
+      'ID,SKU,Nombre,"Categorías","Imágenes","Descripción corta","Descripción"',
+    );
+    url.searchParams.set('order', 'ID.asc');
+    url.searchParams.set('limit', String(BLOQUE));
+    url.searchParams.set('offset', String(i * BLOQUE));
 
-  const respuesta = await fetch(url, {
-    headers: {
-      apikey: configuracion.clavePublica,
-      Authorization: `Bearer ${configuracion.clavePublica}`,
-    },
-    cache: 'no-store',
-    signal: AbortSignal.timeout(10000),
-  });
+    const respuesta = await fetch(url, {
+      headers: {
+        apikey: configuracion.clavePublica,
+        Authorization: `Bearer ${configuracion.clavePublica}`,
+      },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15000),
+    });
 
-  if (!respuesta.ok) {
-    throw new Error(`Supabase respondió ${respuesta.status}: ${await respuesta.text()}`);
+    if (!respuesta.ok) {
+      throw new Error(`Supabase respondió ${respuesta.status}: ${await respuesta.text()}`);
+    }
+
+    const bloque = (await respuesta.json()) as FilaSupabase[];
+    if (!Array.isArray(bloque)) {
+      throw new Error('Supabase devolvió un formato inesperado.');
+    }
+
+    filas.push(...bloque);
+    if (bloque.length < BLOQUE) break;
   }
 
-  const data = (await respuesta.json()) as Array<{
-    ID?: string | number | null;
-    SKU?: string | number | null;
-    Nombre?: string | null;
-    Categorías?: string | null;
-    Imágenes?: string | null;
-    'Descripción corta'?: string | null;
-    'Descripción'?: string | null;
-  }>;
-
-  if (!Array.isArray(data)) {
-    throw new Error('Supabase devolvió un formato inesperado.');
-  }
-
-  return data.map((item) => ({
+  return filas.map((item) => ({
     ID: item.ID ?? null,
     SKU: item.SKU ?? null,
     Nombre: item.Nombre ?? null,
@@ -59,62 +70,4 @@ export async function obtenerProductosSupabase(
     DescripcionCorta: item['Descripción corta'] ?? null,
     Descripcion: item['Descripción'] ?? null,
   }));
-}
-
-export async function obtenerCategoriasSupabase(
-  configuracion: ConfiguracionSupabase,
-): Promise<string[]> {
-  /* Sin credenciales (p. ej. un build de CI sin variables) no hay categorías que pedir. */
-  if (!configuracion.url || !configuracion.clavePublica) return [];
-  const tabla = configuracion.tabla || 'MASTER_PRODUCTOS';
-  if (!/^[a-zA-Z_][a-zA-Z\d_]*$/.test(tabla)) {
-    throw new Error(`Nombre de tabla no válido: ${tabla}`);
-  }
-
-  const baseUrl = `${configuracion.url.replace(/\/+$/, '')}/rest/v1/${tabla}`;
-
-  const trySelect = (select: string) => {
-    const url = new URL(baseUrl);
-    url.searchParams.set('select', select);
-    url.searchParams.set('limit', '500');
-    return fetch(url, {
-      headers: {
-        apikey: configuracion.clavePublica,
-        Authorization: `Bearer ${configuracion.clavePublica}`,
-      },
-      cache: 'no-store',
-      signal: AbortSignal.timeout(10000),
-    });
-  };
-
-  // PostgREST no acepta DISTINCT dentro de select: se pide una sola columna y se
-  // deduplica aquí, así sigue siendo una sola petición GET.
-  let respuesta = await trySelect('Categorías');
-
-  if (!respuesta.ok) {
-    if (respuesta.status === 400) {
-      respuesta = await trySelect('Categoría');
-    }
-
-    if (!respuesta.ok) {
-      throw new Error(`Supabase respondió ${respuesta.status}: ${await respuesta.text()}`);
-    }
-  }
-
-  const data = (await respuesta.json()) as Array<{
-    Categorías?: string | null;
-    Categoría?: string | null;
-  }>;
-
-  if (!Array.isArray(data)) {
-    throw new Error('Supabase devolvió un formato inesperado.');
-  }
-
-  const categorias = data
-    .map((item) => item['Categorías'] ?? item['Categoría'] ?? '')
-    .filter((categoria) => Boolean(categoria))
-    .map((categoria) => String(categoria).trim())
-    .filter((categoria, index, self) => self.indexOf(categoria) === index);
-
-  return categorias.sort((a, b) => a.localeCompare(b, 'es'));
 }

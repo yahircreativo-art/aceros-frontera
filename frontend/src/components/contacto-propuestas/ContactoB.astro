@@ -1,0 +1,235 @@
+---
+/**
+ * CONTACTO B · "Chat con el asistente"
+ * Un teléfono con una conversación simulada (todo ocurre en el navegador,
+ * no hay bot real). Al entrar en pantalla, el personaje saluda escribiendo
+ * y ofrece respuestas rápidas:
+ *  - Cotizar material → escribes qué necesitas y se abre WhatsApp con eso.
+ *  - Horarios → qué sucursales están abiertas ahora (hora de Tijuana).
+ *  - Sucursal más cercana → usa tu ubicación (si la permites) y calcula la
+ *    distancia en el navegador; nada se envía a ningún servidor.
+ *  - Hablar con un asesor → WhatsApp directo.
+ */
+import { siteSeo, sucursalesCliente, icono, waBase, whatsappUrl } from './contacto-data';
+import { assetUrl } from '../../lib/asset-url';
+
+const datos = [
+  { icono: 'phone', etiqueta: 'Teléfono', valor: siteSeo.phone, href: `tel:${siteSeo.phoneHref}` },
+  { icono: 'mail', etiqueta: 'Correo', valor: siteSeo.email, href: `mailto:${siteSeo.email}` },
+  { icono: 'whatsapp', etiqueta: 'WhatsApp', valor: 'Escríbenos', href: whatsappUrl() },
+];
+---
+
+<section id="contacto" data-cob class="cob scroll-mt-28 overflow-hidden bg-neutral-100 py-20 lg:py-28" data-wa={waBase}>
+  <script type="application/json" data-cob-sucursales set:html={JSON.stringify(sucursalesCliente)} />
+
+  <div class="container-page grid items-center gap-14 lg:grid-cols-[1fr_auto] lg:gap-20">
+    <div>
+      <p class="type-overline text-text-brand">Contacto</p>
+      <h2 class="mt-3 type-h1">Pregúntanos <span class="text-text-brand">lo que sea</span></h2>
+      <p class="mt-5 max-w-lg type-body-l text-text-secondary">
+        Cotizaciones, horarios, la sucursal más cercana… Prueba el asistente o contáctanos directo.
+      </p>
+      <ul class="mt-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+        {datos.map((d) => (
+          <li>
+            <a href={d.href} target={d.icono === 'whatsapp' ? '_blank' : undefined} rel="noopener noreferrer" class="cob-dato group">
+              <span class="grid size-11 shrink-0 place-items-center rounded-full bg-neutral-950 text-accent-primary transition group-hover:rotate-[-10deg] group-hover:bg-green-700">
+                <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono(d.icono)} /></svg>
+              </span>
+              <span class="min-w-0"><span class="block type-caption text-text-muted">{d.etiqueta}</span><span class="block truncate type-label">{d.valor}</span></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- Teléfono -->
+    <div class="cob-movil mx-auto w-full max-w-[24rem]">
+      <div class="flex items-center gap-3 bg-green-800 px-5 pb-4 pt-6 text-text-inverse">
+        <span class="relative grid size-11 place-items-center overflow-hidden rounded-full bg-accent-primary">
+          <img src={assetUrl('/images/personaje.webp')} alt="" class="mt-[60%] w-[150%] max-w-none" loading="lazy" />
+        </span>
+        <span>
+          <span class="block type-label">Aceros Frontera</span>
+          <span data-cob-estado class="block type-caption text-green-200">en línea</span>
+        </span>
+      </div>
+      <div data-cob-chat class="cob-chat flex h-[26rem] flex-col gap-2.5 overflow-y-auto p-4" aria-live="polite"></div>
+      <div data-cob-rapidas class="cob-rapidas flex flex-wrap gap-2 px-4 pb-3"></div>
+      <form data-cob-form class="flex items-center gap-2 border-t border-white/10 p-3">
+        <input data-cob-input type="text" disabled placeholder="Elige una opción…" aria-label="Mensaje" class="min-w-0 flex-1 rounded-full bg-[#2a3942] px-4 py-2.5 text-sm text-text-inverse outline-none placeholder:text-white/40 disabled:opacity-50" />
+        <button type="submit" class="grid size-10 shrink-0 place-items-center rounded-full bg-green-600 text-text-inverse transition hover:bg-green-500" aria-label="Enviar">➤</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { estado, distanciaKm } from '../../lib/horario';
+  import type { SucursalCliente } from './contacto-data';
+
+  const sec = document.querySelector<HTMLElement>('[data-cob]');
+  if (sec) {
+    const sucs = JSON.parse(sec.querySelector('[data-cob-sucursales]')!.textContent!) as SucursalCliente[];
+    const chat = sec.querySelector<HTMLElement>('[data-cob-chat]')!;
+    const rapidas = sec.querySelector<HTMLElement>('[data-cob-rapidas]')!;
+    const form = sec.querySelector<HTMLFormElement>('[data-cob-form]')!;
+    const input = sec.querySelector<HTMLInputElement>('[data-cob-input]')!;
+    const estadoTxt = sec.querySelector<HTMLElement>('[data-cob-estado]')!;
+    const wa = (t: string) => sec.dataset.wa + encodeURIComponent(t);
+    const rapido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dormir = (ms: number) => new Promise((r) => setTimeout(r, rapido ? 0 : ms));
+    let esperandoTexto = false;
+
+    const burbuja = (html: string, quien: 'ellos' | 'yo') => {
+      const b = document.createElement('div');
+      b.className = `cob-b cob-${quien}`;
+      b.innerHTML = html;
+      chat.append(b);
+      chat.scrollTo({ top: chat.scrollHeight, behavior: rapido ? 'auto' : 'smooth' });
+      return b;
+    };
+    const escapar = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+    const bot = async (html: string, pausa = 700) => {
+      estadoTxt.textContent = 'escribiendo…';
+      const puntos = burbuja('<span class="cob-puntos"><i></i><i></i><i></i></span>', 'ellos');
+      await dormir(pausa);
+      puntos.remove();
+      estadoTxt.textContent = 'en línea';
+      burbuja(html, 'ellos');
+    };
+    const opciones = (lista: [string, () => void][]) => {
+      rapidas.replaceChildren(
+        ...lista.map(([txt, fn], i) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'cob-op';
+          b.style.setProperty('--i', String(i));
+          b.textContent = txt;
+          b.addEventListener('click', () => {
+            rapidas.replaceChildren();
+            burbuja(escapar(txt), 'yo');
+            fn();
+          });
+          return b;
+        }),
+      );
+    };
+    const menu = () =>
+      opciones([
+        ['Cotizar material', cotizar],
+        ['Horarios', horarios],
+        ['Sucursal más cercana', cercana],
+        ['Hablar con un asesor', asesor],
+      ]);
+    const otraCosa = async () => {
+      await dormir(400);
+      await bot('¿Te ayudo con algo más?', 500);
+      menu();
+    };
+
+    async function cotizar() {
+      await bot('¡Va! Escríbeme qué material necesitas, medidas y cantidad. Ej. <em>20 PTR de 2" cal. 14</em>');
+      esperandoTexto = true;
+      input.disabled = false;
+      input.placeholder = 'Escribe tu pedido…';
+      input.focus();
+    }
+    async function horarios() {
+      const filas = sucs.map((s) => {
+        const e = estado(s.horarios);
+        return `<li><span class="cob-dot ${e.abierta ? 'is-on' : ''}"></span><b>${s.nombre}</b> <small>${s.ciudad}</small><br><small>${e.texto}</small></li>`;
+      });
+      await bot(`Así estamos ahora (hora de Tijuana):<ul class="cob-lista">${filas.join('')}</ul>`, 900);
+      otraCosa();
+    }
+    async function cercana() {
+      await bot('Para encontrarla necesito tu ubicación. Tu navegador te pedirá permiso; no se envía a ningún lado.');
+      const pos = await new Promise<GeolocationPosition | null>((r) =>
+        navigator.geolocation ? navigator.geolocation.getCurrentPosition(r, () => r(null), { timeout: 10000 }) : r(null),
+      );
+      if (!pos) {
+        await bot(`No pude usar tu ubicación. Estas son nuestras sucursales:<ul class="cob-lista">${sucs.map((s) => `<li><b>${s.nombre}</b> <small>${s.ciudad}</small><br><a href="${s.ruta}" target="_blank" rel="noopener">Cómo llegar ↗</a></li>`).join('')}</ul>`);
+        return otraCosa();
+      }
+      const yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const s = sucs.map((x) => ({ ...x, km: distanciaKm(yo, x) })).sort((a, b) => a.km - b.km)[0];
+      const e = estado(s.horarios);
+      await bot(
+        `La más cercana es <b>${s.nombre}</b> (${s.ciudad}), a unos <b>${s.km < 10 ? s.km.toFixed(1) : Math.round(s.km)} km</b>.<br><small>${s.direccion}</small><br><small>${e.texto}</small>
+        <span class="cob-acciones"><a href="${s.ruta}" target="_blank" rel="noopener">Cómo llegar ↗</a><a href="${s.tel}">Llamar ${s.telefono}</a></span>`,
+        900,
+      );
+      otraCosa();
+    }
+    async function asesor() {
+      await bot(`¡Claro! Un asesor te atiende por WhatsApp.<span class="cob-acciones"><a href="${wa('Hola, quiero hablar con un asesor.')}" target="_blank" rel="noopener">Abrir WhatsApp ↗</a></span>`);
+      otraCosa();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const texto = input.value.trim();
+      if (!texto || !esperandoTexto) return;
+      esperandoTexto = false;
+      input.value = '';
+      input.disabled = true;
+      input.placeholder = 'Elige una opción…';
+      burbuja(escapar(texto), 'yo');
+      await bot(`¡Anotado! Te paso con un asesor para darte precio y disponibilidad.<span class="cob-acciones"><a href="${wa(`Hola, quiero cotizar: ${texto}`)}" target="_blank" rel="noopener">Enviar por WhatsApp ↗</a></span>`, 900);
+      otraCosa();
+    });
+
+    /* Arranca al entrar en pantalla */
+    const obs = new IntersectionObserver(async ([e]) => {
+      if (!e.isIntersecting) return;
+      obs.disconnect();
+      await dormir(300);
+      await bot('¡Hola! 👋 Soy el asistente de Aceros Frontera.', 800);
+      await bot('¿En qué te puedo ayudar?', 700);
+      menu();
+    }, { threshold: 0.4 });
+    obs.observe(chat);
+  }
+</script>
+
+<style>
+  .cob-dato { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 1rem; background: var(--color-neutral-0); box-shadow: 0 1px 0 rgb(8 18 13 / 6%); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms; }
+  .cob-dato:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -14px rgb(8 18 13 / 30%); }
+
+  .cob-movil { overflow: hidden; border-radius: 2.5rem; border: 10px solid var(--color-neutral-950); background: #0b141a; box-shadow: 0 40px 80px -30px rgb(8 18 13 / 55%); rotate: 2deg; transition: rotate 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .cob-movil:hover, .cob-movil:focus-within { rotate: 0deg; }
+  .cob-chat { background: #0b141a radial-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 14px 14px; color: var(--color-text-inverse); scrollbar-width: thin; }
+
+  .cob-chat :global(.cob-b) { max-width: 85%; padding: 0.55rem 0.8rem; border-radius: 0.9rem; font-size: 0.875rem; line-height: 1.4; animation: cob-entra 350ms cubic-bezier(0.34, 1.4, 0.5, 1) both; }
+  .cob-chat :global(.cob-ellos) { align-self: flex-start; background: #202c33; border-top-left-radius: 0.2rem; transform-origin: left top; }
+  .cob-chat :global(.cob-yo) { align-self: flex-end; background: var(--color-green-700); border-top-right-radius: 0.2rem; transform-origin: right top; }
+  @keyframes cob-entra { from { opacity: 0; scale: 0.85; } }
+  .cob-chat :global(small) { color: rgb(255 255 255 / 60%); }
+  .cob-chat :global(.cob-lista) { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .cob-chat :global(.cob-dot) { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 999px; background: var(--color-error-500); }
+  .cob-chat :global(.cob-dot.is-on) { background: var(--color-success-500); box-shadow: 0 0 0 3px rgb(75 185 103 / 25%); }
+  .cob-chat :global(.cob-acciones) { margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .cob-chat :global(.cob-acciones a), .cob-chat :global(.cob-lista a) { display: inline-block; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--color-accent-primary); color: var(--color-neutral-1000); font-weight: 600; font-size: 0.8125rem; }
+  .cob-chat :global(.cob-puntos) { display: inline-flex; gap: 4px; padding: 0.2rem 0; }
+  .cob-chat :global(.cob-puntos i) { width: 7px; height: 7px; border-radius: 999px; background: rgb(255 255 255 / 60%); animation: cob-punto 1s infinite; }
+  .cob-chat :global(.cob-puntos i:nth-child(2)) { animation-delay: 0.15s; }
+  .cob-chat :global(.cob-puntos i:nth-child(3)) { animation-delay: 0.3s; }
+  @keyframes cob-punto { 0%, 60%, 100% { translate: 0 0; opacity: 0.5; } 30% { translate: 0 -4px; opacity: 1; } }
+
+  .cob-rapidas { background: #0b141a; }
+  .cob-rapidas :global(.cob-op) {
+    padding: 0.45rem 0.85rem; border-radius: 999px; cursor: pointer; font-size: 0.8125rem; font-weight: 600;
+    color: var(--color-accent-primary); box-shadow: inset 0 0 0 1px var(--color-accent-primary);
+    animation: cob-entra 400ms cubic-bezier(0.34, 1.4, 0.5, 1) both; animation-delay: calc(var(--i) * 70ms);
+    transition: background 200ms, color 200ms;
+  }
+  .cob-rapidas :global(.cob-op:hover) { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cob-movil { rotate: 0deg; }
+    .cob-chat :global(*), .cob-rapidas :global(*) { animation: none !important; }
+  }
+</style>

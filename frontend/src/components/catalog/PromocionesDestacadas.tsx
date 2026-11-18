@@ -94,6 +94,7 @@ export default function PromocionesDestacadas({
   // Avanza sola cada 3 segundos; se detiene al pasar el mouse o al enfocar.
   useEffect(() => {
     if (actuales.length < 2 || pausado) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const temporizador = window.setInterval(() => {
       setIndice((valor) => valor + 1);

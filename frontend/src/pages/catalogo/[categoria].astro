@@ -1,10 +1,11 @@
 ---
 import Base from "../../layouts/Base.astro";
-import Header from "../../components/Header.astro";
+import Header from "../../components/navbars/NavbarC.astro";
 import Footer from "../../components/Footer.astro";
 import Catalog from "../../components/catalog/Catalog";
-import { obtenerProductos } from "../../lib/productos";
+import { obtenerProductos, paraTarjetas } from "../../lib/productos";
 import { rutasCategorias } from "../../lib/categorias";
+import { ciudadesSeo, recortarTexto } from "../../lib/seo";
 
 export async function getStaticPaths() {
   const productos = await obtenerProductos();
@@ -25,8 +26,14 @@ export async function getStaticPaths() {
 
 const { categoria, categorias, productos } = Astro.props;
 const canonicalPath = rutasCategorias(categorias).get(categoria) ?? "/catalogo";
-const title = `${categoria} | Catálogo de productos | Aceros Frontera`;
-const description = `Explora productos de ${categoria} en el catálogo de Aceros Frontera. Consulta disponibilidad y cotiza por WhatsApp en Baja California.`;
+const total = productos.filter((p) => String(p.Categoria ?? "").trim() === categoria).length;
+const title = recortarTexto(`${categoria} en Tijuana`, 60 - " | Aceros Frontera".length) + " | Aceros Frontera";
+const description = recortarTexto(
+  `${total} productos de ${categoria.toLocaleLowerCase("es-MX")} en el catálogo de Aceros Frontera. Busca por nombre o clave y cotiza por WhatsApp en ${ciudadesSeo}.`,
+  158,
+);
+/* La cuadrícula solo necesita los productos de esta categoría (antes recibía el catálogo completo). */
+const productosCategoria = productos.filter((p) => String(p.Categoria ?? "").trim() === categoria);
 ---
 
 <Base
@@ -38,11 +45,11 @@ const description = `Explora productos de ${categoria} en el catálogo de Aceros
   <Header productos={productos} />
 
   <main id="contenido">
-    <section id="catalogo" class="scroll-mt-44 bg-surface-canvas pt-4 pb-16 lg:scroll-mt-28">
+    <section id="catalogo" class="scroll-mt-24 bg-surface-canvas pt-4 pb-16">
       <div class="container-page">
         <Catalog
           client:load
-          productos={productos}
+          productos={paraTarjetas(productosCategoria)}
           categoriaInicial={categoria}
         />
       </div>

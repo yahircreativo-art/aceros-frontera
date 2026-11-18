@@ -1,0 +1,206 @@
+---
+/**
+ * CONTACTO E · "Panel dividido con formulario vivo"
+ * Izquierda: panel verde con el patrón de placa, titular que sube línea por
+ * línea, personaje que se asoma con el scroll y los datos de contacto.
+ * Derecha: tarjeta blanca que entra girando levemente; campos con etiqueta
+ * flotante y subrayado que crece desde el centro, chips de "¿Quién eres?",
+ * contador de caracteres. El botón se transforma al enviar: barra de carga
+ * → palomita "¡Listo!" → abre WhatsApp con el mensaje.
+ */
+import { siteSeo, whatsappUrl, icono, waBase } from './contacto-data';
+import { assetUrl } from '../../lib/asset-url';
+
+const perfiles = ['Particular', 'Herrero', 'Constructor', 'Empresa'];
+const lineas = ['¿Tienes una obra', 'en mente?', 'Hablemos.'];
+const datos = [
+  { icono: 'phone', corto: 'Llamar', valor: siteSeo.phone, href: `tel:${siteSeo.phoneHref}` },
+  { icono: 'whatsapp', corto: 'WhatsApp', valor: 'WhatsApp', href: whatsappUrl() },
+  { icono: 'mail', corto: 'Correo', valor: siteSeo.email, href: `mailto:${siteSeo.email}` },
+];
+const MAX = 400;
+---
+
+<section id="contacto" data-coe class="coe scroll-mt-28 bg-neutral-100 py-12 sm:py-16 lg:py-24" data-wa={waBase}>
+  <div class="container-page">
+    <div class="coe-tarjeta grid overflow-hidden bg-neutral-0 shadow-[0_40px_80px_-40px_rgb(8_18_13/35%)] lg:grid-cols-[1fr_1.15fr]">
+      <!-- Panel -->
+      <div data-coe-panel class="coe-panel relative isolate flex min-h-[23rem] flex-col overflow-hidden bg-green-800 p-6 pb-8 text-text-inverse sm:min-h-[26rem] sm:p-12">
+        <div aria-hidden="true" class="pattern-diamante absolute inset-0 -z-10"></div>
+        <h2 class="font-display text-[clamp(2.25rem,9.5vw,4.5rem)] leading-[0.92] font-extrabold uppercase">
+          {lineas.map((l, i) => (
+            <span class="block overflow-hidden"><span class:list={['coe-linea block', { 'text-accent-primary': i === 2 }]} style={`--i:${i}`}>{l}</span></span>
+          ))}
+        </h2>
+        <ul class="relative z-10 mt-8 flex flex-wrap gap-2 sm:mt-10 sm:flex-col sm:gap-3">
+          {datos.map((d, i) => (
+            <li class="coe-dato" style={`--i:${i + 3}`}>
+              <a href={d.href} target={d.icono === 'whatsapp' ? '_blank' : undefined} rel="noopener noreferrer" class="coe-enlace group inline-flex items-center gap-3 type-label">
+                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-white/10 text-accent-primary sm:size-10 transition group-hover:bg-accent-primary group-hover:text-neutral-1000">
+                  <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono(d.icono)} /></svg>
+                </span>
+                <span class="sm:hidden">{d.corto}</span>
+                <span class="hidden break-all group-hover:underline sm:inline">{d.valor}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <img src={assetUrl('/images/personaje.webp')} alt="" loading="lazy" class="coe-personaje" aria-hidden="true" />
+      </div>
+
+      <!-- Formulario -->
+      <form data-coe-form class="coe-form min-w-0 p-6 pb-10 sm:p-12" novalidate>
+        <p class="type-overline text-text-brand">Solicitud de cotización</p>
+        <p class="mt-2 type-body-m text-text-secondary">Te respondemos por WhatsApp, normalmente el mismo día.</p>
+
+        <fieldset class="mt-6 min-w-0 sm:mt-8">
+          <legend class="type-label">¿Quién eres?</legend>
+          <div class="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            {perfiles.map((p, i) => (
+              <label class="coe-chip"><input type="radio" name="perfil" value={p} class="sr-only" checked={i === 0} />{p}</label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div class="mt-6 grid gap-x-6 gap-y-6 sm:mt-8 sm:grid-cols-2 sm:gap-y-7">
+          <div class="coe-campo">
+            <input id="coe-nombre" name="nombre" type="text" autocomplete="name" required placeholder=" " />
+            <label for="coe-nombre">Nombre</label><i aria-hidden="true"></i>
+          </div>
+          <div class="coe-campo">
+            <input id="coe-tel" name="telefono" type="tel" autocomplete="tel" required placeholder=" " />
+            <label for="coe-tel">Teléfono</label><i aria-hidden="true"></i>
+          </div>
+          <div class="coe-campo sm:col-span-2">
+            <input id="coe-material" name="material" type="text" required placeholder=" " />
+            <label for="coe-material">Material, medidas y cantidad</label><i aria-hidden="true"></i>
+          </div>
+          <div class="coe-campo sm:col-span-2">
+            <textarea id="coe-notas" name="notas" rows="3" maxlength={MAX} placeholder=" "></textarea>
+            <label for="coe-notas">Detalles (opcional)</label><i aria-hidden="true"></i>
+            <span data-coe-cuenta class="absolute right-0 -bottom-6 type-caption text-text-muted">0 / {MAX}</span>
+          </div>
+        </div>
+
+        <p data-coe-error class="mt-8 type-body-s text-feedback-error-text" hidden>Completa nombre, teléfono y material.</p>
+
+        <button type="submit" data-coe-enviar class="coe-enviar mt-9 sm:mt-10">
+          <span class="coe-carga" aria-hidden="true"></span>
+          <span class="coe-txt coe-txt-1">Enviar por WhatsApp <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('whatsapp')} /></svg></span>
+          <span class="coe-txt coe-txt-2" aria-hidden="true">✓ ¡Listo!</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { alAparecer, progresoScroll } from '../../lib/scroll-progreso';
+
+  const sec = document.querySelector<HTMLElement>('[data-coe]');
+  if (sec) {
+    const panel = sec.querySelector<HTMLElement>('[data-coe-panel]')!;
+    const form = sec.querySelector<HTMLFormElement>('[data-coe-form]')!;
+    alAparecer([panel, form], 0.25);
+    progresoScroll(panel, 'paso');
+
+    const notas = form.querySelector<HTMLTextAreaElement>('textarea')!;
+    const cuenta = sec.querySelector<HTMLElement>('[data-coe-cuenta]')!;
+    notas.addEventListener('input', () => {
+      cuenta.textContent = `${notas.value.length} / ${notas.maxLength}`;
+      cuenta.classList.toggle('text-feedback-error-text', notas.value.length > notas.maxLength * 0.9);
+    });
+
+    const btn = sec.querySelector<HTMLButtonElement>('[data-coe-enviar]')!;
+    const error = sec.querySelector<HTMLElement>('[data-coe-error]')!;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = new FormData(form);
+      const faltan = ['nombre', 'telefono', 'material'].filter((n) => !String(d.get(n) ?? '').trim());
+      form.querySelectorAll('.coe-campo').forEach((c) => {
+        const campo = c.querySelector<HTMLInputElement>('input, textarea')!;
+        c.classList.toggle('is-error', faltan.includes(campo.name));
+      });
+      error.hidden = faltan.length === 0;
+      if (faltan.length) {
+        form.querySelector<HTMLElement>(`[name="${faltan[0]}"]`)?.focus();
+        return;
+      }
+      const mensaje = [
+        'Hola, quiero solicitar una cotización.',
+        `Soy: ${d.get('perfil')}`,
+        `Nombre: ${d.get('nombre')}`,
+        `Teléfono: ${d.get('telefono')}`,
+        `Material: ${d.get('material')}`,
+        d.get('notas') ? `Detalles: ${d.get('notas')}` : '',
+      ].filter(Boolean).join('\n');
+      const url = sec.dataset.wa + encodeURIComponent(mensaje);
+
+      /* Abrimos la pestaña dentro del clic (si no, el navegador la bloquea)
+         y la animación del botón corre mientras tanto. */
+      window.open(url, '_blank', 'noopener');
+      if (quieto) return;
+      btn.classList.add('is-cargando');
+      window.setTimeout(() => btn.classList.add('is-listo'), 900);
+      window.setTimeout(() => btn.classList.remove('is-cargando', 'is-listo'), 3200);
+    });
+    form.addEventListener('input', (e) => (e.target as HTMLElement).closest('.coe-campo')?.classList.remove('is-error'));
+  }
+</script>
+
+<style>
+  .coe-linea { translate: 0 110%; }
+  .coe-dato { opacity: 0; translate: -16px 0; }
+  .coe-panel:global(.is-visible) .coe-linea { translate: 0 0; transition: translate 900ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 110ms); }
+  .coe-panel:global(.is-visible) .coe-dato { opacity: 1; translate: 0 0; transition: opacity 500ms calc(var(--i) * 90ms), translate 600ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 90ms); }
+
+  /* El personaje sube conforme bajas */
+  .coe-personaje { position: absolute; right: -1.5rem; bottom: 0; z-index: -1; width: min(45%, 15rem); pointer-events: none; translate: 0 calc(55% - var(--p, 0.5) * 50%); rotate: calc(8deg - var(--p, 0.5) * 10deg); }
+  /* Celular: tarjeta de orilla a orilla, datos como botones compactos y
+     personaje más chico a la derecha (detrás de los botones). */
+  @media (max-width: 39.99rem) {
+    .coe-tarjeta { margin-inline: calc(var(--container-gutter) * -1); }
+    .coe-personaje { right: -0.75rem; width: 38%; }
+    .coe-enlace { gap: 0.5rem; padding: 0.3rem 0.9rem 0.3rem 0.3rem; border-radius: 999px; background: rgb(0 0 0 / 22%); backdrop-filter: blur(4px); }
+    .coe-chip { text-align: center; }
+  }
+
+  .coe-form { opacity: 0; translate: 40px 0; rotate: y -8deg; transform-origin: left center; }
+  .coe-form:global(.is-visible) { opacity: 1; translate: 0 0; rotate: y 0deg; transition: opacity 700ms 150ms, translate 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms, rotate 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms; }
+  @media (max-width: 39.99rem) { .coe-form { translate: 0 30px; rotate: none; } }
+
+  .coe-chip { padding: 0.55rem 1rem; border-radius: 999px; cursor: pointer; font-size: 0.875rem; font-weight: 600; box-shadow: inset 0 0 0 1px var(--color-border-default); transition: background 250ms, color 250ms, box-shadow 250ms, transform 300ms cubic-bezier(0.34, 1.5, 0.5, 1); }
+  .coe-chip:hover { box-shadow: inset 0 0 0 1px var(--color-neutral-950); }
+  .coe-chip:has(input:checked) { background: var(--color-green-700); color: var(--color-text-inverse); box-shadow: none; transform: scale(1.05); }
+  .coe-chip:has(input:focus-visible) { outline: 2px solid var(--color-green-700); outline-offset: 2px; }
+
+  /* Campo con etiqueta flotante */
+  .coe-campo { position: relative; }
+  .coe-campo input, .coe-campo textarea { display: block; width: 100%; padding: 1.4rem 0 0.5rem; background: transparent; border-bottom: 1px solid var(--color-border-field); outline: none; resize: none; font-size: 1rem; }
+  .coe-campo label { position: absolute; left: 0; top: 1.3rem; color: var(--color-text-muted); pointer-events: none; transform-origin: left top; transition: translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 250ms cubic-bezier(0.2, 0.8, 0.2, 1), color 250ms; }
+  .coe-campo :is(input, textarea):focus + label, .coe-campo :is(input, textarea):not(:placeholder-shown) + label { translate: 0 -1.25rem; scale: 0.8; color: var(--color-text-brand); }
+  .coe-campo i { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-green-600); scale: 0 1; transition: scale 400ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .coe-campo :is(input, textarea):focus ~ i { scale: 1 1; }
+  .coe-campo.is-error i { scale: 1 1; background: var(--color-error-500); }
+  .coe-campo.is-error label { color: var(--color-error-500); }
+  .coe-campo.is-error { animation: coe-sacude 400ms; }
+  @keyframes coe-sacude { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
+
+  /* Botón que se transforma */
+  .coe-enviar { position: relative; display: grid; width: 100%; height: 3.75rem; overflow: hidden; border-radius: 999px; cursor: pointer; background: var(--color-brand-primary); color: var(--color-text-on-brand); font-family: var(--font-display); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1), background 300ms, transform 250ms; }
+  @media (min-width: 40rem) { .coe-enviar { width: 18rem; } }
+  .coe-enviar:hover { background: var(--color-brand-hover); transform: translateY(-2px); }
+  .coe-txt { grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: translate 400ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 300ms; }
+  .coe-txt-2 { translate: 0 100%; opacity: 0; color: var(--color-neutral-1000); }
+  .coe-carga { position: absolute; inset: 0; background: var(--color-accent-primary); scale: 0 1; transform-origin: left; }
+  .coe-enviar.is-cargando .coe-carga { scale: 1 1; transition: scale 900ms cubic-bezier(0.6, 0, 0.2, 1); }
+  .coe-enviar.is-cargando .coe-txt-1 { opacity: 0; translate: 0 -100%; }
+  .coe-enviar.is-listo .coe-txt-2 { translate: 0 0; opacity: 1; }
+
+  :global(html:not(.js)) .coe-linea, :global(html:not(.js)) .coe-dato, :global(html:not(.js)) .coe-form { opacity: 1; translate: none; rotate: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .coe-linea, .coe-dato, .coe-form { opacity: 1 !important; translate: none !important; rotate: none !important; }
+    .coe-personaje { translate: 0 10%; rotate: 0deg; }
+  }
+</style>

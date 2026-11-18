@@ -6,7 +6,6 @@
 import { assetUrl } from '../../lib/asset-url';
 import { whatsappUrl } from '../../lib/seo';
 import Button from '../ui/Button.astro';
-import SectionTag from '../ui/SectionTag.astro';
 
 const puntos = [
   'Herramienta eléctrica e inalámbrica',
@@ -19,7 +18,7 @@ const marcas = ['Makita', 'Bosch', 'Lincoln Electric'];
 
 <section
   id="centro-de-servicio"
-  class="relative isolate scroll-mt-44 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:scroll-mt-28 lg:py-28"
+  class="relative isolate scroll-mt-24 overflow-hidden bg-surface-inverse py-20 text-text-inverse lg:py-28"
 >
   <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10 opacity-60"></div>
   <span
@@ -41,14 +40,13 @@ const marcas = ['Makita', 'Bosch', 'Lincoln Electric'];
         />
       </div>
       <ul class="absolute -bottom-5 left-6 flex flex-wrap gap-2">
-        {marcas.map((marca) => <li class="bg-surface-inverse px-3 py-2 type-overline text-text-accent">{marca}</li>)}
+        {marcas.map((marca) => <li class="bg-surface-inverse px-3 py-2 type-label text-text-accent">{marca}</li>)}
       </ul>
     </div>
 
     <div class="reveal [--reveal-delay:150ms]">
-      <SectionTag label="Centro de servicio autorizado" />
-      <h2 class="mt-6 font-display text-5xl leading-[0.92] font-extrabold uppercase sm:text-6xl">
-        Reparación y garantía de tu <span class="text-text-accent">herramienta</span>
+      <h2 class="font-display text-5xl leading-[0.92] font-extrabold uppercase sm:text-6xl">
+        Reparación y garantía de tu herramienta
       </h2>
       <p class="mt-5 max-w-lg type-body-l text-green-100">
         Diagnóstico, mantenimiento y refacciones originales para la herramienta que usas todos los días.

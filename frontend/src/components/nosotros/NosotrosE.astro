@@ -1,0 +1,224 @@
+---
+/**
+ * NOSOTROS E · "Carrusel en abanico" (ref. Partnered with top people)
+ * Fondo oscuro con brillo verde. El titular sube palabra por palabra al
+ * entrar. Debajo, un carrusel en abanico (coverflow) con los servicios: la
+ * tarjeta central crece y muestra su descripción sobre una retícula; las
+ * laterales se encogen y giran. Flechas, arrastre/deslizar, avance
+ * automático con barra de progreso. Cierra una marquesina con los logos de
+ * las marcas aliadas.
+ */
+import { servicios, logosMarcas, enlaces } from './nosotros-data';
+---
+
+<section id="nosotros" data-noe class="noe relative scroll-mt-28 overflow-hidden py-20 text-text-inverse lg:py-28">
+  <div aria-hidden="true" class="noe-fondo absolute inset-0 -z-10"></div>
+
+  <div class="container-page text-center">
+    <h2 data-noe-titulo class="font-display text-[clamp(2.5rem,6vw,4.75rem)] leading-[0.95] font-semibold">
+      {'Más que vender acero,'.split(' ').map((w, i) => <span class="noe-w" style={`--i:${i}`}>{w} </span>)}
+      <br />
+      {'resolvemos tu obra'.split(' ').map((w, i) => <span class="noe-w italic text-accent-primary" style={`--i:${i + 4}`}>{w} </span>)}
+    </h2>
+  </div>
+
+  <!-- Carrusel -->
+  <div data-noe-carrusel class="noe-carrusel relative mx-auto mt-14 h-[26rem] max-w-[72rem] select-none touch-pan-y sm:h-[28rem]" aria-roledescription="carrusel" aria-label="Servicios">
+    {
+      servicios.map((s, i) => (
+        <a href={s.href} data-noe-card class="noe-card" style={`--i:${i}`} aria-label={s.titulo} draggable="false">
+          <img src={s.imagen} alt="" loading="lazy" draggable="false" class="absolute inset-0 size-full object-cover" />
+          <span class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+          <span class="noe-info">
+            <span class="type-overline text-accent-primary">{String(i + 1).padStart(2, '0')} / Servicio</span>
+            <span class="mt-2 block font-display text-3xl leading-none font-bold">{s.titulo}</span>
+            <span class="noe-desc mt-3 block type-body-s text-text-inverse-muted">{s.desc}</span>
+          </span>
+        </a>
+      ))
+    }
+    <button type="button" data-noe-prev class="noe-flecha left-2 sm:left-4" aria-label="Anterior">‹</button>
+    <button type="button" data-noe-next class="noe-flecha right-2 sm:right-4" aria-label="Siguiente">›</button>
+  </div>
+
+  <div class="mt-8 flex justify-center gap-2" aria-hidden="true">
+    {servicios.map((_, i) => <span data-noe-punto={i} class="noe-punto"><i></i></span>)}
+  </div>
+
+  <!-- Marcas -->
+  {
+    logosMarcas.length > 0 && (
+      <div class="noe-marcas mt-20 overflow-hidden" aria-label="Marcas aliadas">
+        <p class="mb-6 text-center type-overline text-text-inverse-muted">Marcas que nos respaldan</p>
+        <div class="noe-pista flex w-max gap-6">
+          {[0, 1].map((copia) =>
+            logosMarcas.map((m) => (
+              <span class="noe-logo grid h-16 w-36 shrink-0 place-items-center rounded-xl bg-white px-4" aria-hidden={copia === 1 ? 'true' : undefined}>
+                <img src={m.imagen} alt={copia === 0 ? m.nombre : ''} loading="lazy" class="max-h-10 w-auto object-contain" />
+              </span>
+            )),
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  <div class="mt-12 text-center">
+    <a href={enlaces.cotizar} target="_blank" rel="noopener noreferrer" class="noe-cta inline-flex items-center gap-2 rounded-full bg-accent-primary px-6 py-3 type-button-m text-neutral-1000">
+      Cotiza tu proyecto <span aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<script>
+  import { alAparecer } from '../../lib/scroll-progreso';
+
+  const sec = document.querySelector<HTMLElement>('[data-noe]');
+  if (sec) {
+    alAparecer([sec.querySelector('[data-noe-titulo]')!], 0.4);
+    const carrusel = sec.querySelector<HTMLElement>('[data-noe-carrusel]')!;
+    alAparecer([carrusel], 0.25, () => iniciar());
+
+    const cards = [...carrusel.querySelectorAll<HTMLElement>('[data-noe-card]')];
+    const puntos = [...sec.querySelectorAll<HTMLElement>('[data-noe-punto]')];
+    const n = cards.length;
+    const AUTO = 4500;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activa = 0;
+    let temporizador: number | undefined;
+    let pausa = false;
+
+    const pintar = () => {
+      cards.forEach((c, i) => {
+        let d = i - activa;
+        if (d > n / 2) d -= n;
+        if (d < -n / 2) d += n;
+        c.style.setProperty('--d', String(d));
+        c.style.setProperty('--ad', String(Math.abs(d)));
+        c.classList.toggle('is-activa', d === 0);
+        c.tabIndex = d === 0 ? 0 : -1;
+        c.setAttribute('aria-hidden', String(d !== 0));
+      });
+      puntos.forEach((p, i) => {
+        p.classList.toggle('is-on', i === activa);
+        p.querySelector('i')!.style.animation = 'none';
+        void p.offsetWidth;
+        p.querySelector('i')!.style.animation = '';
+      });
+    };
+    const ir = (i: number) => {
+      activa = (i + n) % n;
+      pintar();
+      programar();
+    };
+    const programar = () => {
+      window.clearTimeout(temporizador);
+      if (!quieto && !pausa) temporizador = window.setTimeout(() => ir(activa + 1), AUTO);
+    };
+    function iniciar() {
+      carrusel.classList.add('is-listo');
+      programar();
+    }
+    pintar();
+
+    sec.querySelector('[data-noe-prev]')!.addEventListener('click', () => ir(activa - 1));
+    sec.querySelector('[data-noe-next]')!.addEventListener('click', () => ir(activa + 1));
+    carrusel.addEventListener('mouseenter', () => { pausa = true; sec.classList.add('is-pausa'); window.clearTimeout(temporizador); });
+    carrusel.addEventListener('mouseleave', () => { pausa = false; sec.classList.remove('is-pausa'); programar(); });
+
+    /* Clic en una lateral la trae al centro; arrastre para cambiar */
+    let x0 = 0, movido = 0, abajo = false;
+    carrusel.addEventListener('pointerdown', (e) => { abajo = true; x0 = e.clientX; movido = 0; });
+    carrusel.addEventListener('pointermove', (e) => { if (abajo) movido = e.clientX - x0; });
+    carrusel.addEventListener('pointerup', () => {
+      abajo = false;
+      if (Math.abs(movido) > 40) ir(activa + (movido < 0 ? 1 : -1));
+    });
+    cards.forEach((c, i) =>
+      c.addEventListener('click', (e) => {
+        if (Math.abs(movido) > 6) return e.preventDefault();
+        if (i !== activa) { e.preventDefault(); ir(i); }
+      }),
+    );
+    carrusel.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') ir(activa + 1);
+      if (e.key === 'ArrowLeft') ir(activa - 1);
+    });
+  }
+</script>
+
+<style>
+  .noe-fondo {
+    background:
+      radial-gradient(60% 50% at 50% 55%, rgb(13 128 94 / 35%), transparent 70%),
+      radial-gradient(30% 30% at 50% 100%, rgb(234 192 43 / 12%), transparent 70%),
+      linear-gradient(180deg, var(--color-green-950), var(--color-neutral-950));
+  }
+
+  .noe-w { display: inline-block; white-space: pre; opacity: 0; translate: 0 0.5em; filter: blur(6px); }
+  [data-noe-titulo]:global(.is-visible) .noe-w { opacity: 1; translate: 0 0; filter: none; transition: opacity 600ms, translate 800ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 600ms; transition-delay: calc(var(--i) * 70ms); }
+
+  /* Coverflow */
+  .noe-carrusel { perspective: 1400px; }
+  .noe-card {
+    --w: clamp(14rem, 26vw, 19rem);
+    position: absolute; left: 50%; top: 50%; width: var(--w); height: 92%; overflow: hidden; border-radius: 1.25rem;
+    box-shadow: 0 30px 60px -20px rgb(0 0 0 / 70%), inset 0 0 0 1px rgb(255 255 255 / 10%);
+    translate: calc(-50% + var(--d, 0) * var(--w) * 0.78) calc(-50% + var(--ad, 0) * 18px);
+    scale: calc(1 - var(--ad, 0) * 0.12);
+    rotate: y calc(var(--d, 0) * -14deg);
+    opacity: clamp(0, calc(1.6 - var(--ad, 0) * 0.45), 1);
+    z-index: calc(10 - var(--ad, 0));
+    filter: brightness(calc(1 - var(--ad, 0) * 0.22)) grayscale(calc(var(--ad, 0) * 0.35));
+    transition: translate 700ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 700ms cubic-bezier(0.2, 0.8, 0.2, 1), rotate 700ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 500ms, filter 500ms, width 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+  }
+  .noe-card.is-activa { --w: clamp(16rem, 32vw, 24rem); }
+  /* Entrada: todas salen del centro y se abren en abanico */
+  .noe-carrusel:not(.is-listo) .noe-card { translate: -50% -30%; scale: 0.7; opacity: 0; rotate: y 0deg; }
+  .noe-card img { transition: scale 900ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .noe-card.is-activa img { scale: 1.06; }
+
+  .noe-info { position: absolute; inset-inline: 0; bottom: 0; padding: 1.5rem; text-align: left; }
+  .noe-card.is-activa .noe-info {
+    background: linear-gradient(to top, rgb(1 49 34 / 95%), rgb(1 49 34 / 70%) 60%, transparent),
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 20px 20px,
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px) 0 0 / 20px 20px;
+  }
+  .noe-desc { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 600ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 400ms; }
+  .is-activa .noe-desc { max-height: 6rem; opacity: 1; transition-delay: 0s, 250ms; }
+
+  .noe-flecha {
+    position: absolute; top: 50%; z-index: 20; translate: 0 -50%;
+    display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 999px; cursor: pointer;
+    background: rgb(255 255 255 / 8%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%); backdrop-filter: blur(6px);
+    font-size: 1.5rem; transition: background 200ms, color 200ms, scale 200ms;
+  }
+  .noe-flecha:hover { background: var(--color-accent-primary); color: var(--color-neutral-1000); scale: 1.08; }
+
+  .noe-punto { position: relative; width: 1.25rem; height: 4px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / 18%); transition: width 400ms; }
+  .noe-punto.is-on { width: 3rem; }
+  .noe-punto i { position: absolute; inset: 0; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .noe-punto.is-on i { animation: noe-avance 4.5s linear forwards; }
+  .noe.is-pausa .noe-punto.is-on i { animation-play-state: paused; }
+  @keyframes noe-avance { to { transform: scaleX(1); } }
+
+  .noe-marcas { mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  .noe-pista { animation: noe-marquesina 40s linear infinite; }
+  .noe-marcas:hover .noe-pista { animation-play-state: paused; }
+  @keyframes noe-marquesina { to { transform: translateX(calc(-50% - 0.75rem)); } }
+  .noe-logo img { filter: grayscale(1); opacity: 0.7; transition: filter 300ms, opacity 300ms; }
+  .noe-logo:hover img { filter: none; opacity: 1; }
+
+  .noe-cta { transition: transform 300ms cubic-bezier(0.34, 1.5, 0.5, 1), background 200ms; }
+  .noe-cta:hover { transform: scale(1.05); background: var(--color-accent-hover); }
+
+  :global(html:not(.js)) .noe-w { opacity: 1; translate: none; filter: none; }
+  :global(html:not(.js)) .noe-carrusel .noe-card { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .noe-w { opacity: 1 !important; translate: none !important; filter: none !important; }
+    .noe-card, .noe-card img { transition: none !important; }
+    .noe-pista, .noe-punto i { animation: none !important; }
+  }
+</style>

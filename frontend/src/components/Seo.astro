@@ -2,27 +2,39 @@
 import seo from '../data/seo.json';
 import type { PageId } from '../lib/seo';
 import { assetUrl } from '../lib/asset-url';
+import { sucursales, horarioSchema } from '../data/sucursales';
 
 interface Props {
   page: PageId;
   title?: string;
   description?: string;
   path?: string;
+  /** Imagen para Open Graph (URL absoluta o ruta de public/). Por defecto, la del sitio. */
+  image?: string;
+  ogType?: string;
+  /** Nodos JSON-LD propios de la página (Product, BreadcrumbList…). */
+  extraLd?: Record<string, unknown>[];
 }
 
-const { page, title, description, path } = Astro.props;
+const { page, title, description, path, image: imagenPagina, ogType, extraLd = [] } = Astro.props;
 const site = seo.site;
 const data = {
   ...seo.pages[page],
   title: title ?? seo.pages[page].title,
   description: description ?? seo.pages[page].description,
   path: path ?? seo.pages[page].path,
+  ogType: ogType ?? seo.pages[page].ogType,
 };
 
 const baseUrl = Astro.site?.toString() ?? site.baseUrl;
 const siteRoot = new URL(assetUrl('/'), baseUrl).toString();
-const canonical = new URL(data.path.replace(/^\/+/, ''), siteRoot).toString();
-const image = new URL(assetUrl(site.defaultImage), baseUrl).toString();
+/* Barra final igual que el sitemap y que GitHub Pages; sin ella cada canonical es una redirección 301. */
+const rutaCanonica = data.path.replace(/^\/+/, '').replace(/\/?$/, '/').replace(/^\/$/, '');
+const canonical = new URL(rutaCanonica, siteRoot).toString();
+const imagenPropia = Boolean(imagenPagina);
+const image = imagenPagina
+  ? /^https?:\/\//.test(imagenPagina) ? imagenPagina : new URL(assetUrl(imagenPagina), baseUrl).toString()
+  : new URL(assetUrl(site.defaultImage), baseUrl).toString();
 const organizationId = `${siteRoot}#organization`;
 const websiteId = `${siteRoot}#website`;
 
@@ -42,12 +54,10 @@ const organization = {
     streetAddress: site.address.street,
     addressLocality: site.address.city,
     addressRegion: site.address.region,
+    postalCode: site.address.postalCode,
     addressCountry: site.address.country,
   },
-  areaServed: {
-    '@type': 'Country',
-    name: site.areaServed,
-  },
+  areaServed: [...new Set(sucursales.map((s) => s.ciudad))].map((ciudad) => ({ '@type': 'City', name: ciudad })),
   openingHoursSpecification: site.openingHours.map((horario) => ({
     '@type': 'OpeningHoursSpecification',
     dayOfWeek: horario.days,
@@ -55,7 +65,31 @@ const organization = {
     closes: horario.closes,
   })),
   sameAs: site.socials.map((red) => red.url),
+  department: sucursales.map((s) => ({ '@id': `${siteRoot}sucursales/#${s.id}` })),
 };
+
+/* Una tienda por sucursal con sus datos reales (src/data/sucursales.ts) para la búsqueda local. */
+const tiendas = sucursales.map((s) => ({
+  '@type': site.businessType,
+  '@id': `${siteRoot}sucursales/#${s.id}`,
+  name: `${site.name} ${s.nombre.replace(/^Sucursal\s+/, '')}`,
+  url: `${siteRoot}sucursales/#${s.id}`,
+  image,
+  telephone: `+52${s.telefonos[0].replace(/\D/g, '')}`,
+  priceRange: site.priceRange,
+  parentOrganization: { '@id': organizationId },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: s.direccion,
+    addressLocality: s.ciudad,
+    addressRegion: s.estado,
+    ...(s.codigoPostal ? { postalCode: s.codigoPostal } : {}),
+    addressCountry: site.address.country,
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: s.coordenadas.lat, longitude: s.coordenadas.lng },
+  hasMap: s.mapaUrl,
+  openingHoursSpecification: horarioSchema(s),
+}));
 
 const website = {
   '@type': 'WebSite',
@@ -79,7 +113,7 @@ const webpage = {
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': [organization, website, webpage],
+  '@graph': [organization, ...tiendas, website, webpage, ...extraLd],
 };
 ---
 
@@ -100,9 +134,13 @@ const jsonLd = {
 <meta property="og:description" content={data.description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={image} />
-<meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+{imagenPropia ? null : (
+  <>
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+  </>
+)}
 
 <meta name="twitter:card" content={site.twitterCard} />
 {site.twitterSite ? <meta name="twitter:site" content={site.twitterSite} /> : null}

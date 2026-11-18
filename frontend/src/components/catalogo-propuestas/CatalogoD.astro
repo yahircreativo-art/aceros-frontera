@@ -1,0 +1,175 @@
+---
+/**
+ * CATÁLOGO D · "Mesa de dibujo"
+ * Izquierda: pestañas con las familias; la activa muestra una barra que se
+ * llena (avance automático cada 5 s mientras no toques nada).
+ * Derecha: una mesa de dibujo con retícula donde la pieza de la familia se
+ * traza en grande, con cota y notas; sus productos caen como etiquetas y el
+ * número gigante de la familia se desliza al cambiar.
+ */
+import type { Producto } from '../../lib/types';
+import Pictogram from '../ui/Pictogram.astro';
+import PlanoLinea from './PlanoLinea.astro';
+import { prepararFamilias, catalogoUrl, cotizarLista } from './catalogo-data';
+
+interface Props { productos: Producto[] }
+const familias = prepararFamilias(Astro.props.productos);
+---
+
+<section id="categorias" data-cad class="cad scroll-mt-28 bg-neutral-0 py-20 lg:py-28">
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="type-overline text-text-brand">Catálogo</p>
+        <h2 class="mt-3 type-h1">Lo que encuentras <span class="text-text-brand">en la tienda</span></h2>
+      </div>
+      <a href={catalogoUrl} class="type-button-m underline decoration-accent-primary decoration-4 underline-offset-8 hover:text-text-brand">Ver catálogo completo</a>
+    </div>
+
+    <div class="mt-12 grid gap-6 lg:grid-cols-[19rem_1fr]">
+      <div role="tablist" aria-label="Familias de producto" class="cad-tabs flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+        {familias.map((f, i) => (
+          <button type="button" role="tab" id={`cad-tab-${i}`} aria-controls={`cad-panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-cad-tab={i} class="cad-tab">
+            <Pictogram name={f.icono} class="size-6 shrink-0" />
+            <span class="whitespace-nowrap">{f.titulo}</span>
+            <span class="cad-num ml-auto font-mono text-xs">{f.numero}</span>
+            <i class="cad-avance" aria-hidden="true"></i>
+          </button>
+        ))}
+      </div>
+
+      <div class="cad-mesa relative min-h-[30rem] overflow-hidden rounded-3xl bg-green-950 text-white lg:min-h-[34rem]">
+        <div aria-hidden="true" class="cad-reticula absolute inset-0"></div>
+        {familias.map((f, i) => (
+          <div role="tabpanel" id={`cad-panel-${i}`} aria-labelledby={`cad-tab-${i}`} data-cad-panel={i} class:list={['cad-panel absolute inset-0 grid p-6 sm:p-10 lg:grid-cols-[1fr_15rem]', { 'is-on is-trazado': i === 0 }]} hidden={i !== 0}>
+            <span aria-hidden="true" class="cad-gigante">{f.numero}</span>
+            <div class="relative flex min-h-56 items-center">
+              <PlanoLinea plano={f.plano} nombre={f.pieza} class="cad-dibujo h-full max-h-[24rem] w-full" />
+            </div>
+            <div class="relative flex flex-col justify-end gap-4">
+              <div>
+                <p class="font-mono text-[0.6875rem] tracking-[0.18em] text-text-accent">{f.pieza.toUpperCase()}</p>
+                <p class="mt-1 font-display text-4xl leading-none font-extrabold uppercase">{f.titulo}</p>
+                <p class="mt-1 font-mono text-xs text-white/60">{f.spec}</p>
+              </div>
+              <ul class="flex flex-wrap gap-1.5">
+                {f.items.map((it, k) => <li class="cad-chip" style={`--k:${k}`}>{it}</li>)}
+              </ul>
+              <div class="flex flex-wrap gap-2 pt-2">
+                <a href={f.href} class="cad-btn bg-accent-primary text-neutral-1000">Ver {f.corto.toLowerCase()} →</a>
+                <a href={cotizarLista} target="_blank" rel="noopener noreferrer" class="cad-btn ring-1 ring-white/25">Cotizar</a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-cad]');
+  if (sec) {
+    const tabs = [...sec.querySelectorAll<HTMLButtonElement>('[data-cad-tab]')];
+    const paneles = [...sec.querySelectorAll<HTMLElement>('[data-cad-panel]')];
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const AUTO = 5000;
+    let activa = 0, auto = !quieto, visible = false, t: number | undefined;
+
+    const ir = (i: number, enfocar = false) => {
+      activa = (i + tabs.length) % tabs.length;
+      tabs.forEach((b, k) => {
+        const on = k === activa;
+        b.setAttribute('aria-selected', String(on));
+        b.tabIndex = on ? 0 : -1;
+        b.classList.remove('is-corre');
+      });
+      paneles.forEach((p, k) => {
+        p.hidden = k !== activa;
+        p.classList.remove('is-on', 'is-trazado');
+      });
+      void paneles[activa].offsetWidth;
+      paneles[activa].classList.add('is-on', 'is-trazado');
+      if (enfocar) tabs[activa].focus();
+      tabs[activa].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      programar();
+    };
+    const programar = () => {
+      window.clearTimeout(t);
+      if (!auto || !visible) return;
+      void tabs[activa].offsetWidth;
+      tabs[activa].classList.add('is-corre');
+      t = window.setTimeout(() => ir(activa + 1), AUTO);
+    };
+    const detener = () => {
+      auto = false;
+      window.clearTimeout(t);
+      tabs.forEach((b) => b.classList.remove('is-corre'));
+    };
+
+    tabs.forEach((b, i) => b.addEventListener('click', () => { detener(); ir(i); }));
+    sec.querySelector('[role="tablist"]')!.addEventListener('keydown', (e) => {
+      const k = (e as KeyboardEvent).key;
+      const d = k === 'ArrowDown' || k === 'ArrowRight' ? 1 : k === 'ArrowUp' || k === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      detener();
+      ir(activa + d, true);
+    });
+    sec.querySelector('.cad-mesa')!.addEventListener('pointerenter', detener);
+
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) {
+        paneles[activa].classList.remove('is-trazado');
+        void paneles[activa].offsetWidth;
+        paneles[activa].classList.add('is-trazado');
+        programar();
+      } else window.clearTimeout(t);
+    }, { threshold: 0.35 }).observe(sec.querySelector('.cad-mesa')!);
+    /* Esperamos a que se vea para trazar el primero */
+    paneles[0].classList.remove('is-trazado');
+  }
+</script>
+
+<style>
+  .cad-tabs { scrollbar-width: none; }
+  .cad-tab {
+    position: relative; display: flex; align-items: center; gap: 0.85rem; padding: 0.95rem 1.1rem; border-radius: 1rem; cursor: pointer; overflow: hidden; flex-shrink: 0;
+    background: var(--color-neutral-100); color: var(--color-text-secondary); font-weight: 600; text-align: left;
+    transition: background 300ms, color 300ms, transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .cad-tab:hover { color: var(--color-text-primary); transform: translateX(3px); }
+  .cad-tab[aria-selected="true"] { background: var(--color-neutral-950); color: var(--color-text-inverse); }
+  .cad-tab[aria-selected="true"] :global(svg) { color: var(--color-accent-primary); }
+  .cad-num { opacity: 0.5; }
+  .cad-avance { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .cad-tab:global(.is-corre) .cad-avance { animation: cad-avanza 5s linear forwards; }
+  @keyframes cad-avanza { to { transform: scaleX(1); } }
+
+  .cad-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  }
+  .cad-panel { position: absolute; }
+  .cad-panel:not([hidden]) { display: grid; }
+  .cad-gigante { position: absolute; right: -1rem; top: -2.5rem; font-family: var(--font-display); font-weight: 800; font-size: clamp(10rem, 22vw, 18rem); line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.12); pointer-events: none; }
+  .cad-panel:global(.is-on) .cad-gigante { animation: cad-num 800ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @keyframes cad-num { from { translate: 0 40%; opacity: 0; } }
+  .cad-panel :global(.cad-dibujo) { color: rgb(255 255 255 / 0.92); }
+  .cad-panel:global(.is-on) > div:last-child > div:first-child { animation: cad-sube 700ms cubic-bezier(0.2, 0.8, 0.2, 1) 150ms both; }
+  @keyframes cad-sube { from { translate: 0 20px; opacity: 0; } }
+  .cad-chip { padding: 0.3rem 0.7rem; border-radius: 999px; background: rgb(255 255 255 / 0.08); font-size: 0.8125rem; }
+  .cad-panel:global(.is-on) .cad-chip { animation: cad-cae 500ms cubic-bezier(0.34, 1.5, 0.5, 1) both; animation-delay: calc(400ms + var(--k) * 60ms); }
+  @keyframes cad-cae { from { translate: 0 -14px; opacity: 0; scale: 0.8; } }
+  .cad-btn { display: inline-flex; padding: 0.7rem 1.1rem; border-radius: 999px; font-weight: 600; font-size: 0.875rem; transition: transform 200ms; }
+  .cad-btn:hover { transform: translateY(-2px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cad *, .cad-panel * { animation: none !important; }
+  }
+</style>

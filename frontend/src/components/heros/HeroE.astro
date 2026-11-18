@@ -1,0 +1,234 @@
+---
+/**
+ * HERO E · "Escaparate en arco" (ref. Potu)
+ * Titular centrado con palabra que rota (perfiles → lámina → varilla…) y,
+ * debajo, un carrusel infinito de familias que corre solo sobre un arco:
+ * las tarjetas se inclinan y bajan según su distancia al centro. Se puede
+ * arrastrar (con inercia) y se pausa al pasar el cursor. El personaje
+ * aparece a la izquierda con un globo de diálogo.
+ *
+ * Uso: <HeroE />  ·  sin personaje: <HeroE personaje={false} />
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import { familias } from '../../data/familias';
+import Button from '../ui/Button.astro';
+import Pictogram from '../ui/Pictogram.astro';
+
+interface Props {
+  personaje?: boolean;
+}
+const { personaje = true } = Astro.props;
+
+const fotos = ['/images/dsc06679.webp', '/images/dsc06588.webp', '/images/dsc06636.webp', '/images/dsc06752.webp', '/images/hero-bg.webp', '/images/dsc06771.webp', '/images/dsc06784.webp'];
+const estilos = ['foto', 'amarillo', 'foto', 'verde', 'foto', 'negro', 'foto'] as const;
+const tarjetas = [...familias, ...familias].map((f, i) => ({
+  ...f,
+  foto: assetUrl(fotos[i % fotos.length]),
+  estilo: estilos[i % estilos.length],
+  href: rutaInterna('/catalogo'),
+}));
+const palabras = ['perfiles', 'lámina', 'varilla', 'tubería', 'herramienta'];
+---
+
+<section id="inicio" data-he class="he relative isolate overflow-hidden bg-neutral-50 text-text-primary">
+  <div aria-hidden="true" class="he-fondo absolute inset-0 -z-10"></div>
+
+  <div class="container-page relative pt-14 text-center lg:pt-20">
+    
+    <h1 class="he-in mx-auto mt-6 max-w-5xl font-display text-[clamp(3rem,6vw,5rem)] leading-[0.92] font-extrabold uppercase" style="--i:1">
+      Todo el acero en<br />
+      <span class="he-rota" data-he-rota aria-hidden="true">
+        {palabras.map((p, i) => <span class:list={['he-palabra', { 'is-on': i === 0 }]}>{p}</span>)}
+      </span>
+      <span class="sr-only">perfiles, lámina, varilla, tubería y herramienta</span>
+      para tu obra
+    </h1>
+    <p class="he-in mx-auto mt-6 max-w-xl type-body-l text-text-secondary" style="--i:2">
+      Acero, ferretería y herramienta en un solo lugar, con fabricación de armex y entrega en obra.
+    </p>
+    <div class="he-in mt-8 flex flex-wrap justify-center gap-4" style="--i:3">
+      <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+      <Button href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+    </div>
+
+    {
+      personaje && (
+        <div class="he-personaje pointer-events-none absolute -bottom-16 left-0 z-10 hidden w-44 xl:block 2xl:w-52">
+          
+          <img src={assetUrl('/images/personaje.webp')} alt="Personaje de Aceros Frontera con los brazos cruzados" width="780" height="1400" loading="eager" class="h-auto w-full" />
+        </div>
+      )
+    }
+  </div>
+
+  <!-- Carrusel en arco -->
+  <div data-he-pista class="he-pista relative mt-10 h-[22rem] cursor-grab select-none touch-pan-y sm:h-[25rem] lg:mt-14" aria-label="Familias de producto">
+    {
+      tarjetas.map((t, i) => (
+        <a href={t.href} data-he-card class:list={['he-card', `he-${t.estilo}`]} aria-hidden={i >= familias.length ? 'true' : undefined} tabindex={i >= familias.length ? -1 : undefined} draggable="false">
+          {t.estilo === 'foto' ? (
+            <>
+              <img src={t.foto} alt="" loading="lazy" draggable="false" class="absolute inset-0 size-full object-cover" />
+              <span class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+              <span class="relative mt-auto text-left">
+                <span class="block type-caption uppercase tracking-[0.14em] text-accent-primary">Familia</span>
+                <span class="block font-display text-3xl font-extrabold uppercase text-text-inverse">{t.titulo}</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <Pictogram name={t.icono} class="size-14" />
+              <span class="mt-auto text-left">
+                <span class="block font-display text-3xl font-extrabold uppercase leading-none">{t.titulo}</span>
+                <span class="mt-2 block type-caption opacity-80">{t.items.slice(0, 3).join(' · ')}</span>
+              </span>
+            </>
+          )}
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-he]');
+  if (root) {
+    requestAnimationFrame(() => root.classList.add('is-in'));
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Palabra que rota */
+    const palabras = [...root.querySelectorAll<HTMLElement>('.he-palabra')];
+    const caja = root.querySelector<HTMLElement>('[data-he-rota]')!;
+    let p = 0;
+    const ajustar = () => (caja.style.width = `${palabras[p].offsetWidth}px`);
+    ajustar();
+    if (!quieto)
+      window.setInterval(() => {
+        palabras[p].classList.replace('is-on', 'is-off');
+        const anterior = palabras[p];
+        window.setTimeout(() => anterior.classList.remove('is-off'), 600);
+        p = (p + 1) % palabras.length;
+        palabras[p].classList.add('is-on');
+        ajustar();
+      }, 2200);
+    window.addEventListener('resize', ajustar);
+
+    /* Carrusel en arco con arrastre e inercia */
+    const pista = root.querySelector<HTMLElement>('[data-he-pista]')!;
+    const cards = [...pista.querySelectorAll<HTMLElement>('[data-he-card]')];
+    let ancho = 0, paso = 0, total = 0;
+    const medir = () => {
+      ancho = pista.clientWidth;
+      paso = cards[0].offsetWidth + 20;
+      total = paso * cards.length;
+    };
+    medir();
+    window.addEventListener('resize', medir);
+
+    let pos = 0;
+    let vel = quieto ? 0 : 0.45;
+    const BASE = quieto ? 0 : 0.45;
+    let arrastrando = false, sobre = false, ultimoX = 0, movido = 0;
+
+    const pintar = () => {
+      const centro = ancho / 2;
+      cards.forEach((c, i) => {
+        let x = (i * paso - pos) % total;
+        if (x < -paso) x += total;
+        const medio = x + paso / 2 - 10 - centro;
+        const n = medio / (ancho / 2 || 1); // -1 … 1 aprox.
+        const y = n * n * 70;
+        const rot = n * 9;
+        c.style.transform = `translate3d(${x}px, ${y.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg)`;
+        c.style.zIndex = String(100 - Math.round(Math.abs(n) * 50));
+      });
+    };
+    const bucle = () => {
+      if (!arrastrando) {
+        const meta = sobre ? 0 : BASE;
+        vel += (meta - vel) * 0.04;
+        pos = (pos + vel + total) % total;
+      }
+      pintar();
+      requestAnimationFrame(bucle);
+    };
+    requestAnimationFrame(bucle);
+
+    pista.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') sobre = true; });
+    pista.addEventListener('pointerleave', () => (sobre = false));
+    pista.addEventListener('pointerdown', (e) => {
+      arrastrando = true; movido = 0; ultimoX = e.clientX; vel = 0;
+      pista.setPointerCapture(e.pointerId);
+      pista.classList.add('is-drag');
+    });
+    pista.addEventListener('pointermove', (e) => {
+      if (!arrastrando) return;
+      const dx = e.clientX - ultimoX;
+      ultimoX = e.clientX;
+      movido += Math.abs(dx);
+      pos = (pos - dx + total) % total;
+      vel = -dx;
+    });
+    const soltar = () => { arrastrando = false; pista.classList.remove('is-drag'); };
+    pista.addEventListener('pointerup', soltar);
+    pista.addEventListener('pointercancel', soltar);
+    /* Si se arrastró, el clic no navega */
+    pista.addEventListener('click', (e) => { if (movido > 6) e.preventDefault(); }, true);
+  }
+</script>
+
+<style>
+  .he-fondo {
+    background:
+      radial-gradient(50% 60% at 50% 100%, rgb(234 192 43 / 18%), transparent 70%),
+      linear-gradient(to right, rgb(8 18 13 / 0.04) 1px, transparent 1px) 0 0 / 64px 64px,
+      linear-gradient(to bottom, rgb(8 18 13 / 0.04) 1px, transparent 1px) 0 0 / 64px 64px;
+    mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  }
+
+  .he-in { opacity: 0; transform: translateY(18px); transition: opacity 700ms, transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(100ms + var(--i) * 100ms); }
+  .is-in .he-in, html:not(.js) .he-in { opacity: 1; transform: none; }
+  .he-punto { animation: he-late 1.6s ease-in-out infinite; }
+  @keyframes he-late { 50% { box-shadow: 0 0 0 5px rgb(22 163 74 / 20%); } }
+
+  /* Palabra rotativa */
+  .he-rota { position: relative; display: inline-block; height: 0.95em; vertical-align: bottom; overflow: hidden; color: var(--color-green-700); transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .he-palabra { position: absolute; left: 0; bottom: 0; white-space: nowrap; transform: translateY(100%); }
+  .he-palabra.is-on { position: relative; display: inline-block; transform: none; transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .he-palabra.is-off { transform: translateY(-100%); transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .he-rota::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.04em; height: 0.08em; background: var(--color-accent-primary); }
+
+  /* Personaje con globo */
+  .he-personaje { opacity: 0; transform: translateX(-30px) rotate(-4deg); transition: opacity 700ms 700ms, transform 1000ms cubic-bezier(0.34, 1.3, 0.5, 1) 700ms; filter: drop-shadow(0 20px 30px rgb(8 18 13 / 20%)); }
+  .is-in .he-personaje, html:not(.js) .he-personaje { opacity: 1; transform: none; }
+  .he-globo {
+    position: absolute; right: -2.5rem; top: 1.5rem; z-index: 1; padding: 0.6rem 0.9rem; border-radius: 1rem 1rem 1rem 0.2rem;
+    background: var(--color-neutral-950); color: var(--color-text-inverse); font-family: var(--font-display); font-weight: 700; font-size: 1rem; text-transform: uppercase; white-space: nowrap;
+    transform-origin: bottom left; scale: 0; transition: scale 500ms cubic-bezier(0.34, 1.5, 0.5, 1) 1500ms;
+  }
+  .is-in .he-globo, html:not(.js) .he-globo { scale: 1; }
+
+  /* Tarjetas */
+  .he-pista { overflow: hidden; }
+  .he-pista.is-drag { cursor: grabbing; }
+  .he-card {
+    position: absolute; top: 1rem; left: 0; display: flex; flex-direction: column; gap: 0.5rem;
+    width: clamp(13rem, 22vw, 17rem); aspect-ratio: 3 / 4; padding: 1.25rem; overflow: hidden; border-radius: 1.25rem;
+    box-shadow: 0 20px 40px -12px rgb(8 18 13 / 35%); will-change: transform; transform-origin: 50% 100%;
+    transition: box-shadow 300ms;
+  }
+  .he-card:hover { box-shadow: 0 30px 50px -10px rgb(8 18 13 / 45%), 0 0 0 3px var(--color-accent-primary); }
+  .he-card img { transition: scale 700ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .he-card:hover img { scale: 1.08; }
+  .he-amarillo { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
+  .he-verde { background: var(--color-green-700); color: var(--color-neutral-0); }
+  .he-negro { background: var(--color-neutral-950); color: var(--color-neutral-0); }
+  .he-verde :global(svg), .he-negro :global(svg) { color: var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .he *, .he-personaje, .he-globo { transition: none !important; animation: none !important; }
+  }
+</style>

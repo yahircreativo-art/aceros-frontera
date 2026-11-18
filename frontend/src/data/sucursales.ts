@@ -1,6 +1,7 @@
 /**
  * Datos de las sucursales de Aceros Frontera en Baja California.
- * Fuente: acerosfrontera.com/telefonos-y-direcciones (teléfonos, horarios y direcciones).
+ * Fuente: acerosfrontera.com/telefonos-y-direcciones (teléfonos, horarios y direcciones),
+ * revisada el 18 nov 2026. El WhatsApp general (664 409 9953) y el correo están en src/data/seo.json.
  */
 
 export interface HorarioSucursal {
@@ -39,7 +40,7 @@ export const sucursales: Sucursal[] = [
     horarios: [HORARIO_SEMANA, HORARIO_SABADO, { dias: 'Domingo', horas: '8:00 – 13:00' }],
     coordenadas: { lat: 32.511797, lng: -116.897485 },
     mapaUrl:
-      'https://www.google.com/maps/place/STEEL+AND+PROFILES+FRONTERA/@32.387956,-116.9854608,10.77z?shorturl=1',
+      'https://www.google.com/maps/place/STEEL+AND+PROFILES+FRONTERA/@32.511797,-116.897485,17z',
   },
   {
     id: 'matamoros',
@@ -48,7 +49,7 @@ export const sucursales: Sucursal[] = [
     estado: 'Baja California',
     direccion: 'Hermenegildo Galeana 1418',
     colonia: 'Col. Ejido Matamoros',
-    telefonos: ['664 720 9227', '664 720 9223', '664 720 9224', '664 720 9222'],
+    telefonos: ['664 409 8514', '664 404 7815', '664 408 2948'],
     horarios: [HORARIO_SEMANA, HORARIO_SABADO],
     coordenadas: { lat: 32.4850767, lng: -116.8736109 },
     mapaUrl:
@@ -88,7 +89,7 @@ export const sucursales: Sucursal[] = [
     direccion: 'Av. Hidalgo 855',
     colonia: 'Col. Obrera',
     codigoPostal: '22830',
-    telefonos: ['646 206 1201', '646 206 1208', '646 153 2069', '646 227 1284'],
+    telefonos: ['646 206 1201', '646 206 1208', '646 153 2069'],
     horarios: [HORARIO_SEMANA, HORARIO_SABADO],
     coordenadas: { lat: 31.8666917, lng: -116.6105163 },
     mapaUrl:
@@ -138,4 +139,22 @@ export function sucursalesPorCiudad(): { ciudad: string; sucursales: Sucursal[] 
   }
 
   return [...grupos].map(([ciudad, lista]) => ({ ciudad, sucursales: lista }));
+}
+
+const DIAS_SCHEMA: Record<string, string[]> = {
+  'Lunes a viernes': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  Sábado: ['Saturday'],
+  Domingo: ['Sunday'],
+};
+
+const horaIso = (hora: string) => hora.trim().padStart(5, '0');
+
+/** Horario de la sucursal como OpeningHoursSpecification de schema.org ("7:30 – 17:30" → 07:30/17:30). */
+export function horarioSchema(sucursal: Sucursal) {
+  return sucursal.horarios.flatMap((h) => {
+    const dias = DIAS_SCHEMA[h.dias];
+    const [abre, cierra] = h.horas.split(/\s*[–-]\s*/);
+    if (!dias || !abre || !cierra) return [];
+    return [{ '@type': 'OpeningHoursSpecification', dayOfWeek: dias, opens: horaIso(abre), closes: horaIso(cierra) }];
+  });
 }

@@ -1,23 +1,10 @@
 ---
-import type { Producto } from "../../lib/types";
-import { obtenerCategoriasSupabase } from "../../lib/supabase-productos";
+import { obtenerCategorias } from "../../lib/productos";
 import { rutaInterna } from "../../lib/asset-url";
 import { rutaCategoria } from "../../lib/categorias";
 
-interface Props {
-  productos: Producto[];
-  supabaseUrl: string;
-  supabaseKey: string;
-  supabaseTabla: string;
-}
-
-const { supabaseUrl, supabaseKey, supabaseTabla } = Astro.props;
-
-const categorias = await obtenerCategoriasSupabase({
-  url: supabaseUrl,
-  clavePublica: supabaseKey,
-  tabla: supabaseTabla,
-});
+/* Usa la misma descarga del catálogo que el resto del build (sin petición extra ni límite propio). */
+const categorias = await obtenerCategorias();
 
 const listaCategoriasOrdenadas = [...categorias].sort((a, b) => a.localeCompare(b, "es"));
 ---
@@ -28,7 +15,7 @@ const listaCategoriasOrdenadas = [...categorias].sort((a, b) => a.localeCompare(
       id="categorias"
       data-categorias="lleno"
       data-expandido="false"
-      class="scroll-mt-44 mt-2 px-3 py-4 sm:px-5"
+      class="scroll-mt-24 mt-2 px-3 py-4 sm:px-5"
     >
       <div class="relative overflow-hidden rounded-panel">
         <div

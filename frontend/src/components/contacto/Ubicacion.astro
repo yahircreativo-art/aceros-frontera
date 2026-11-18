@@ -4,6 +4,7 @@
  * derecha (eyebrow, titular, Contact Items y botón "Cómo llegar").
  */
 import { assetUrl } from '../../lib/asset-url';
+import { sucursales } from '../../data/sucursales';
 import { siteSeo, whatsappUrl } from '../../lib/seo';
 import Button from '../ui/Button.astro';
 
@@ -15,22 +16,24 @@ interface Props {
 const { nivel = 'h2' } = Astro.props;
 const Titulo = nivel;
 
-const ubicacion = encodeURIComponent('32.4851102,-116.873457');
+/* Matriz: Sucursal Cucapah (mismas coordenadas que en src/data/sucursales.ts). */
+const matriz = sucursales.find((s) => s.id === 'cucapah')!;
+const ubicacion = encodeURIComponent(`${matriz.coordenadas.lat},${matriz.coordenadas.lng}`);
 const icono = (nombre: string) => `${assetUrl('/icons.svg')}#${nombre}`;
 
 const items = [
   {
     icono: 'pin',
     etiqueta: 'Dirección',
-    valor: `${siteSeo.address.street}, ${siteSeo.address.city}, ${siteSeo.address.region}`,
+    valor: `${siteSeo.address.street}, C.P. ${siteSeo.address.postalCode}, ${siteSeo.address.city}, ${siteSeo.address.region}`,
   },
   { icono: 'phone', etiqueta: 'Teléfono', valor: siteSeo.phone, href: `tel:${siteSeo.phoneHref}` },
-  { icono: 'whatsapp', etiqueta: 'WhatsApp', valor: siteSeo.phone, href: whatsappUrl(), externo: true },
+  { icono: 'whatsapp', etiqueta: 'WhatsApp', valor: siteSeo.whatsappDisplay, href: whatsappUrl(), externo: true },
   { icono: 'mail', etiqueta: 'Correo', valor: siteSeo.email, href: `mailto:${siteSeo.email}` },
   {
     icono: 'clock',
     etiqueta: 'Horario',
-    valor: siteSeo.openingHours.map((h) => `${h.label}: ${h.opens}–${h.closes}`).join(' · '),
+    valor: siteSeo.openingHours.map((h) => `${h.label}: ${h.opens}–${h.closes}`).join(', '),
   },
 ];
 ---

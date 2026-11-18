@@ -12,10 +12,10 @@
 
 export const historia = {
   titulo: 'Nuestra historia',
-  /* PENDIENTE: historia de la empresa. */
+  /* Textos de acerosfrontera.com. PENDIENTE: ampliar con la historia de la empresa. */
   parrafos: [
     'Su proyecto comienza con nosotros. Desde herrería artística hasta los cimientos de un nuevo edificio, en Aceros Frontera encontrará los productos que usted necesita.',
-    'Contamos con el inventario más extenso de la región y con sucursales en Tijuana, Mexicali y Ensenada, siendo la mejor opción en servicio, precio y calidad para la industria metalmecánica y de la construcción.',
+    'Con más de 25 años de experiencia, más de 3000 productos en existencia y 6 sucursales en Tijuana, Mexicali y Ensenada, somos la mejor opción en servicio, precio y calidad para la industria metalmecánica y de la construcción.',
   ],
   imagen: '',
   imagenAlt: 'Equipo de Aceros Frontera',

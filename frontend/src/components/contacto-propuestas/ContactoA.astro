@@ -1,0 +1,259 @@
+---
+/**
+ * CONTACTO A · "Cotizador por pasos"
+ * Formulario en 3 pasos con barra de avance y transición lateral:
+ *  1. ¿Qué necesitas? → mosaicos de familias (selección múltiple).
+ *  2. Medidas, cantidad y ciudad de entrega.
+ *  3. Tus datos.
+ * A la derecha, una burbuja de WhatsApp muestra el mensaje armándose en
+ * vivo mientras llenas el formulario. Al final se abre WhatsApp con ese texto.
+ */
+import Pictogram from '../ui/Pictogram.astro';
+import Cota from '../ui/Cota.astro';
+import { familias, ciudades, icono, waBase, siteSeo } from './contacto-data';
+---
+
+<section id="contacto" data-coa class="coa relative scroll-mt-28 overflow-hidden bg-neutral-950 py-20 text-text-inverse lg:py-28" data-wa={waBase}>
+  <div aria-hidden="true" class="pattern-diamante absolute inset-0"></div>
+
+  <div class="container-page relative grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-start">
+    <div class="min-w-0">
+      <h2 class="font-display text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.9] font-extrabold uppercase">Pide tu cotización</h2>
+      <Cota texto="3 pasos y te respondemos por WhatsApp" class="mt-4 text-text-accent" />
+
+      <!-- Avance -->
+      <ol class="mt-8 grid grid-cols-3 gap-2" aria-label="Pasos">
+        {['Material', 'Detalles', 'Tus datos'].map((p, i) => (
+          <li data-coa-paso-ind={i} class:list={['coa-ind', { 'is-on': i === 0 }]}>
+            <span class="text-xs">Paso {i + 1}</span>
+            <span class="type-label">{p}</span>
+            <i aria-hidden="true"></i>
+          </li>
+        ))}
+      </ol>
+
+      <form data-coa-form class="chamfer mt-6 w-full min-w-0 overflow-hidden bg-white/[0.04] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.1)] [--chamfer:24px]" novalidate>
+        <div data-coa-pista class="coa-pista flex">
+          <!-- Paso 1 -->
+          <fieldset class="coa-paso" data-paso="0">
+            <legend class="type-h4">¿Qué material necesitas?</legend>
+            <p class="mt-1 type-body-s text-text-inverse-muted">Puedes elegir varios.</p>
+            <div class="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {familias.map((f) => (
+                <label class="coa-tile">
+                  <input type="checkbox" name="material" value={f.titulo} class="sr-only" />
+                  <Pictogram name={f.icono} class="size-8" />
+                  <span class="type-label">{f.titulo}</span>
+                  <span class="coa-tick" aria-hidden="true">✓</span>
+                </label>
+              ))}
+              <label class="coa-tile">
+                <input type="checkbox" name="material" value="Otro" class="sr-only" />
+                <span class="grid size-8 place-items-center text-2xl">+</span>
+                <span class="type-label">Otro</span>
+                <span class="coa-tick" aria-hidden="true">✓</span>
+              </label>
+            </div>
+            <p data-coa-error="0" class="coa-error" role="alert" hidden>Elige al menos un material.</p>
+          </fieldset>
+
+          <!-- Paso 2 -->
+          <fieldset class="coa-paso" data-paso="1">
+            <legend class="type-h4">Cuéntanos los detalles</legend>
+            <div class="mt-5 grid gap-5 sm:grid-cols-2">
+              <label class="sm:col-span-2"><span class="coa-label">Medidas o especificaciones</span>
+                <input name="medidas" type="text" class="coa-campo" placeholder='Ej. PTR 2" cal. 14, lámina R-72…' />
+              </label>
+              <label><span class="coa-label">Cantidad aproximada</span>
+                <input name="cantidad" type="text" class="coa-campo" placeholder="Piezas, metros, toneladas…" />
+              </label>
+              <fieldset><legend class="coa-label">Entrega en</legend>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  {ciudades.map((c) => (
+                    <label class="coa-chip"><input type="radio" name="ciudad" value={c} class="sr-only" />{c}</label>
+                  ))}
+                </div>
+              </fieldset>
+              <label class="sm:col-span-2"><span class="coa-label">Notas</span>
+                <textarea name="notas" rows="3" class="coa-campo" placeholder="Para qué es, fecha de entrega…"></textarea>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Paso 3 -->
+          <fieldset class="coa-paso" data-paso="2">
+            <legend class="type-h4">¿A quién le respondemos?</legend>
+            <div class="mt-5 grid gap-5 sm:grid-cols-2">
+              <label><span class="coa-label">Nombre</span>
+                <input name="nombre" type="text" autocomplete="name" required class="coa-campo" placeholder="Tu nombre" />
+              </label>
+              <label><span class="coa-label">Teléfono</span>
+                <input name="telefono" type="tel" autocomplete="tel" required class="coa-campo" placeholder="664 000 0000" />
+              </label>
+            </div>
+            <p data-coa-error="2" class="coa-error" role="alert" hidden>Escribe tu nombre y teléfono.</p>
+          </fieldset>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/10 p-4 sm:px-6">
+          <button type="button" data-coa-atras class="coa-btn-sec" disabled>Atrás</button>
+          <button type="button" data-coa-sig class="coa-btn">Siguiente</button>
+          <button type="submit" data-coa-enviar class="coa-btn" hidden>
+            Enviar por WhatsApp
+            <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('whatsapp')} /></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Vista previa -->
+    <aside class="min-w-0 lg:sticky lg:top-32">
+      <div class="coa-tel overflow-hidden rounded-[2rem] bg-[#0b141a] ring-1 ring-white/10">
+        <div class="flex items-center gap-3 bg-green-800 px-5 py-4">
+          <span class="grid size-10 place-items-center rounded-full bg-accent-primary font-display text-lg font-extrabold text-neutral-1000">AF</span>
+          <span><span class="block type-label">Aceros Frontera</span><span class="block type-caption text-text-inverse-muted">{siteSeo.phone}</span></span>
+        </div>
+        <div class="coa-chat flex min-h-80 flex-col gap-3 p-5">
+          <p class="coa-burbuja coa-ellos">¡Hola! Arma tu cotización y te respondemos por aquí 👷</p>
+          <p data-coa-preview class="coa-burbuja coa-yo"></p>
+        </div>
+      </div>
+      <p class="mt-4 text-center type-caption text-text-inverse-muted">Así llegará tu mensaje. No guardamos tus datos.</p>
+    </aside>
+  </div>
+</section>
+
+<script>
+  const sec = document.querySelector<HTMLElement>('[data-coa]');
+  if (sec) {
+    const form = sec.querySelector<HTMLFormElement>('[data-coa-form]')!;
+    const pista = sec.querySelector<HTMLElement>('[data-coa-pista]')!;
+    const pasos = [...sec.querySelectorAll<HTMLElement>('.coa-paso')];
+    const inds = [...sec.querySelectorAll<HTMLElement>('[data-coa-paso-ind]')];
+    const atras = sec.querySelector<HTMLButtonElement>('[data-coa-atras]')!;
+    const sig = sec.querySelector<HTMLButtonElement>('[data-coa-sig]')!;
+    const enviar = sec.querySelector<HTMLButtonElement>('[data-coa-enviar]')!;
+    const preview = sec.querySelector<HTMLElement>('[data-coa-preview]')!;
+    let paso = 0;
+
+    const mensaje = () => {
+      const d = new FormData(form);
+      const materiales = d.getAll('material').join(', ');
+      return [
+        'Hola, quiero solicitar una cotización.',
+        materiales && `Material: ${materiales}`,
+        d.get('medidas') && `Medidas: ${d.get('medidas')}`,
+        d.get('cantidad') && `Cantidad: ${d.get('cantidad')}`,
+        d.get('ciudad') && `Entrega en: ${d.get('ciudad')}`,
+        d.get('notas') && `Notas: ${d.get('notas')}`,
+        d.get('nombre') && `Nombre: ${d.get('nombre')}`,
+        d.get('telefono') && `Teléfono: ${d.get('telefono')}`,
+      ].filter(Boolean).join('\n');
+    };
+    const actualizar = () => {
+      preview.textContent = mensaje();
+      preview.classList.remove('is-pop');
+      void preview.offsetWidth;
+      preview.classList.add('is-pop');
+    };
+    form.addEventListener('input', actualizar);
+    actualizar();
+
+    const valido = (i: number) => {
+      let ok = true;
+      if (i === 0) ok = new FormData(form).getAll('material').length > 0;
+      if (i === 2) ok = ['nombre', 'telefono'].every((n) => String(new FormData(form).get(n) ?? '').trim());
+      const err = sec.querySelector<HTMLElement>(`[data-coa-error="${i}"]`);
+      if (err) err.hidden = ok;
+      if (!ok) {
+        pasos[i].classList.remove('is-sacude');
+        void pasos[i].offsetWidth;
+        pasos[i].classList.add('is-sacude');
+      }
+      return ok;
+    };
+    const ir = (i: number, enfocar = true) => {
+      paso = i;
+      pista.style.transform = `translateX(${-100 * i}%)`;
+      pista.style.height = `${pasos[i].offsetHeight}px`;
+      pasos.forEach((p, k) => {
+        p.toggleAttribute('inert', k !== i);
+        p.classList.toggle('is-activo', k === i);
+      });
+      inds.forEach((el, k) => {
+        el.classList.toggle('is-on', k === i);
+        el.classList.toggle('is-hecho', k < i);
+      });
+      atras.disabled = i === 0;
+      sig.hidden = i === pasos.length - 1;
+      enviar.hidden = i !== pasos.length - 1;
+      if (enfocar) pasos[i].querySelector<HTMLElement>('input, textarea')?.focus({ preventScroll: true });
+    };
+    sig.addEventListener('click', () => valido(paso) && ir(paso + 1));
+    atras.addEventListener('click', () => ir(paso - 1));
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!valido(0)) return ir(0);
+      if (!valido(2)) return;
+      window.open(sec.dataset.wa + encodeURIComponent(mensaje()), '_blank', 'noopener');
+    });
+    ir(0, false);
+    window.addEventListener('resize', () => (pista.style.height = `${pasos[paso].offsetHeight}px`));
+  }
+</script>
+
+<style>
+  .coa-ind { position: relative; display: flex; flex-direction: column; gap: 0.15rem; padding-bottom: 0.75rem; color: var(--color-text-inverse-muted); transition: color 300ms; }
+  .coa-ind i { position: absolute; inset-inline: 0; bottom: 0; height: 3px; background: rgb(255 255 255 / 12%); overflow: hidden; }
+  .coa-ind i::after { content: ""; position: absolute; inset: 0; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .coa-ind.is-on, .coa-ind.is-hecho { color: var(--color-text-inverse); }
+  .coa-ind.is-on i::after, .coa-ind.is-hecho i::after { transform: scaleX(1); }
+
+  /* Alto = el del paso activo (lo fija el script), no el del paso más alto */
+  .coa-pista { align-items: flex-start; transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1), height 400ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .coa-paso { flex: 0 0 100%; min-width: 0; padding: 1.5rem; border: 0; margin: 0; opacity: 0.3; transition: opacity 400ms; }
+  @media (min-width: 40rem) { .coa-paso { padding: 2rem; } }
+  .coa-paso.is-activo { opacity: 1; }
+  .coa-paso.is-sacude { animation: coa-sacude 400ms; }
+  @keyframes coa-sacude { 20%, 60% { translate: -8px 0; } 40%, 80% { translate: 8px 0; } }
+
+  .coa-tile {
+    position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; cursor: pointer; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+    background: rgb(255 255 255 / 4%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%); color: var(--color-text-inverse-muted);
+    transition: background 250ms, color 250ms, box-shadow 250ms, transform 250ms cubic-bezier(0.34, 1.5, 0.5, 1);
+  }
+  .coa-tile:hover { color: var(--color-text-inverse); }
+  .coa-tile:has(input:checked) { background: var(--color-accent-primary); color: var(--color-neutral-1000); box-shadow: none; }
+  .coa-tile:has(input:focus-visible) { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .coa-tick { position: absolute; right: 0.75rem; top: 0.75rem; display: grid; place-items: center; width: 1.4rem; height: 1.4rem; background: var(--color-neutral-1000); color: var(--color-accent-primary); font-size: 0.75rem; scale: 0; transition: scale 300ms cubic-bezier(0.34, 1.6, 0.5, 1); }
+  .coa-tile:has(input:checked) .coa-tick { scale: 1; }
+
+  .coa-label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text-inverse-muted); }
+  .coa-campo { margin-top: 0.4rem; width: 100%; padding: 0.75rem 0; background: transparent; border-bottom: 1px solid rgb(255 255 255 / 25%); color: var(--color-text-inverse); outline: none; transition: border-color 250ms; }
+  .coa-campo:focus { border-color: var(--color-accent-primary); }
+  .coa-campo:focus-visible { box-shadow: 0 2px 0 0 var(--color-accent-primary); background: rgb(255 255 255 / 5%); }
+  .coa-campo::placeholder { color: rgb(255 255 255 / 35%); }
+  .coa-chip { padding: 0.5rem 1rem; cursor: pointer; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); font-size: 0.875rem; font-weight: 600; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 20%); transition: background 200ms, color 200ms; }
+  .coa-chip:has(input:focus-visible) { box-shadow: inset 0 0 0 3px var(--color-accent-primary); }
+  .coa-chip:has(input:checked) { background: var(--color-accent-primary); color: var(--color-neutral-1000); box-shadow: none; }
+  .coa-chip:has(input:focus-visible) { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .coa-error { margin-top: 1rem; font-size: 0.875rem; color: var(--color-error-400); }
+
+  .coa-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.4rem; cursor: pointer; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); background: var(--color-accent-primary); color: var(--color-neutral-1000); font-family: var(--font-display); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; transition: background 200ms, transform 250ms; }
+  .coa-btn:hover { background: var(--color-accent-hover); }
+  .coa-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-neutral-1000); }
+  @media (max-width: 39.99rem) { .coa-btn { padding: 0.75rem 1rem; font-size: 0.875rem; } }
+  .coa-btn-sec { padding: 0.8rem 1rem; cursor: pointer; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; color: var(--color-text-inverse-muted); }
+  .coa-btn-sec:disabled { opacity: 0.3; cursor: default; }
+
+  .coa-chat { background: #0b141a radial-gradient(rgb(255 255 255 / 4%) 1px, transparent 1px) 0 0 / 14px 14px; }
+  .coa-burbuja { max-width: 85%; padding: 0.6rem 0.85rem; border-radius: 0.9rem; font-size: 0.875rem; line-height: 1.4; white-space: pre-line; overflow-wrap: anywhere; }
+  .coa-ellos { align-self: flex-start; background: #202c33; border-top-left-radius: 0.2rem; }
+  .coa-yo { align-self: flex-end; background: var(--color-green-700); border-top-right-radius: 0.2rem; }
+  .coa-yo.is-pop { animation: coa-pop 300ms cubic-bezier(0.34, 1.5, 0.5, 1); }
+  @keyframes coa-pop { from { scale: 0.97; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .coa-pista, .coa *, .coa-yo { transition: none !important; animation: none !important; }
+  }
+</style>

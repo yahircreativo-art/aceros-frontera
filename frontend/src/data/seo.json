@@ -1,9 +1,9 @@
 {
   "site": {
     "name": "Aceros Frontera",
-    "legalName": "Aceros Frontera",
+    "legalName": "Comercial de Aceros y Perfiles Frontera SA de CV",
     "tagline": "Acero, perfiles y piezas para tus proyectos",
-    "description": "Proveedor local en Tijuana, Ensenada y Mexicali de perfiles, tubos, alambrón, malla electrosoldada y materiales de acero para construcción, fabricación y mantenimiento.",
+    "description": "Distribuidor de acero en Baja California: perfiles, vigas, tubería, lámina, placa y ferretería, con fabricación de armex, corte de placa y 6 sucursales en Tijuana, Mexicali y Ensenada.",
     "baseUrl": "https://acerosfrontera.com",
     "language": "es-MX",
     "locale": "es_MX",
@@ -13,13 +13,14 @@
     "twitterSite": "",
     "businessType": "HardwareStore",
     "priceRange": "$$",
-    "phone": "+52 661 2779677",
-    "phoneHref": "+526612779677",
-    "whatsapp": "526612779677",
+    "phone": "664 629 5073",
+    "phoneHref": "+526646295073",
+    "whatsapp": "526644099953",
     "whatsappMessage": "Hola, necesito cotizar acero y materiales para mi proyecto.",
-    "email": "yahir.creativo@gmail.com",
+    "email": "contacto@acerosfrontera.com",
     "address": {
-      "street": "Río Amacuzac 548A, Desarrollo Urbanoejido Matamoros, 22234",
+      "street": "Blvd. Cucapah 20498, Col. Buenos Aires Sur",
+      "postalCode": "22207",
       "city": "Tijuana",
       "region": "Baja California",
       "country": "MX",
@@ -27,7 +28,7 @@
     },
     "openingHours": [
       {
-        "label": "Lunes a sábado",
+        "label": "Lunes a viernes",
         "days": [
           "Monday",
           "Tuesday",
@@ -35,33 +36,38 @@
           "Thursday",
           "Friday"
         ],
-        "opens": "08:00",
-        "closes": "18:30"
+        "opens": "07:30",
+        "closes": "17:30"
       },
       {
         "label": "Sábado",
         "days": [
           "Saturday"
         ],
-        "opens": "08:00",
+        "opens": "07:30",
         "closes": "14:00"
+      },
+      {
+        "label": "Domingo (solo Cucapah)",
+        "days": [
+          "Sunday"
+        ],
+        "opens": "08:00",
+        "closes": "13:00"
       }
     ],
     "areaServed": "Mexico",
     "socials": [
       {
+        "name": "Facebook",
+        "url": "https://www.facebook.com/acerosfronterabc"
+      },
+      {
         "name": "Instagram",
         "url": "https://www.instagram.com/acerosfrontera"
-      },
-      {
-        "name": "Facebook",
-        "url": "https://www.facebook.com/acerosfrontera"
-      },
-      {
-        "name": "LinkedIn",
-        "url": "https://www.linkedin.com/company/acerosfrontera"
       }
-    ]
+    ],
+    "whatsappDisplay": "664 409 9953"
   },
   "pages": {
     "home": {
@@ -84,7 +90,7 @@
     },
     "sucursales": {
       "title": "Sucursales en Tijuana, Mexicali y Ensenada | Aceros Frontera",
-      "description": "Mapa, direcciones, teléfonos y horarios de las 6 sucursales de Aceros Frontera en Baja California: Cucapah, Matamoros y Panamericano en Tijuana, Mexicali, y Hidalgo y Chapultepec en Ensenada.",
+      "description": "Direcciones, teléfonos, horarios y mapa de las 6 sucursales de Aceros Frontera: Cucapah, Matamoros y Panamericano en Tijuana, Mexicali y 2 en Ensenada.",
       "path": "/sucursales",
       "keywords": [
         "sucursales Aceros Frontera",
@@ -99,8 +105,8 @@
       "schemaType": "CollectionPage"
     },
     "catalogo": {
-      "title": "Catálogo de productos | Aceros Frontera Tijuana",
-      "description": "Consulta el catálogo completo de Aceros Frontera: perfiles, tubos, pintura, herramienta y consumibles. Busca por nombre o clave, filtra por categoría y cotiza por WhatsApp en Tijuana, Baja California.",
+      "title": "Catálogo de acero y ferretería en Tijuana | Aceros Frontera",
+      "description": "Perfiles, tubos, pintura, herramienta y ferretería. Busca por nombre o clave, filtra por categoría y cotiza por WhatsApp en Tijuana, Mexicali y Ensenada.",
       "path": "/catalogo",
       "keywords": [
         "catálogo de acero Tijuana",
@@ -115,8 +121,8 @@
       "schemaType": "CollectionPage"
     },
     "contacto": {
-      "title": "Contacto y cotización de acero | Aceros Frontera",
-      "description": "Cotiza acero, perfiles, lámina y ferretería por WhatsApp. Dirección, teléfonos, correo y horarios de Aceros Frontera en Baja California.",
+      "title": "Contacto y cotización de acero en Tijuana | Aceros Frontera",
+      "description": "Cotiza acero, perfiles, lámina y ferretería por WhatsApp. Teléfonos, correo, direcciones y horarios de Aceros Frontera en Tijuana, Mexicali y Ensenada.",
       "path": "/contacto",
       "keywords": [
         "contacto Aceros Frontera",
@@ -129,8 +135,8 @@
       "schemaType": "ContactPage"
     },
     "nosotros": {
-      "title": "Nosotros | Aceros Frontera, acero y ferretería en Baja California",
-      "description": "Conoce Aceros Frontera: distribución de acero, fabricación de armex y lámina a la medida, centro de servicio autorizado y sucursales en Tijuana, Mexicali y Ensenada.",
+      "title": "Nosotros | Aceros Frontera, acero en Baja California",
+      "description": "Aceros Frontera distribuye acero, fabrica armex y lámina a la medida y atiende en 6 sucursales de Tijuana, Mexicali y Ensenada, Baja California.",
       "path": "/nosotros",
       "keywords": [
         "Aceros Frontera",
@@ -141,6 +147,33 @@
       "robots": "index, follow",
       "ogType": "website",
       "schemaType": "AboutPage"
+    },
+    "producto": {
+      "title": "Producto | Aceros Frontera",
+      "description": "Ficha de producto de Aceros Frontera.",
+      "path": "/catalogo",
+      "keywords": [
+        "Aceros Frontera",
+        "ferretería Tijuana",
+        "cotizar por WhatsApp"
+      ],
+      "robots": "index, follow",
+      "ogType": "product",
+      "schemaType": "ItemPage"
+    },
+    "familia": {
+      "title": "Acero | Aceros Frontera",
+      "description": "Familia de productos de acero de Aceros Frontera.",
+      "path": "/acero",
+      "keywords": [
+        "acero Tijuana",
+        "acero Mexicali",
+        "acero Ensenada",
+        "Aceros Frontera"
+      ],
+      "robots": "index, follow",
+      "ogType": "website",
+      "schemaType": "CollectionPage"
     }
   }
 }

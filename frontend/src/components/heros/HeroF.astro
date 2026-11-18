@@ -1,0 +1,256 @@
+---
+/**
+ * HERO F · "Obra de fondo"
+ * Las mismas escenas en línea del Hero A (edificio con grúa → nave
+ * industrial → casa), pero en grande como fondo de toda la sección y con
+ * poca intensidad, para que el texto se lea bien encima. Un degradado oscuro
+ * del lado del texto refuerza el contraste. Abajo a la derecha, un pequeño
+ * indicador con el nombre de la escena y su avance.
+ * Geometría en src/lib/construcciones.ts.
+ *
+ * Uso: <HeroF />
+ *   intensidad: opacidad de las líneas (0–1). Por defecto 0.3.
+ *   personaje:  muestra al personaje a la derecha.
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { escenas, ANCHO_ESCENA, ALTO_ESCENA } from '../../lib/construcciones';
+import Button from '../ui/Button.astro';
+import SectionTag from '../ui/SectionTag.astro';
+
+interface Props {
+  intensidad?: number;
+  personaje?: boolean;
+}
+const { intensidad = 0.3, personaje = false } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+---
+
+<section
+  id="inicio"
+  data-hf
+  data-nombres={JSON.stringify(escenas.map((e) => e.nombre))}
+  class="hf relative isolate overflow-hidden bg-neutral-950 text-text-inverse"
+  style={`--hf-intensidad:${intensidad}`}
+>
+  <!-- Fondo: retícula + escenas en grande -->
+  <div aria-hidden="true" class="hf-reticula absolute inset-0 -z-30"></div>
+  <svg
+    viewBox={`0 0 ${ANCHO_ESCENA} ${ALTO_ESCENA}`}
+    class="hf-svg absolute -z-20"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id={`hf-tinta-${uid}`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={ALTO_ESCENA}>
+        <stop offset="0" stop-color="#ffffff" />
+        <stop offset="0.8" stop-color="#dfe5e2" />
+        <stop offset="1" style="stop-color: var(--color-accent-primary)" />
+      </linearGradient>
+    </defs>
+    {
+      escenas.map((e, i) => (
+        <g data-hf-escena={i} data-duracion={e.duracion} stroke={`url(#hf-tinta-${uid})`} class:list={['hf-escena', { 'is-activa is-dibujando is-listo': i === 0 }]}>
+          {e.trazos.map((t) => (
+            <path d={t.d} pathLength="1" class={t.tipo === 'cara' ? 'hf-cara' : 'hf-det'} style={`--d:${t.retraso}s`} />
+          ))}
+          {e.humo && (
+            <g class="hf-humo">
+              {[0, 1, 2, 3].map((k) => (
+                <circle cx={e.humo![0]} cy={e.humo![1]} r={7 + k * 2} style={`--k:${k}`} />
+              ))}
+            </g>
+          )}
+        </g>
+      ))
+    }
+  </svg>
+  <!-- Velo para leer el texto -->
+  <div aria-hidden="true" class="hf-velo absolute inset-0 -z-10"></div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+    <div class="relative z-10 max-w-3xl">
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <SectionTag label="Abierto al público" />
+        <p class="flex items-center gap-3 type-overline text-text-accent">
+          <span aria-hidden="true" class="h-0.5 w-10 bg-accent-primary"></span>
+          Del plano a tu obra
+        </p>
+      </div>
+
+      <h1
+        class="reveal mt-8 font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase [--reveal-delay:100ms]"
+        style="text-shadow: 0 4px 30px rgb(0 0 0 / 60%)"
+      >
+        <span class="block">Hacemos</span>
+        <span class="block">posible</span>
+        <span class="block text-text-accent">tu proyecto</span>
+      </h1>
+
+      <p class="reveal mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-inverse [--reveal-delay:200ms]">
+        Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
+        menudeo, fabricación de armex y entrega en tu obra con flota propia.
+      </p>
+
+      <div class="reveal mt-10 flex flex-wrap gap-4 [--reveal-delay:300ms]">
+        <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+      </div>
+
+      <a href={`tel:${siteSeo.phoneHref}`} class="reveal mt-10 inline-flex items-center gap-3 type-label transition-colors hover:text-text-accent [--reveal-delay:400ms]">
+        <svg viewBox="0 0 24 24" class="size-5 text-text-accent" aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#phone`} /></svg>
+        {siteSeo.phone}
+      </a>
+    </div>
+
+    {
+      personaje && (
+        <img
+          src={assetUrl('/images/personaje.webp')}
+          alt="Personaje de Aceros Frontera con los brazos cruzados"
+          width="780"
+          height="1400"
+          loading="eager"
+          class="hf-personaje pointer-events-none absolute bottom-0 right-[clamp(1rem,4vw,2rem)] z-10 hidden h-[85%] w-auto lg:block"
+        />
+      )
+    }
+
+    <!-- Indicador de escena -->
+    <div class="hf-indicador absolute bottom-6 right-[clamp(1rem,4vw,2rem)] z-20 hidden items-center gap-4 font-mono text-[0.6875rem] tracking-wider text-text-inverse-muted sm:flex" aria-hidden="true">
+      <span>FIG_<b data-hf-num class="font-normal text-text-accent">01</b> · <span data-hf-nombre>{escenas[0].nombre.toUpperCase()}</span></span>
+      <span class="flex gap-1.5">
+        {escenas.map((_, i) => <span data-hf-punto={i} class="hf-punto"><i></i></span>)}
+      </span>
+    </div>
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hf]');
+  if (root) {
+    const escenas = [...root.querySelectorAll<SVGGElement>('[data-hf-escena]')];
+    const puntos = [...root.querySelectorAll<HTMLElement>('[data-hf-punto]')];
+    const num = root.querySelector<HTMLElement>('[data-hf-num]')!;
+    const nombre = root.querySelector<HTMLElement>('[data-hf-nombre]')!;
+    const nombres = JSON.parse(root.dataset.nombres ?? '[]') as string[];
+
+    const ESPERA = 2800;
+    const BORRADO = 1500;
+    const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let visible = true;
+    const dormir = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+
+    const reiniciar = (g: SVGGElement) => {
+      g.classList.add('is-reset');
+      g.classList.remove('is-dibujando', 'is-listo', 'is-borrando');
+      void g.getBoundingClientRect();
+      g.classList.remove('is-reset');
+    };
+
+    const mostrar = async (i: number) => {
+      escenas.forEach((g, k) => {
+        if (k !== i) reiniciar(g);
+        g.classList.toggle('is-activa', k === i);
+      });
+      puntos.forEach((p) => p.classList.remove('is-on'));
+      num.textContent = String(i + 1).padStart(2, '0');
+      nombre.textContent = (nombres[i] ?? '').toUpperCase();
+
+      const g = escenas[i];
+      const dur = Number(g.dataset.duracion) * 1000;
+      reiniciar(g);
+      puntos[i].style.setProperty('--t', `${dur + ESPERA}ms`);
+      requestAnimationFrame(() => {
+        g.classList.add('is-dibujando');
+        puntos[i].classList.add('is-on');
+      });
+      await dormir(dur);
+      g.classList.add('is-listo');
+      await dormir(ESPERA);
+      while (!visible) await dormir(400); // en pausa fuera de pantalla
+      g.classList.add('is-borrando');
+      await dormir(BORRADO);
+      mostrar((i + 1) % escenas.length);
+    };
+
+    if (!sinMovimiento) {
+      new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(root);
+      mostrar(0);
+    }
+  }
+</script>
+
+<style>
+  .hf-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Escenas en grande: ocupan casi toda la altura, cargadas a la derecha. */
+  .hf-svg {
+    --fondo: var(--color-neutral-950);
+    right: -4%;
+    bottom: -2%;
+    height: 112%;
+    width: auto;
+    aspect-ratio: 600 / 470;
+    opacity: var(--hf-intensidad, 0.3);
+    contain: layout paint;
+    transform: translateZ(0);
+  }
+  @media (max-width: 63.99rem) {
+    .hf-svg { right: 50%; height: 90%; bottom: 0; transform: translateX(50%) translateZ(0); }
+  }
+
+  /* Velo: oscurece el lado del texto y abajo. */
+  .hf-velo {
+    background:
+      linear-gradient(90deg, rgb(11 13 12 / 92%) 0%, rgb(11 13 12 / 70%) 38%, rgb(11 13 12 / 15%) 70%, transparent 100%),
+      linear-gradient(0deg, rgb(11 13 12 / 70%) 0%, transparent 30%);
+  }
+  @media (max-width: 63.99rem) {
+    .hf-velo { background: rgb(11 13 12 / 72%); }
+  }
+
+  .hf-escena:not(.is-activa) { display: none; }
+
+  .hf-cara, .hf-det { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+  .hf-cara { stroke-width: 1.3; fill: var(--fondo); fill-opacity: 0; }
+  .hf-det { stroke-width: 0.8; fill: none; }
+
+  .is-dibujando .hf-cara, .is-dibujando .hf-det {
+    stroke-dashoffset: 0; fill-opacity: 1;
+    transition: stroke-dashoffset 1.1s cubic-bezier(0.45, 0, 0.25, 1) var(--d), fill-opacity 0.5s ease var(--d);
+  }
+  .is-borrando .hf-cara, .is-borrando .hf-det {
+    stroke-dashoffset: -1; fill-opacity: 0;
+    transition: stroke-dashoffset 0.9s cubic-bezier(0.45, 0, 0.25, 1) calc(var(--d) * 0.06), fill-opacity 0.4s ease calc(0.5s + var(--d) * 0.06);
+  }
+  .is-reset .hf-cara, .is-reset .hf-det { transition: none !important; }
+
+  .hf-humo circle { fill: none; stroke: #fff; stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .is-listo:not(.is-borrando) .hf-humo circle { animation: hf-humo 2.4s ease-out infinite; animation-delay: calc(var(--k) * 0.6s); }
+  @keyframes hf-humo {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(18px, -60px) scale(1.6); }
+  }
+
+  .hf-punto { position: relative; display: block; width: 1.75rem; height: 3px; overflow: hidden; background: rgb(255 255 255 / 15%); }
+  .hf-punto i { position: absolute; inset: 0; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .hf-punto.is-on i { transform: scaleX(1); transition: transform var(--t, 6s) linear; }
+
+  .hf-personaje { filter: drop-shadow(0 20px 40px rgb(0 0 0 / 60%)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hf-cara, .hf-det { stroke-dashoffset: 0 !important; fill-opacity: 1 !important; transition: none !important; }
+    .hf-humo circle { animation: none !important; }
+  }
+</style>

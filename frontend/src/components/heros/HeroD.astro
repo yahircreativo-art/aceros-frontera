@@ -1,0 +1,180 @@
+---
+/**
+ * HERO D · "Círculo central" (ref. Digital Agency)
+ * Fondo negro con riel lateral (redes sociales en vertical) e indicador de
+ * scroll. Un círculo verde con el personaje (o una foto) sigue al cursor con
+ * retraso detrás de un titular gigante; la palabra "ACERO" va en contorno y
+ * se rellena de amarillo en bucle. Abajo, cifras que cuentan al aparecer y
+ * un sello giratorio que lleva a WhatsApp.
+ *
+ * Uso: <HeroD />  ·  sin personaje: <HeroD personaje={false} />
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { sucursales } from '../../data/sucursales';
+import { familias } from '../../data/familias';
+
+interface Props {
+  personaje?: boolean;
+}
+const { personaje = true } = Astro.props;
+const ciudades = new Set(sucursales.map((s) => s.ciudad)).size;
+const redes = (siteSeo.socials ?? []).slice(0, 3) as { name: string; url: string }[];
+---
+
+<section id="inicio" data-hd class="hd relative isolate overflow-hidden bg-neutral-950 text-text-inverse">
+  <div aria-hidden="true" class="hd-ruido absolute inset-0 -z-20"></div>
+
+  <!-- Riel izquierdo -->
+  <div class="absolute inset-y-0 left-0 z-20 hidden w-16 flex-col items-center justify-center gap-8 border-r border-white/10 xl:flex">
+    {redes.map((r) => (
+      <a href={r.url} target="_blank" rel="noopener noreferrer" class="hd-vertical type-caption uppercase tracking-[0.2em] text-text-inverse-muted transition-colors hover:text-accent-primary">{r.name}</a>
+    ))}
+  </div>
+  <!-- Indicador de scroll -->
+  <div class="absolute inset-y-0 right-0 z-20 hidden w-16 flex-col items-center justify-end gap-4 border-l border-white/10 pb-10 xl:flex" aria-hidden="true">
+    <span class="hd-vertical type-caption uppercase tracking-[0.2em] text-text-inverse-muted">Scroll</span>
+    <span class="hd-scroll relative h-20 w-px overflow-hidden bg-white/15"></span>
+  </div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] flex-col py-12 xl:px-24">
+    <!-- Círculo -->
+    <div data-hd-circulo class="hd-circulo pointer-events-none absolute left-1/2 top-[46%] -z-10 aspect-square w-[min(34rem,82vw)]">
+      <div class="hd-circulo-in relative size-full overflow-hidden rounded-full">
+        {
+          personaje ? (
+            <>
+              <span class="absolute inset-0 bg-green-700 pattern-diamante" />
+            </>
+          ) : (
+            <img src={assetUrl('/images/hero-bg.webp')} alt="" loading="eager" fetchpriority="high" class="size-full object-cover grayscale-[40%]" />
+          )
+        }
+      </div>
+      <span class="hd-orbita absolute -inset-6 rounded-full" aria-hidden="true"></span>
+    </div>
+
+    <h1 class="hd-titulo my-auto pt-10 font-display font-extrabold uppercase leading-[0.86]">
+      <span class="hd-l block overflow-hidden" style="--i:0"><span class="block">
+        Somos <span class="hd-contorno" data-text="acero">aceros</span>
+      </span></span>
+      <span class="hd-l block overflow-hidden" style="--i:1"><span class="flex items-center gap-[0.15em]">
+        <svg viewBox="0 0 24 24" class="hd-flecha h-[0.62em] w-[0.62em] shrink-0 text-accent-primary" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 19L19 5M8 5h11v11" /></svg>
+        frontera
+      </span></span>
+    </h1>
+
+    <div class="hd-pie grid items-end gap-8 sm:grid-cols-[1fr_auto]">
+      <div>
+        <p class="max-w-md type-body-m text-text-inverse-muted">
+          Acero, ferretería y herramienta para tu proyecto. Mayoreo y menudeo, fabricación de armex y
+          entrega en obra con flota propia.
+        </p>
+        <div class="mt-8 flex gap-10">
+          <div><p class="font-display text-5xl font-extrabold"><span data-hd-cuenta={sucursales.length}>{sucursales.length}</span><span class="text-accent-primary">+</span></p><p class="type-caption text-text-inverse-muted">Sucursales</p></div>
+          <div><p class="font-display text-5xl font-extrabold"><span data-hd-cuenta={ciudades}>{ciudades}</span></p><p class="type-caption text-text-inverse-muted">Ciudades en B.C.</p></div>
+          <div class="hidden sm:block"><p class="font-display text-5xl font-extrabold"><a href={rutaInterna('/catalogo')} class="hover:text-accent-primary">{familias.length}</a></p><p class="type-caption text-text-inverse-muted">Familias de producto</p></div>
+        </div>
+      </div>
+
+      <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="hd-sello group relative grid size-32 place-items-center justify-self-start sm:justify-self-end" aria-label="Cotizar por WhatsApp">
+        <svg viewBox="0 0 100 100" class="absolute inset-0 size-full" aria-hidden="true">
+          <defs><path id="hd-circ" d="M50 50m-40 0a40 40 0 1 1 80 0a40 40 0 1 1-80 0" /></defs>
+          <text><textPath href="#hd-circ">COTIZA · WHATSAPP · COTIZA · WHATSAPP · </textPath></text>
+        </svg>
+        <span class="grid size-14 place-items-center rounded-full bg-accent-primary text-neutral-1000 transition-transform duration-300 group-hover:scale-110">
+          <svg viewBox="0 0 24 24" class="size-6" aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#whatsapp`} /></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <div class="h-3 bg-accent-primary" aria-hidden="true"></div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hd]');
+  if (root) {
+    requestAnimationFrame(() => root.classList.add('is-in'));
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Círculo que sigue al cursor con retraso */
+    const circulo = root.querySelector<HTMLElement>('[data-hd-circulo]')!;
+    if (!quieto && window.matchMedia('(pointer: fine)').matches) {
+      let tx = 0, ty = 0, x = 0, y = 0, anim = 0;
+      const paso = () => {
+        x += (tx - x) * 0.06;
+        y += (ty - y) * 0.06;
+        circulo.style.setProperty('--cx', `${x.toFixed(1)}px`);
+        circulo.style.setProperty('--cy', `${y.toFixed(1)}px`);
+        anim = Math.abs(tx - x) + Math.abs(ty - y) > 0.2 ? requestAnimationFrame(paso) : 0;
+      };
+      root.addEventListener('pointermove', (e) => {
+        const r = root.getBoundingClientRect();
+        tx = (e.clientX - r.left - r.width / 2) * 0.12;
+        ty = (e.clientY - r.top - r.height / 2) * 0.12;
+        if (!anim) anim = requestAnimationFrame(paso);
+      });
+      root.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!anim) anim = requestAnimationFrame(paso); });
+    }
+
+    /* Cifras que cuentan */
+    root.querySelectorAll<HTMLElement>('[data-hd-cuenta]').forEach((el) => {
+      const fin = Number(el.dataset.hdCuenta);
+      if (quieto) return;
+      const t0 = performance.now() + 700;
+      el.textContent = '0';
+      const tic = (t: number) => {
+        const p = Math.min(Math.max((t - t0) / 1200, 0), 1);
+        el.textContent = String(Math.round(fin * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(tic);
+      };
+      requestAnimationFrame(tic);
+    });
+  }
+</script>
+
+<style>
+  .hd-ruido { background: radial-gradient(60% 50% at 50% 45%, rgb(13 128 94 / 22%), transparent 70%), radial-gradient(40% 40% at 85% 90%, rgb(234 192 43 / 8%), transparent 70%); }
+  .hd-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
+  .hd-scroll::after { content: ""; position: absolute; left: 0; width: 100%; height: 40%; background: var(--color-accent-primary); animation: hd-baja 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  @keyframes hd-baja { from { top: -40%; } to { top: 100%; } }
+
+  .hd-circulo { translate: calc(-50% + var(--cx, 0px)) calc(-50% + var(--cy, 0px)); }
+  .hd-circulo-in { clip-path: circle(0% at 50% 50%); transition: clip-path 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) 200ms; }
+  .is-in .hd-circulo-in, html:not(.js) .hd-circulo-in { clip-path: circle(50% at 50% 50%); }
+  .hd-personaje { translate: 0 20%; transition: translate 1300ms cubic-bezier(0.34, 1.3, 0.5, 1) 500ms; }
+  .is-in .hd-personaje { translate: 0 0; }
+  .hd-orbita { border: 1px dashed rgb(255 255 255 / 18%); animation: hd-gira 40s linear infinite; }
+  .hd-orbita::before { content: ""; position: absolute; top: 50%; left: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent-primary); box-shadow: 0 0 18px var(--color-accent-primary); }
+  @keyframes hd-gira { to { transform: rotate(360deg); } }
+
+  .hd-titulo { font-size: clamp(3.25rem, 10.5vw, 10rem); }
+  .hd-l > span { transform: translateY(105%); transition: transform 1000ms cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(250ms + var(--i) * 140ms); }
+  .is-in .hd-l > span, html:not(.js) .hd-l > span { transform: none; }
+  .hd-l:nth-child(2) { padding-left: clamp(0rem, 12vw, 12rem); }
+
+  /* Contorno que se rellena en bucle */
+  .hd-contorno { position: relative; display: inline-block; color: transparent; -webkit-text-stroke: 2px var(--color-accent-primary); }
+  .hd-contorno::after {
+    content: attr(data-text); position: absolute; inset: 0; color: var(--color-accent-primary); -webkit-text-stroke: 0;
+    clip-path: inset(0 100% 0 0); animation: hd-relleno 5s cubic-bezier(0.65, 0, 0.35, 1) 1.4s infinite;
+  }
+  @keyframes hd-relleno { 0% { clip-path: inset(0 100% 0 0); } 35%, 65% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 0 100%); } }
+  .hd-flecha { transition: transform 400ms; }
+  .hd-titulo:hover .hd-flecha { transform: rotate(45deg); }
+
+  .hd-pie { opacity: 0; transform: translateY(16px); transition: opacity 700ms 800ms, transform 800ms 800ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .is-in .hd-pie, html:not(.js) .hd-pie { opacity: 1; transform: none; }
+
+  .hd-sello svg { animation: hd-gira 12s linear infinite; }
+  .hd-sello text { font: 700 9.5px var(--font-display); letter-spacing: 0.2em; fill: var(--color-text-inverse); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hd *, .hd *::before, .hd *::after { animation: none !important; transition: none !important; }
+    .hd-circulo-in { clip-path: circle(50% at 50% 50%); }
+    .hd-l > span, .hd-pie { transform: none; opacity: 1; }
+    .hd-personaje { translate: 0 0; }
+    .hd-contorno::after { clip-path: inset(0 0 0 0); }
+  }
+</style>
