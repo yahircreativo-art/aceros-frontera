@@ -1,0 +1,196 @@
+---
+/**
+ * Panel flotante de /propuestas/: cambia cada sección de la portada entre sus
+ * variantes, marca la favorita de cada una y copia un resumen para enviarlo.
+ * Cada variante es su propia página (los componentes no pueden convivir dos
+ * veces en la misma); al cambiar, la página vuelve a la misma sección.
+ */
+import { propuestas, rutaPropuesta, type Seleccion, type SeccionPropuesta } from '../data/propuestas';
+import { rutaInterna } from '../lib/asset-url';
+
+interface Props {
+  seleccion: Seleccion;
+  /** Sección que se está comparando (null = diseño publicado). */
+  vista: SeccionPropuesta | null;
+}
+
+const { seleccion, vista } = Astro.props;
+const enVista = propuestas.find((p) => p.id === vista);
+const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
+---
+
+<div
+  data-propuestas
+  data-vista={vista ?? ''}
+  data-letra={vista ? seleccion[vista] : ''}
+  data-publicadas={JSON.stringify(publicadas)}
+  data-titulos={JSON.stringify(Object.fromEntries(propuestas.map((p) => [p.id, p.titulo])))}
+  class="prop-panel fixed bottom-4 left-4 z-[60] w-[min(23rem,calc(100vw-6rem))] text-text-inverse"
+>
+  <button
+    type="button"
+    data-propuestas-abrir
+    aria-expanded="true"
+    aria-controls="prop-cuerpo"
+    class="prop-boton chamfer flex w-full items-center justify-between gap-3 bg-accent-primary px-4 py-2.5 type-button-m text-text-on-accent [--chamfer:10px]"
+  >
+    <span>Propuestas de diseño</span>
+    <span data-propuestas-flecha aria-hidden="true" class="transition-transform">
+      <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6" /></svg>
+    </span>
+  </button>
+
+  <div id="prop-cuerpo" data-propuestas-cuerpo class="prop-cuerpo mt-1 max-h-[calc(100dvh-8rem)] overflow-y-auto bg-neutral-950 p-4 shadow-2xl">
+    <p class="type-body-s text-text-inverse-muted">
+      {enVista ? <>Viendo <strong class="text-text-inverse">{enVista.titulo} {seleccion[enVista.id]}</strong>; lo demás, como se publicó.</> : <>Diseño publicado. Toca una letra para comparar.</>}
+    </p>
+
+    <ul class="mt-3 flex flex-col gap-2">
+      {propuestas.map((p) => (
+        <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+          <p class="shrink-0 type-label text-text-inverse-muted sm:w-18">{p.titulo}</p>
+          <div class="flex flex-wrap gap-1" role="group" aria-label={p.titulo}>
+            {p.letras.map((letra) => {
+              const activa = seleccion[p.id] === letra;
+              return (
+                <a
+                  href={rutaInterna(rutaPropuesta(p.id, letra))}
+                  data-propuesta-letra={`${p.id}:${letra}`}
+                  aria-current={activa ? 'page' : undefined}
+                  title={p.actual === letra ? `${p.titulo} ${letra} (publicada)` : `${p.titulo} ${letra}`}
+                  class:list={[
+                    'prop-letra relative grid size-7 place-items-center type-label sm:size-8',
+                    activa ? 'bg-green-600 text-text-inverse' : 'bg-neutral-800 text-text-inverse hover:bg-neutral-700',
+                  ]}
+                >
+                  {letra}
+                  {p.actual === letra && <span class="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 bg-accent-primary" aria-hidden="true" />}
+                </a>
+              );
+            })}
+          </div>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-3 flex items-center gap-2 text-xs text-text-inverse-muted">
+      <span class="inline-block size-1.5 bg-accent-primary" aria-hidden="true"></span> Publicada
+      <span class="ml-3 inline-block size-3 border-2 border-accent-primary" aria-hidden="true"></span> Tu favorita
+    </p>
+
+    {enVista && (
+      <button type="button" data-propuestas-elegir class="prop-boton mt-3 w-full bg-green-600 px-4 py-2 type-button-m text-text-inverse hover:bg-green-500">
+        Me quedo con {enVista.titulo} {seleccion[enVista.id]}
+      </button>
+    )}
+
+    <div class="mt-3 border-t border-neutral-800 pt-3">
+      <p class="type-label text-text-inverse-muted">Elección</p>
+      <p data-propuestas-resumen class="mt-1 text-xs text-text-inverse"></p>
+      <div class="mt-2 flex gap-2">
+        <button type="button" data-propuestas-copiar class="prop-boton flex-1 bg-accent-primary px-3 py-2 type-button-m text-text-on-accent hover:bg-accent-hover">Copiar resumen</button>
+        <button type="button" data-propuestas-reiniciar class="prop-boton bg-neutral-800 px-3 py-2 type-button-m text-text-inverse hover:bg-neutral-700">Reiniciar</button>
+      </div>
+      <p data-propuestas-aviso class="mt-1 text-xs text-text-accent empty:hidden" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .prop-letra.is-favorita { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .prop-panel :is(a, button):focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-border-focus); }
+  .prop-panel[data-cerrado] .prop-cuerpo { display: none; }
+  .prop-panel[data-cerrado] [data-propuestas-flecha] { transform: rotate(180deg); }
+</style>
+
+<script>
+  const panel = document.querySelector<HTMLElement>('[data-propuestas]');
+  if (panel) {
+    const CLAVE_ELECCION = 'propuestas-eleccion';
+    const CLAVE_SCROLL = 'propuestas-scroll';
+    const CLAVE_CERRADO = 'propuestas-cerrado';
+    const vista = panel.dataset.vista ?? '';
+    const letra = panel.dataset.letra ?? '';
+    const publicadas: Record<string, string> = JSON.parse(panel.dataset.publicadas ?? '{}');
+    const titulos: Record<string, string> = JSON.parse(panel.dataset.titulos ?? '{}');
+
+    const leer = (clave: string, almacen: Storage) => { try { return almacen.getItem(clave); } catch { return null; } };
+    const guardar = (clave: string, valor: string | null, almacen: Storage) => {
+      try { valor === null ? almacen.removeItem(clave) : almacen.setItem(clave, valor); } catch { /* sin almacenamiento */ }
+    };
+
+    /* ---------- Abrir y cerrar (cerrado por defecto en celular) ---------- */
+    const abrir = panel.querySelector<HTMLButtonElement>('[data-propuestas-abrir]')!;
+    const fijarCerrado = (cerrado: boolean) => {
+      panel.toggleAttribute('data-cerrado', cerrado);
+      abrir.setAttribute('aria-expanded', String(!cerrado));
+    };
+    const guardado = leer(CLAVE_CERRADO, localStorage);
+    fijarCerrado(guardado ? guardado === '1' : window.innerWidth < 640);
+    abrir.addEventListener('click', () => {
+      const cerrado = !panel.hasAttribute('data-cerrado');
+      fijarCerrado(cerrado);
+      guardar(CLAVE_CERRADO, cerrado ? '1' : '0', localStorage);
+    });
+
+    /* ---------- Favoritas ---------- */
+    const eleccion = (): Record<string, string> => {
+      try { return { ...publicadas, ...JSON.parse(leer(CLAVE_ELECCION, localStorage) ?? '{}') }; } catch { return { ...publicadas }; }
+    };
+    const resumen = panel.querySelector<HTMLElement>('[data-propuestas-resumen]')!;
+    const aviso = panel.querySelector<HTMLElement>('[data-propuestas-aviso]')!;
+    const pintar = () => {
+      const e = eleccion();
+      panel.querySelectorAll<HTMLElement>('[data-propuesta-letra]').forEach((a) => {
+        const [seccion, l] = (a.dataset.propuestaLetra ?? '').split(':');
+        a.classList.toggle('is-favorita', e[seccion] === l);
+      });
+      resumen.textContent = Object.keys(titulos).map((s) => `${titulos[s]} ${e[s]}`).join(', ');
+    };
+    pintar();
+
+    panel.querySelector('[data-propuestas-elegir]')?.addEventListener('click', () => {
+      guardar(CLAVE_ELECCION, JSON.stringify({ ...eleccion(), [vista]: letra }), localStorage);
+      pintar();
+      aviso.textContent = `Guardado: ${titulos[vista]} ${letra}.`;
+    });
+    panel.querySelector('[data-propuestas-reiniciar]')?.addEventListener('click', () => {
+      guardar(CLAVE_ELECCION, null, localStorage);
+      pintar();
+      aviso.textContent = 'Elección reiniciada al diseño publicado.';
+    });
+    panel.querySelector('[data-propuestas-copiar]')?.addEventListener('click', async () => {
+      const e = eleccion();
+      const texto = ['Propuestas elegidas para la portada:', ...Object.keys(titulos).map((s) => `- ${titulos[s]}: ${e[s]}${e[s] === publicadas[s] ? ' (la publicada)' : ''}`)].join('\n');
+      try {
+        await navigator.clipboard.writeText(texto);
+        aviso.textContent = 'Resumen copiado. Pégalo en WhatsApp o en un correo.';
+      } catch {
+        aviso.textContent = texto;
+      }
+    });
+
+    /* ---------- Volver a la misma sección al cambiar de variante ---------- */
+    const inicio = (seccion: string) => {
+      if (seccion === 'navbar') return 0;
+      const envoltura = document.querySelector<HTMLElement>(`[data-propuesta="${seccion}"]`);
+      const primero = envoltura?.firstElementChild as HTMLElement | null;
+      return primero ? primero.getBoundingClientRect().top + window.scrollY : null;
+    };
+    panel.querySelectorAll<HTMLAnchorElement>('[data-propuesta-letra]').forEach((a) => {
+      a.addEventListener('click', () => {
+        const seccion = (a.dataset.propuestaLetra ?? '').split(':')[0];
+        const top = inicio(seccion);
+        guardar(CLAVE_SCROLL, JSON.stringify({ seccion, desfase: top === null ? 0 : window.scrollY - top }), sessionStorage);
+      });
+    });
+    try {
+      const pendiente = JSON.parse(leer(CLAVE_SCROLL, sessionStorage) ?? 'null') as { seccion: string; desfase: number } | null;
+      guardar(CLAVE_SCROLL, null, sessionStorage);
+      if (pendiente) {
+        history.scrollRestoration = 'manual';
+        const top = inicio(pendiente.seccion);
+        if (top !== null) window.scrollTo({ top: Math.max(0, top + pendiente.desfase), behavior: 'instant' });
+      }
+    } catch { /* sin almacenamiento */ }
+  }
+</script>

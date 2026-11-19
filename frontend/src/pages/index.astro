@@ -1,44 +1,23 @@
 ---
-import Base from "../layouts/Base.astro";
+/* Variantes publicadas. Para comparar otras sin tocar el sitio: /propuestas/
+   (src/data/propuestas.ts). Si cambias una aquí, cambia también su `actual`. */
+import Portada from "../components/Portada.astro";
 import Header from "../components/navbars/NavbarC.astro";
-import Footer from "../components/Footer.astro";
-import Contact from "../components/contacto-propuestas/ContactoD.astro";
-import HeroHome from "../components/heros/HeroG.astro";
-import Marcas from "../components/home/Marcas.astro";
-import Categorias from "../components/catalogo-propuestas/CatalogoB.astro";
-import Fabricantes from "../components/home/Fabricantes.astro";
-import Bocetos from "../components/home/Bocetos.astro";
-import Servicios from "../components/home/Servicios.astro";
-import CentroServicio from "../components/home/CentroServicio.astro";
+import Hero from "../components/heros/HeroG.astro";
 import Nosotros from "../components/nosotros/NosotrosA.astro";
-import Sucursales from "../components/home/Sucursales.astro";
-import BolsaTrabajo from "../components/home/BolsaTrabajo.astro";
-import CtaFinal from "../components/home/CtaFinal.astro";
+import Categorias from "../components/catalogo-propuestas/CatalogoB.astro";
+import Contacto from "../components/contacto-propuestas/ContactoD.astro";
 import { obtenerProductos } from "../lib/productos";
 
 // Catálogo desde Supabase (sin credenciales, la portada se genera sin productos).
 const productos = await obtenerProductos();
 ---
 
-<Base page="home">
-  <Header productos={productos} />
-
-  <main id="contenido" class="overflow-x-clip">
-    <HeroHome />
-    <Nosotros />
-    <Fabricantes />
-    <Marcas />
-    <Bocetos />
-    <Categorias productos={productos} />
-
-    <Servicios />
-    <CentroServicio />
-
-    <Sucursales />
-    <BolsaTrabajo />
-    <Contact />
-    <CtaFinal />
-  </main>
-
-  <Footer />
-</Base>
+<Portada
+  productos={productos}
+  Header={Header}
+  Hero={Hero}
+  Nosotros={Nosotros}
+  Categorias={Categorias}
+  Contacto={Contacto}
+/>

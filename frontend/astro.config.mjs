@@ -13,7 +13,11 @@ const seo = JSON.parse(
 export default defineConfig({
   site: process.env.SITE_URL ?? seo.site.baseUrl,
   base: process.env.SITE_BASE_PATH ?? '/',
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    // /propuestas/ es una vista interna para comparar diseños: fuera del sitemap.
+    sitemap({ filter: (pagina) => !pagina.includes('/propuestas/') }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

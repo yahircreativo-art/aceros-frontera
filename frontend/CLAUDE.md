@@ -52,9 +52,11 @@ Deploy: `../.github/workflows/deploy-pages.yml` builds `frontend/` on push to `m
   - Fonts: Barlow Condensed (display) and Montserrat.
   - Utilities: `type-*`, `container-page` (gutter `--container-gutter`), `chamfer`/`btn-chamfer` (cut corner, the brand shape), `pattern-placa`/`pattern-diamante`, `text-outline`.
   - UI components: `components/ui/` (`Button`, `Pictogram`, `SectionHeading`, `SectionTag`, `Cota`).
-- **Section proposals.** The owner asks for A–E variants and previews them by changing the import in `src/pages/index.astro`.
-  - They live in `components/{navbars,heros,nosotros,contacto-propuestas,catalogo-propuestas}/`, each with a `*-data.ts` of shared data.
-  - Original Figma components: `components/home/`, `components/contacto/`.
+- **Section proposals.** The owner asks for A–E variants of home sections.
+  - They live in `components/{navbars,heros,nosotros,contacto-propuestas,catalogo-propuestas}/`, each with a `*-data.ts` of shared data. Original Figma components: `components/home/`, `components/contacto/`.
+  - The home page is `components/Portada.astro`, which receives the variant components as props. `pages/index.astro` passes the published ones.
+  - `/propuestas/` (`pages/propuestas/[...variante].astro`, noindex, excluded from the sitemap) builds one page per variant (`/propuestas/hero-b/`) with the floating `PanelPropuestas` to switch, mark favourites and copy a summary. Variants cannot share a page because components use fixed ids.
+  - To publish another variant, change its import in `index.astro` and its `actual` in `src/data/propuestas.ts`. Add new variants to both `propuestas.ts` and the component map in the propuestas page.
 - **Isometric line drawings** (the most distinctive element of the site):
   - `lib/planos.ts` extrudes cross-sections (IPR, PTR, angle, tube, R-72 sheet) into SVG paths drawn with a mask (`home/PlanoDibujo.astro`, `catalogo-propuestas/PlanoLinea.astro`).
   - `lib/construcciones.ts` + `lib/obra-camara.ts` animate building, factory and house construction with an orthographic camera (`heros/HeroG.astro`).

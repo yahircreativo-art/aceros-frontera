@@ -1,0 +1,58 @@
+---
+/**
+ * Contenido de la portada. index.astro lo usa con las variantes publicadas;
+ * /propuestas/ lo usa con otras para compararlas. Las secciones con variantes
+ * llegan como componentes; cada una va envuelta en un [data-propuesta]
+ * (display: contents) para que el panel de propuestas recuerde dónde estabas.
+ */
+import Base from '../layouts/Base.astro';
+import Footer from './Footer.astro';
+import Marcas from './home/Marcas.astro';
+import Fabricantes from './home/Fabricantes.astro';
+import Bocetos from './home/Bocetos.astro';
+import Servicios from './home/Servicios.astro';
+import CentroServicio from './home/CentroServicio.astro';
+import Sucursales from './home/Sucursales.astro';
+import BolsaTrabajo from './home/BolsaTrabajo.astro';
+import CtaFinal from './home/CtaFinal.astro';
+import type { PageId } from '../lib/seo';
+import type { Producto } from '../lib/types';
+
+interface Props {
+  page?: PageId;
+  canonicalPath?: string;
+  productos: Producto[];
+  /* Componentes de cada sección con variantes. */
+  Header: any;
+  Hero: any;
+  Nosotros: any;
+  Categorias: any;
+  Contacto: any;
+}
+
+const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categorias, Contacto } = Astro.props;
+---
+
+<Base page={page} canonicalPath={canonicalPath}>
+  <Header productos={productos} />
+
+  <main id="contenido" class="overflow-x-clip">
+    <div data-propuesta="hero" class="contents"><Hero /></div>
+    <div data-propuesta="nosotros" class="contents"><Nosotros /></div>
+    <Fabricantes />
+    <Marcas />
+    <Bocetos />
+    <div data-propuesta="catalogo" class="contents"><Categorias productos={productos} /></div>
+
+    <Servicios />
+    <CentroServicio />
+
+    <Sucursales />
+    <BolsaTrabajo />
+    <div data-propuesta="contacto" class="contents"><Contacto /></div>
+    <CtaFinal />
+  </main>
+
+  <Footer />
+  <slot />
+</Base>
