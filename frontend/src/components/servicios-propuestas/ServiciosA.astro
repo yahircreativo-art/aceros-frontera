@@ -1,0 +1,127 @@
+---
+/**
+ * SERVICIOS A · "Índice y lámina"
+ * Fondo negro. A la izquierda, el índice de servicios en letra grande; a la
+ * derecha, una lámina con la foto, la descripción y el botón del servicio
+ * elegido. Al pasar el cursor, enfocar o tocar un servicio, la lámina
+ * cambia con un corte diagonal (como soplete). En celular, cada servicio se
+ * abre como acordeón con su foto.
+ *
+ * Sin JavaScript se ven todos los servicios abiertos, uno debajo de otro.
+ *
+ * Uso: <ServiciosA />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { servicios, infoUrl, cotaServicios } from './servicios-data';
+---
+
+<section id="servicios" data-sva class="sva relative scroll-mt-24 bg-neutral-950 py-20 text-text-inverse lg:py-28">
+  <div class="container-page">
+    <Cota texto={cotaServicios} class="text-text-accent" />
+    <h2 class="mt-5 max-w-[18ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">
+      Más que vender acero
+    </h2>
+
+    <div class="mt-12 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <!-- Índice -->
+      <ul class="sva-indice min-w-0 border-t border-white/20" role="list">
+        {servicios.map((s, i) => (
+          <li id={s.id} class="scroll-mt-28 border-b border-white/20">
+            <button type="button" data-sva-ir={i} aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`sva-panel-${i}`} class="sva-item flex w-full items-center justify-between gap-4 py-4 text-left">
+              <span class="font-display text-[clamp(1.6rem,2.6vw,2.4rem)] leading-none font-extrabold uppercase">{s.titulo}</span>
+              <i aria-hidden="true" class="sva-marca"></i>
+            </button>
+            <!-- Panel del acordeón (celular) -->
+            <div id={`sva-panel-${i}`} data-sva-movil={i} class="sva-movil lg:hidden">
+              <img src={s.imagen} alt="" loading="lazy" decoding="async" class="chamfer aspect-[16/10] w-full object-cover [--chamfer:16px]" />
+              <p class="mt-4 type-body-m text-text-inverse-muted">{s.descripcion}</p>
+              <Button href={infoUrl(s)} target="_blank" variant="secondary" size="md" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-5 mb-6" />
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <!-- Lámina (escritorio) -->
+      <div class="sva-lamina relative hidden min-w-0 lg:block">
+        {servicios.map((s, i) => (
+          <article data-sva-panel={i} class:list={['sva-panel chamfer absolute inset-0 overflow-hidden [--chamfer:36px]', { 'is-on': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>
+            <img src={s.imagen} alt="" loading="lazy" decoding="async" class="absolute inset-0 size-full object-cover" />
+            <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></span>
+            <div class="absolute inset-x-0 bottom-0 p-8 xl:p-10">
+              <h3 class="font-display text-4xl leading-none font-extrabold uppercase">{s.titulo}</h3>
+              <p class="mt-3 max-w-lg type-body-m text-text-inverse-muted">{s.descripcion}</p>
+              <Button href={infoUrl(s)} target="_blank" variant="secondary" size="md" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-6" />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-sva]');
+  if (root) {
+    root.classList.add('is-js');
+    const botones = [...root.querySelectorAll<HTMLButtonElement>('[data-sva-ir]')];
+    const paneles = [...root.querySelectorAll<HTMLElement>('[data-sva-panel]')];
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+    let actual = 0;
+
+    const ir = (i: number, alternar = false) => {
+      const cerrar = alternar && !escritorio.matches && i === actual && botones[i].getAttribute('aria-expanded') === 'true';
+      actual = i;
+      botones.forEach((b, k) => b.setAttribute('aria-expanded', String(!cerrar && k === i)));
+      paneles.forEach((p, k) => {
+        const on = k === i;
+        p.classList.toggle('is-on', on);
+        p.toggleAttribute('aria-hidden', !on);
+        p.querySelector('a')?.setAttribute('tabindex', on ? '0' : '-1');
+      });
+    };
+
+    botones.forEach((b, i) => {
+      b.addEventListener('click', () => ir(i, true));
+      b.addEventListener('pointerenter', () => { if (escritorio.matches) ir(i); });
+      b.addEventListener('focus', () => { if (escritorio.matches) ir(i); });
+    });
+
+    /* Los botones de las láminas ocultas no reciben foco. */
+    paneles.forEach((p, k) => p.querySelector('a')?.setAttribute('tabindex', k === 0 ? '0' : '-1'));
+
+    /* Si alguien llega por ancla (/#corte-de-placa), abre ese servicio. */
+    const desdeAncla = () => {
+      const k = botones.findIndex((b) => b.closest('li')?.id === location.hash.slice(1));
+      if (k >= 0) ir(k);
+    };
+    desdeAncla();
+    window.addEventListener('hashchange', desdeAncla);
+  }
+</script>
+
+<style>
+  .sva-lamina { min-height: 34rem; }
+  .sva-panel { clip-path: polygon(0 0, 0 0, -12% calc(100% - 36px), -12% 100%, 0 100%); transition: clip-path 700ms cubic-bezier(0.65, 0, 0.35, 1); z-index: 0; }
+  .sva-panel.is-on { z-index: 1; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0 100%); }
+  /* Corte diagonal: el panel entra barrido en ángulo. */
+  .sva-panel:not(.is-on) { transition-duration: 0ms; transition-delay: 700ms; }
+
+  .sva-item { color: var(--color-text-inverse-muted); cursor: pointer; transition: color 200ms, padding 300ms; }
+  .sva-item:hover, .sva-item[aria-expanded='true'] { color: var(--color-text-inverse); }
+  @media (min-width: 64rem) { .sva-item[aria-expanded='true'] { padding-left: 1rem; } }
+  .sva-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .sva-marca { width: 1.5rem; height: 3px; flex-shrink: 0; background: rgb(255 255 255 / 0.2); transition: background-color 200ms, width 300ms; }
+  .sva-item[aria-expanded='true'] .sva-marca { width: 3rem; background: var(--color-accent-primary); }
+
+  /* Acordeón de celular: con JS solo el abierto muestra su panel. */
+  .sva.is-js .sva-movil { display: none; }
+  @media (max-width: 63.99rem) {
+    .sva.is-js .sva-item[aria-expanded='true'] + .sva-movil { display: block; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sva-panel, .sva-panel:not(.is-on) { transition: none; }
+    .sva-item, .sva-marca { transition: none; }
+  }
+</style>

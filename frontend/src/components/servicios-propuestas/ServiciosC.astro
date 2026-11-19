@@ -1,0 +1,72 @@
+---
+/**
+ * SERVICIOS C · "Mosaico de placas"
+ * Fondo verde de marca. Los servicios son placas de distintos tamaños con
+ * su foto, cortadas en chaflán, como piezas de una hoja de corte. Al pasar
+ * el cursor la foto se ve a color y sube la descripción. Entran
+ * escalonadas al aparecer (.reveal de Base.astro).
+ *
+ * Uso: <ServiciosC />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { whatsappUrl } from '../../lib/seo';
+import { servicios, infoUrl, cotaServicios } from './servicios-data';
+
+/* Acomodo del mosaico (escritorio, 12 columnas × 2 filas). */
+const acomodo = [
+  'lg:col-span-5 lg:row-span-2',
+  'lg:col-span-4',
+  'lg:col-span-3',
+  'lg:col-span-3',
+  'lg:col-span-4',
+  'lg:col-span-12 lg:row-span-1',
+];
+---
+
+<section id="servicios" class="svc relative scroll-mt-24 overflow-hidden bg-green-800 py-20 text-text-inverse lg:py-28">
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 opacity-[0.06]"></div>
+
+  <div class="container-page relative">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
+      <div>
+        <Cota texto={cotaServicios} class="text-text-accent" />
+        <h2 class="mt-5 font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">Todo lo que hacemos con el acero</h2>
+      </div>
+      <div class="lg:justify-self-end">
+        <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar un servicio" />
+      </div>
+    </div>
+
+    <ul class="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:auto-rows-[15rem] lg:grid-cols-12">
+      {servicios.map((s, i) => (
+        <li id={s.id} class:list={['svc-placa reveal chamfer group relative min-h-[16rem] lg:min-h-0 scroll-mt-28 overflow-hidden bg-neutral-950 [--chamfer:22px]', acomodo[i], { 'sm:col-span-2': i === 0 || i === 5 }]} style={`--reveal-delay:${i * 70}ms`}>
+          <img src={s.imagen} alt="" loading="lazy" decoding="async" class="svc-foto absolute inset-0 size-full object-cover" />
+          <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/5"></span>
+          <a href={infoUrl(s)} target="_blank" rel="noopener noreferrer" class="svc-enlace absolute inset-0 flex flex-col justify-end p-6" aria-label={`${s.titulo}: solicitar información por WhatsApp`}>
+            <h3 class:list={['font-display leading-[0.95] font-extrabold uppercase', i === 0 ? 'text-[clamp(2rem,3.4vw,3.25rem)]' : 'text-[1.75rem]']}>{s.titulo}</h3>
+            <p class="svc-desc type-body-s text-text-inverse-muted">{s.descripcion}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .svc-foto { opacity: 0.65; filter: grayscale(1); transition: opacity 600ms, filter 600ms, transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .svc-placa:hover .svc-foto, .svc-placa:focus-within .svc-foto { opacity: 0.95; filter: none; transform: scale(1.04); }
+
+  /* Descripción: visible en celular; en escritorio sube al pasar el cursor. */
+  .svc-desc { margin-top: 0.6rem; max-width: 34rem; }
+  @media (min-width: 64rem) and (hover: hover) {
+    .svc-desc { max-height: 0; opacity: 0; overflow: hidden; margin-top: 0; transition: max-height 500ms ease, opacity 400ms ease, margin 500ms ease; }
+    .svc-placa:hover .svc-desc, .svc-placa:focus-within .svc-desc { max-height: 8rem; opacity: 1; margin-top: 0.6rem; }
+  }
+  .svc-enlace:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svc-foto, .svc-desc { transition: none; }
+    .svc-placa:hover .svc-foto { transform: none; }
+  }
+</style>

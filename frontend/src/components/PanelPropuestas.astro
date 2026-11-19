@@ -25,6 +25,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
   data-letra={vista ? seleccion[vista] : ''}
   data-publicadas={JSON.stringify(publicadas)}
   data-titulos={JSON.stringify(Object.fromEntries(propuestas.map((p) => [p.id, p.titulo])))}
+  data-sin-variante={JSON.stringify(Object.fromEntries(propuestas.map((p) => [p.id, p.sinVariante ?? 'sin publicar'])))}
   class="prop-panel fixed bottom-4 left-4 z-[60] w-[min(23rem,calc(100vw-6rem))] text-text-inverse"
 >
   <button
@@ -112,6 +113,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
     const letra = panel.dataset.letra ?? '';
     const publicadas: Record<string, string> = JSON.parse(panel.dataset.publicadas ?? '{}');
     const titulos: Record<string, string> = JSON.parse(panel.dataset.titulos ?? '{}');
+    const sinVariante: Record<string, string> = JSON.parse(panel.dataset.sinVariante ?? '{}');
 
     const leer = (clave: string, almacen: Storage) => { try { return almacen.getItem(clave); } catch { return null; } };
     const guardar = (clave: string, valor: string | null, almacen: Storage) => {
@@ -144,7 +146,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
         const [seccion, l] = (a.dataset.propuestaLetra ?? '').split(':');
         a.classList.toggle('is-favorita', e[seccion] === l);
       });
-      resumen.textContent = Object.keys(titulos).map((s) => `${titulos[s]} ${e[s] || 'sin publicar'}`).join(', ');
+      resumen.textContent = Object.keys(titulos).map((s) => `${titulos[s]} ${e[s] || sinVariante[s]}`).join(', ');
     };
     pintar();
 
@@ -160,7 +162,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
     });
     panel.querySelector('[data-propuestas-copiar]')?.addEventListener('click', async () => {
       const e = eleccion();
-      const texto = ['Propuestas elegidas para la portada:', ...Object.keys(titulos).map((s) => `- ${titulos[s]}: ${e[s] || 'sin publicar'}${e[s] && e[s] === publicadas[s] ? ' (la publicada)' : ''}`)].join('\n');
+      const texto = ['Propuestas elegidas para la portada:', ...Object.keys(titulos).map((s) => `- ${titulos[s]}: ${e[s] || sinVariante[s]}${e[s] && e[s] === publicadas[s] ? ' (la publicada)' : ''}`)].join('\n');
       try {
         await navigator.clipboard.writeText(texto);
         aviso.textContent = 'Resumen copiado. Pégalo en WhatsApp o en un correo.';

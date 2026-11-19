@@ -1,0 +1,139 @@
+---
+/**
+ * SERVICIOS D · "Fichas técnicas"
+ * Fondo negro. Cada servicio es una ficha de plano en un carrusel
+ * horizontal: arriba, su pictograma de marca dibujado en grande sobre una
+ * retícula (se traza al entrar en pantalla); abajo, título, descripción y
+ * "Solicitar información". Se desplaza con el dedo, la rueda, el teclado o
+ * los botones; el contador dice qué ficha va al frente.
+ *
+ * Sin JavaScript es un carrusel con desplazamiento normal; con "reducir
+ * movimiento" los pictogramas aparecen completos.
+ *
+ * Uso: <ServiciosD />
+ */
+import { assetUrl } from '../../lib/asset-url';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { servicios, infoUrl, cotaServicios } from './servicios-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+---
+
+<section id="servicios" data-svd class="svd relative scroll-mt-24 overflow-hidden bg-neutral-950 py-20 text-text-inverse lg:py-28">
+  <div class="container-page flex flex-wrap items-end justify-between gap-6">
+    <div>
+      <Cota texto={cotaServicios} class="text-text-accent" />
+      <h2 class="mt-5 max-w-[16ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">Ficha por servicio</h2>
+    </div>
+    <div class="flex items-center gap-4">
+      <p class="type-body-s text-text-inverse-muted" aria-live="polite"><span data-svd-num>1</span> de {servicios.length}</p>
+      <div class="flex">
+        <button type="button" data-svd-ant class="svd-btn chamfer [--chamfer:8px]" aria-label="Ficha anterior"><svg viewBox="0 0 24 24" class="size-5 rotate-180" aria-hidden="true"><use href={icono('arrow-right')} /></svg></button>
+        <button type="button" data-svd-sig class="svd-btn chamfer ml-2 [--chamfer:8px]" aria-label="Ficha siguiente"><svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('arrow-right')} /></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <ul data-svd-pista class="svd-pista mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6" tabindex="0" aria-label="Fichas de servicios">
+    {servicios.map((s) => (
+      <li id={s.id} data-svd-ficha class="svd-ficha chamfer flex shrink-0 snap-start scroll-mt-28 flex-col bg-neutral-900 [--chamfer:24px]">
+        <div class="svd-dibujo relative grid aspect-[4/3] place-items-center border-b border-white/15 text-accent-primary">
+          <Pictogram name={s.pictograma} class="svd-picto size-40" />
+          <span aria-hidden="true" class="svd-cota absolute inset-x-8 bottom-5"></span>
+        </div>
+        <div class="flex flex-1 flex-col p-6">
+          <h3 class="font-display text-3xl leading-[0.95] font-extrabold uppercase">{s.titulo}</h3>
+          <p class="mt-3 mb-auto type-body-s text-text-inverse-muted">{s.descripcion}</p>
+          <Button href={infoUrl(s)} target="_blank" variant="secondary" size="md" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-6 self-start" />
+        </div>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-svd]');
+  if (root) {
+    const pista = root.querySelector<HTMLElement>('[data-svd-pista]')!;
+    const fichas = [...root.querySelectorAll<HTMLElement>('[data-svd-ficha]')];
+    const num = root.querySelector<HTMLElement>('[data-svd-num]')!;
+    const ant = root.querySelector<HTMLButtonElement>('[data-svd-ant]')!;
+    const sig = root.querySelector<HTMLButtonElement>('[data-svd-sig]')!;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* scroll-padding se lee sin resolver (max(...)); el padding sí llega en px y vale lo mismo. */
+    const margen = () => parseFloat(getComputedStyle(pista).paddingLeft) || 0;
+    const indice = () => {
+      const x = pista.scrollLeft + margen();
+      let mejor = 0;
+      fichas.forEach((f, i) => { const fx = f.offsetLeft - pista.offsetLeft; if (Math.abs(fx - x) < Math.abs(fichas[mejor].offsetLeft - pista.offsetLeft - x)) mejor = i; });
+      return mejor;
+    };
+    const actualizar = () => {
+      const i = indice();
+      num.textContent = String(i + 1);
+      ant.disabled = pista.scrollLeft <= 2;
+      sig.disabled = pista.scrollLeft + pista.clientWidth >= pista.scrollWidth - 2;
+    };
+    const ir = (d: number) => {
+      const i = Math.min(Math.max(indice() + d, 0), fichas.length - 1);
+      pista.scrollTo({ left: fichas[i].offsetLeft - pista.offsetLeft - margen(), behavior: quieto ? 'auto' : 'smooth' });
+    };
+    ant.addEventListener('click', () => ir(-1));
+    sig.addEventListener('click', () => ir(1));
+    pista.addEventListener('scroll', () => requestAnimationFrame(actualizar), { passive: true });
+    pista.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); ir(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); ir(-1); }
+    });
+    actualizar();
+
+    /* Cada pictograma se traza al entrar en pantalla (no con "reducir movimiento"). */
+    if (!quieto) {
+      root.querySelectorAll('.svd-picto > *').forEach((el) => el.setAttribute('pathLength', '1'));
+      root.classList.add('is-listo');
+    }
+    const obs = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('is-trazado'); obs.unobserve(e.target); }
+    }), { threshold: 0.5 });
+    fichas.forEach((f) => obs.observe(f));
+  }
+</script>
+
+<style>
+  /* La pista arranca alineada con el contenedor y se sale por la derecha. */
+  .svd-pista {
+    /* Mismo margen que .container-page (su gutter solo existe dentro de él). */
+    --margen: max(clamp(1rem, 4vw, 2rem), calc((100% - var(--container-page)) / 2));
+    padding-inline: var(--margen);
+    scroll-padding-inline: var(--margen);
+    scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+  }
+  .svd-pista:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+  .svd-ficha { width: min(22rem, 82vw); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1); }
+
+  .svd-dibujo {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  /* Trazo del pictograma (sus rutas son de Pictogram.astro). El script les pone
+     pathLength="1" y la clase .is-listo; sin JS se ven completas. */
+  .svd :global(.svd-picto) { stroke-width: 0.9; }
+  .svd.is-listo :global(.svd-picto > *) { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.1s cubic-bezier(0.65, 0, 0.35, 1) 150ms; }
+  .svd.is-listo .is-trazado :global(.svd-picto > *) { stroke-dashoffset: 0; }
+
+  /* Cota bajo el dibujo */
+  .svd-cota { height: 9px; border-inline: 1px solid rgb(255 255 255 / 0.4); }
+  .svd-cota::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 1px; background: rgb(255 255 255 / 0.4); }
+
+  .svd-btn { display: grid; place-items: center; width: 3rem; height: 3rem; background: rgb(255 255 255 / 0.08); cursor: pointer; transition: background-color 150ms, color 150ms, opacity 150ms; }
+  .svd-btn:hover:not(:disabled) { background: var(--color-accent-primary); color: var(--color-text-on-accent); }
+  .svd-btn:disabled { opacity: 0.35; cursor: default; }
+  .svd-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+
+</style>

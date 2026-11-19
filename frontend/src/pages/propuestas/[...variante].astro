@@ -41,6 +41,16 @@ import ResenasB from '../../components/resenas/ResenasB.astro';
 import ResenasC from '../../components/resenas/ResenasC.astro';
 import ResenasD from '../../components/resenas/ResenasD.astro';
 import ResenasE from '../../components/resenas/ResenasE.astro';
+import ServiciosA from '../../components/servicios-propuestas/ServiciosA.astro';
+import ServiciosB from '../../components/servicios-propuestas/ServiciosB.astro';
+import ServiciosC from '../../components/servicios-propuestas/ServiciosC.astro';
+import ServiciosD from '../../components/servicios-propuestas/ServiciosD.astro';
+import ServiciosE from '../../components/servicios-propuestas/ServiciosE.astro';
+import FooterA from '../../components/footers/FooterA.astro';
+import FooterB from '../../components/footers/FooterB.astro';
+import FooterC from '../../components/footers/FooterC.astro';
+import FooterD from '../../components/footers/FooterD.astro';
+import FooterE from '../../components/footers/FooterE.astro';
 import ContactoA from '../../components/contacto-propuestas/ContactoA.astro';
 import ContactoB from '../../components/contacto-propuestas/ContactoB.astro';
 import ContactoC from '../../components/contacto-propuestas/ContactoC.astro';
@@ -70,6 +80,8 @@ const componentes: Record<SeccionPropuesta, Record<string, any>> = {
   nosotros: { A: NosotrosA, B: NosotrosB, C: NosotrosC, D: NosotrosD, E: NosotrosE },
   catalogo: { A: CatalogoA, B: CatalogoB, C: CatalogoC, D: CatalogoD, E: CatalogoE },
   resenas: { A: ResenasA, B: ResenasB, C: ResenasC, D: ResenasD, E: ResenasE },
+  servicios: { A: ServiciosA, B: ServiciosB, C: ServiciosC, D: ServiciosD, E: ServiciosE },
+  footer: { A: FooterA, B: FooterB, C: FooterC, D: FooterD, E: FooterE },
   contacto: { A: ContactoA, B: ContactoB, C: ContactoC, D: ContactoD, E: ContactoE },
 };
 
@@ -87,6 +99,8 @@ const ruta = Astro.params.variante ? `/propuestas/${Astro.params.variante}/` : '
   Categorias={componentes.catalogo[seleccion.catalogo]}
   Resenas={componentes.resenas[seleccion.resenas]}
   Contacto={componentes.contacto[seleccion.contacto]}
+  Pie={componentes.footer[seleccion.footer]}
+  ServiciosSec={componentes.servicios[seleccion.servicios]}
 >
   <PanelPropuestas seleccion={seleccion} vista={vista} />
 </Portada>

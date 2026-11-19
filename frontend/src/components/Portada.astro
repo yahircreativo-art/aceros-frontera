@@ -30,9 +30,13 @@ interface Props {
   Contacto: any;
   /** Opcional: la sección de reseñas aún no se publica. */
   Resenas?: any;
+  /** Opcional: sin él va el footer de siempre (Footer.astro). */
+  Pie?: any;
+  /** Opcional: sin él va la sección de servicios de siempre (home/Servicios.astro). */
+  ServiciosSec?: any;
 }
 
-const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categorias, Contacto, Resenas } = Astro.props;
+const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categorias, Contacto, Resenas, Pie = Footer, ServiciosSec = Servicios } = Astro.props;
 ---
 
 <Base page={page} canonicalPath={canonicalPath}>
@@ -46,7 +50,7 @@ const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categor
     <Bocetos />
     <div data-propuesta="catalogo" class="contents"><Categorias productos={productos} /></div>
 
-    <Servicios />
+    <div data-propuesta="servicios" class="contents"><ServiciosSec /></div>
     <CentroServicio />
 
     <Sucursales />
@@ -56,6 +60,6 @@ const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categor
     <CtaFinal />
   </main>
 
-  <Footer />
+  <div data-propuesta="footer" class="contents"><Pie /></div>
   <slot />
 </Base>

@@ -79,7 +79,7 @@ const bandas = [resenas5.slice(0, mitad), resenas5.slice(mitad)];
 
   @media (prefers-reduced-motion: reduce) {
     .rsc-pista { animation: none; }
-    .rsc-banda { overflow-x: auto; mask-image: none; padding-inline: var(--container-gutter, 1rem); }
+    .rsc-banda { overflow-x: auto; mask-image: none; padding-inline: max(clamp(1rem, 4vw, 2rem), calc((100% - var(--container-page)) / 2)); }
     .rsc-pista li[aria-hidden='true'] { display: none; }
   }
 </style>

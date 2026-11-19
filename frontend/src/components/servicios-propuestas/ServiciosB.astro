@@ -1,0 +1,106 @@
+---
+/**
+ * SERVICIOS B · "Hoja de procesos"
+ * Fondo claro. Los servicios son renglones de una hoja técnica (servicio,
+ * qué incluye, acción) separados por líneas finas. En escritorio, al pasar
+ * el cursor por un renglón, su foto aparece recortada en chaflán y sigue al
+ * cursor; el renglón se marca con una franja amarilla. En celular cada
+ * renglón lleva su foto pequeña.
+ *
+ * Con "reducir movimiento" la foto no sigue al cursor (aparece fija).
+ *
+ * Uso: <ServiciosB />
+ */
+import { assetUrl } from '../../lib/asset-url';
+import Cota from '../ui/Cota.astro';
+import { servicios, infoUrl, cotaServicios } from './servicios-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+---
+
+<section id="servicios" data-svb class="svb relative scroll-mt-24 bg-neutral-0 py-20 text-text-primary lg:py-28">
+  <div class="container-page">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+      <div>
+        <Cota texto={cotaServicios} class="text-text-brand" />
+        <h2 class="mt-5 font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">Servicios de taller y mostrador</h2>
+      </div>
+      <p class="max-w-md type-body-l text-text-secondary lg:justify-self-end">
+        Cortamos, fabricamos y reparamos para que tu material llegue listo a la obra o al taller.
+      </p>
+    </div>
+
+    <div class="svb-cab mt-12 hidden grid-cols-[minmax(0,5fr)_minmax(0,6fr)_auto] gap-8 border-b border-neutral-950 pb-3 text-xs font-semibold text-text-muted md:grid">
+      <span>Servicio</span><span>Qué incluye</span><span class="w-44">Acción</span>
+    </div>
+
+    <ul class="svb-lista">
+      {servicios.map((s) => (
+        <li id={s.id} data-svb-fila data-img={s.imagen} class="svb-fila relative grid scroll-mt-28 grid-cols-[5rem_minmax(0,1fr)] gap-x-4 gap-y-3 border-b border-neutral-300 py-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)_auto] md:items-center md:gap-8">
+          <img src={s.imagen} alt="" loading="lazy" decoding="async" class="chamfer row-span-2 aspect-square w-20 object-cover [--chamfer:10px] md:hidden" />
+          <h3 class="font-display text-[clamp(1.75rem,3vw,2.75rem)] leading-[0.95] font-extrabold uppercase">{s.titulo}</h3>
+          <p class="type-body-m text-text-secondary">{s.descripcion}</p>
+          <a href={infoUrl(s)} target="_blank" rel="noopener noreferrer" class="svb-cta chamfer col-span-2 inline-flex w-fit items-center gap-2 px-4 py-3 type-button-s [--chamfer:8px] md:col-span-1 md:w-44 md:justify-center" aria-label={`${s.titulo}: solicitar información por WhatsApp`}>
+            <svg viewBox="0 0 24 24" class="size-4" aria-hidden="true"><use href={icono('whatsapp')} /></svg>
+            Pedir información
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <!-- Foto que sigue al cursor (escritorio) -->
+  <div data-svb-foto aria-hidden="true" class="svb-foto chamfer pointer-events-none fixed top-0 left-0 z-30 hidden aspect-[4/3] w-72 overflow-hidden [--chamfer:22px] md:block">
+    <img data-svb-img src={servicios[0].imagen} alt="" class="size-full object-cover" />
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-svb]');
+  const fino = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (root && fino.matches) {
+    const foto = root.querySelector<HTMLElement>('[data-svb-foto]')!;
+    const img = root.querySelector<HTMLImageElement>('[data-svb-img]')!;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let x = 0, y = 0, fx = 0, fy = 0, raf = 0;
+
+    const mover = () => {
+      fx += (x - fx) * 0.18;
+      fy += (y - fy) * 0.18;
+      foto.style.transform = `translate(${fx + 24}px, ${fy - 110}px)`;
+      if (Math.abs(x - fx) > 0.5 || Math.abs(y - fy) > 0.5) raf = requestAnimationFrame(mover);
+      else raf = 0;
+    };
+
+    root.querySelectorAll<HTMLElement>('[data-svb-fila]').forEach((fila) => {
+      fila.addEventListener('pointerenter', (e) => {
+        img.src = fila.dataset.img!;
+        if (!foto.classList.contains('is-on')) { fx = e.clientX; fy = e.clientY; }
+        foto.classList.add('is-on');
+      });
+      fila.addEventListener('pointerleave', () => foto.classList.remove('is-on'));
+      fila.addEventListener('pointermove', (e) => {
+        x = e.clientX; y = e.clientY;
+        if (quieto) { foto.style.transform = `translate(${x + 24}px, ${y - 110}px)`; return; }
+        if (!raf) raf = requestAnimationFrame(mover);
+      });
+    });
+    window.addEventListener('scroll', () => foto.classList.remove('is-on'), { passive: true });
+  }
+</script>
+
+<style>
+  .svb-fila::before { content: ""; position: absolute; left: 0; top: -1px; height: 3px; width: 100%; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; transition: transform 400ms cubic-bezier(0.65, 0, 0.35, 1); }
+  .svb-fila:hover::before, .svb-fila:focus-within::before { transform: scaleX(1); }
+
+  .svb-cta { background: var(--color-neutral-100); transition: background-color 150ms, color 150ms; }
+  .svb-fila:hover .svb-cta, .svb-cta:focus-visible { background: var(--color-green-800); color: var(--color-text-inverse); }
+  .svb-cta:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+  .svb-foto { opacity: 0; scale: 0.85; transition: opacity 200ms, scale 300ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .svb-foto.is-on { opacity: 1; scale: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svb-fila::before, .svb-foto { transition: none; }
+  }
+</style>

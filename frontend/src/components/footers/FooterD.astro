@@ -1,0 +1,104 @@
+---
+/**
+ * FOOTER D · "Perfil de remate"
+ * Fondo negro. Una viga IPR enorme en línea (la misma de los bocetos,
+ * src/lib/planos.ts) se dibuja detrás del contenido al llegar al final de
+ * la página, saliéndose por la derecha. Delante, el contenido en columnas
+ * y un botón grande "Volver arriba" con su cota.
+ *
+ * Sin JavaScript o con "reducir movimiento" la viga se ve completa.
+ *
+ * Uso: <FooterD />
+ */
+import Logo from '../Logo.astro';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import PlanoLinea from '../catalogo-propuestas/PlanoLinea.astro';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { piezasPlano } from '../../lib/planos';
+import { siteSeo, whatsappUrl, sucursales, anio, lema, columnas, horarios, redes, direccion } from './footers-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+const viga = piezasPlano.find((p) => p.nombre.includes('IPR')) ?? piezasPlano[0];
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))];
+---
+
+<footer id="pie" data-fd class="fd relative isolate overflow-hidden bg-neutral-950 text-text-inverse">
+  <div aria-hidden="true" class="fd-viga pointer-events-none absolute -z-10 text-white">
+    <PlanoLinea plano={viga.plano} nombre={viga.nombre} notas={false} class="h-full w-full" />
+  </div>
+  <div aria-hidden="true" class="fd-velo absolute inset-0 -z-10"></div>
+
+  <div class="container-page py-14 md:py-20">
+    <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+      <div class="min-w-0">
+        <Logo large />
+        <p class="mt-6 max-w-[14ch] font-display text-[clamp(2.5rem,6vw,4.5rem)] leading-[0.88] font-extrabold uppercase">{lema}</p>
+        <Cota texto={`${sucursales.length} sucursales en ${ciudades.slice(0, -1).join(', ')} y ${ciudades.at(-1)}`} class="mt-5 text-text-accent" />
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <Button href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <a href="#top" class="fd-arriba chamfer inline-flex items-center gap-2 px-5 font-display text-lg font-bold uppercase [--chamfer:8px]">
+          <svg viewBox="0 0 24 24" class="size-5 -rotate-90" aria-hidden="true"><use href={icono('arrow-right')} /></svg>
+          Volver arriba
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-14 grid grid-cols-2 gap-x-6 gap-y-10 border-t border-white/20 pt-10 lg:grid-cols-4">
+      {columnas.map((c) => (
+        <div>
+          <h2 class="type-label text-text-accent">{c.titulo}</h2>
+          <ul class="mt-3 grid gap-2.5 type-body-s text-text-inverse-muted">
+            {c.enlaces.map((e) => (
+              <li><a class="fd-link" href={rutaInterna(e.href)} target={e.externo ? '_blank' : undefined} rel={e.externo ? 'noopener noreferrer' : undefined}>{e.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <div>
+        <h2 class="type-label text-text-accent">Contacto</h2>
+        <ul class="mt-3 grid gap-2.5 type-body-s text-text-inverse-muted">
+          <li><a class="fd-link" href={`tel:${siteSeo.phoneHref}`}>{siteSeo.phone}</a></li>
+          <li><a class="fd-link break-all" href={`mailto:${siteSeo.email}`}>{siteSeo.email}</a></li>
+          {redes.map((r) => <li><a class="fd-link" href={r.url} target="_blank" rel="noopener noreferrer">{r.name}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h2 class="type-label text-text-accent">Horario</h2>
+        <ul class="mt-3 grid gap-2.5 type-body-s text-text-inverse-muted">
+          {horarios.map((h) => <li>{h.dias}<br /><span class="text-text-inverse">{h.horas}</span></li>)}
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-col gap-2 border-t border-white/20 pt-6 type-caption text-text-inverse-muted sm:flex-row sm:justify-between sm:gap-6">
+      <p>© {anio} {siteSeo.legalName}. Todos los derechos reservados.</p>
+      <address class="not-italic">{direccion}</address>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-fd]');
+  if (root) {
+    const viga = root.querySelector<HTMLElement>('.fd-viga')!;
+    new IntersectionObserver(([e], o) => {
+      if (e.isIntersecting) { viga.classList.add('is-trazado'); o.disconnect(); }
+    }, { threshold: 0.2 }).observe(root);
+  }
+</script>
+
+<style>
+  .fd-viga { right: -14%; top: 50%; width: min(72rem, 120%); aspect-ratio: 4 / 3; transform: translateY(-50%); opacity: 0.16; }
+  @media (max-width: 47.99rem) { .fd-viga { right: -45%; width: 160%; top: 22%; } }
+  .fd-velo { background: linear-gradient(90deg, rgb(11 13 12 / 85%) 0%, rgb(11 13 12 / 40%) 60%, transparent 100%); }
+
+  .fd-arriba { min-height: 3.5rem; color: var(--color-text-inverse); background: rgb(255 255 255 / 0.08); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25); transition: background-color 150ms, color 150ms; }
+  .fd-arriba:hover { background: var(--color-text-inverse); color: var(--color-neutral-950); }
+  .fd-arriba:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+  .fd-link { transition: color 150ms; }
+  .fd-link:hover { color: var(--color-text-inverse); }
+  .fd-link:focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: 2px; }
+</style>

@@ -1,0 +1,104 @@
+---
+/**
+ * FOOTER A · "Cajetín de plano"
+ * Todo el pie es el cuadro de datos de un plano técnico: celdas con líneas
+ * finas y etiquetas pequeñas (Empresa, Contacto, Horario, Planta,
+ * Sucursales…), como el recuadro de la esquina de un dibujo de obra. La
+ * última fila hace de pie legal ("Hoja", año, razón social).
+ *
+ * Uso: <FooterA />
+ */
+import Logo from '../Logo.astro';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl, sucursales, telHref, anio, lema, columnas, horarios, redes, direccion, nombreCorto } from './footers-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+---
+
+<footer id="pie" class="fa brand-stripe-top-lg bg-neutral-950 text-text-inverse">
+  <div class="container-page py-12 md:py-16">
+    <div class="fa-cuadro grid grid-cols-[minmax(0,1fr)] md:grid-cols-2 lg:grid-cols-12">
+      <!-- Empresa -->
+      <div class="fa-celda md:col-span-2 lg:col-span-5 lg:row-span-2">
+        <small>Empresa</small>
+        <Logo large />
+        <p class="mt-2 font-display text-3xl font-bold uppercase leading-none text-text-accent">{lema}</p>
+        <p class="type-body-s text-text-inverse-muted">{siteSeo.description}</p>
+      </div>
+
+      <!-- Contacto -->
+      <div class="fa-celda lg:col-span-4">
+        <small>Contacto</small>
+        <ul class="grid gap-2 type-body-s">
+          <li><a class="fa-link" href={whatsappUrl()} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" class="size-4 text-text-accent" aria-hidden="true"><use href={icono('whatsapp')} /></svg>WhatsApp {siteSeo.whatsappDisplay}</a></li>
+          <li><a class="fa-link" href={`tel:${siteSeo.phoneHref}`}><svg viewBox="0 0 24 24" class="size-4 text-text-accent" aria-hidden="true"><use href={icono('phone')} /></svg>{siteSeo.phone}</a></li>
+          <li><a class="fa-link" href={`mailto:${siteSeo.email}`}><svg viewBox="0 0 24 24" class="size-4 text-text-accent" aria-hidden="true"><use href={icono('mail')} /></svg>{siteSeo.email}</a></li>
+        </ul>
+      </div>
+
+      <!-- Horario -->
+      <div class="fa-celda lg:col-span-3">
+        <small>Horario</small>
+        <dl class="grid gap-1.5 type-body-s">
+          {horarios.map((h) => (
+            <div class="flex justify-between gap-4"><dt class="text-text-inverse-muted">{h.dias}</dt><dd class="shrink-0 font-semibold">{h.horas}</dd></div>
+          ))}
+        </dl>
+      </div>
+
+      <!-- Navegación -->
+      {columnas.map((c) => (
+        <div class="fa-celda lg:col-span-2">
+          <small>{c.titulo}</small>
+          <ul class="grid gap-2 type-body-s">
+            {c.enlaces.map((e) => (
+              <li><a class="fa-link" href={rutaInterna(e.href)} target={e.externo ? '_blank' : undefined} rel={e.externo ? 'noopener noreferrer' : undefined}>{e.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <!-- Planta -->
+      <div class="fa-celda md:col-span-2 lg:col-span-3">
+        <small>Matriz</small>
+        <address class="type-body-s not-italic text-text-inverse-muted">{direccion}</address>
+        <ul class="flex gap-4 type-body-s">
+          {redes.map((r) => <li><a class="fa-link font-semibold" href={r.url} target="_blank" rel="noopener noreferrer">{r.name}</a></li>)}
+        </ul>
+      </div>
+
+      <!-- Sucursales -->
+      <div class="fa-celda md:col-span-2 lg:col-span-12">
+        <small>Sucursales</small>
+        <ul class="grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-6">
+          {sucursales.map((s) => (
+            <li class="min-w-0 type-body-s">
+              <b class="block">{nombreCorto(s.nombre)}</b>
+              <span class="block text-xs text-text-inverse-muted">{s.ciudad}</span>
+              <a class="fa-link mt-0.5" href={telHref(s.telefonos[0])}>{s.telefonos[0]}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Pie legal como fila del cajetín -->
+      <div class="fa-celda fa-legal md:col-span-2 lg:col-span-8"><small>Razón social</small><span>© {anio} {siteSeo.legalName}. Todos los derechos reservados.</span></div>
+      <div class="fa-celda fa-legal lg:col-span-2"><small>Revisión</small><span>{anio}</span></div>
+      <div class="fa-celda fa-legal lg:col-span-2"><small>Hoja</small><span>1 de 1</span></div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* Las celdas comparten borde: cada una dibuja arriba e izquierda y el cuadro cierra abajo y derecha. */
+  .fa-cuadro { border-right: 1px solid rgb(255 255 255 / 0.25); border-bottom: 1px solid rgb(255 255 255 / 0.25); }
+  .fa-celda {
+    display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; padding: 1.1rem 1.25rem 1.25rem;
+    border-top: 1px solid rgb(255 255 255 / 0.25); border-left: 1px solid rgb(255 255 255 / 0.25);
+  }
+  .fa-celda > small { font-size: 0.6875rem; font-weight: 600; color: var(--color-text-inverse-muted); }
+  .fa-legal { flex-direction: row; align-items: baseline; gap: 0.75rem; padding-block: 0.7rem; font-size: 0.8125rem; color: var(--color-text-inverse-muted); }
+  .fa-link { display: inline-flex; align-items: center; gap: 0.5rem; width: fit-content; transition: color 150ms; }
+  .fa-link:hover { color: var(--color-text-accent); }
+  .fa-link:focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: 2px; }
+</style>

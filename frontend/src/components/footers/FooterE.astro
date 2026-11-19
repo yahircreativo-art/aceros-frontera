@@ -1,0 +1,65 @@
+---
+/**
+ * FOOTER E · "Compacto"
+ * Pensado para páginas interiores (catálogo, producto) donde el pie no debe
+ * competir con el contenido: una franja negra con logo, navegación en una
+ * línea, botones de contacto con icono y una segunda línea con horario y
+ * pie legal. La franja amarilla de marca va arriba, cortada en chaflán.
+ *
+ * Uso: <FooterE />
+ */
+import Logo from '../Logo.astro';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl, anio, navegacion, horarios, redes } from './footers-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+const contacto = [
+  { href: whatsappUrl(), label: `WhatsApp ${siteSeo.whatsappDisplay}`, icono: 'whatsapp', externo: true },
+  { href: `tel:${siteSeo.phoneHref}`, label: `Llamar al ${siteSeo.phone}`, icono: 'phone' },
+  { href: `mailto:${siteSeo.email}`, label: `Escribir a ${siteSeo.email}`, icono: 'mail' },
+];
+---
+
+<footer id="pie" class="fe relative bg-neutral-950 text-text-inverse">
+  <div aria-hidden="true" class="fe-franja"></div>
+
+  <div class="container-page py-8">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <Logo />
+      <nav aria-label="Pie de página">
+        <ul class="flex flex-wrap gap-x-6 gap-y-2 type-body-s">
+          {navegacion.map((e) => <li><a class="fe-link" href={rutaInterna(e.href)}>{e.label}</a></li>)}
+        </ul>
+      </nav>
+      <ul class="flex gap-2">
+        {contacto.map((c) => (
+          <li>
+            <a href={c.href} target={c.externo ? '_blank' : undefined} rel={c.externo ? 'noopener noreferrer' : undefined} class="fe-ico chamfer grid size-11 place-items-center [--chamfer:7px]" aria-label={c.label} title={c.label}>
+              <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono(c.icono)} /></svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-3 border-t border-white/15 pt-5 type-caption text-text-inverse-muted lg:flex-row lg:items-center lg:justify-between">
+      <ul class="flex flex-wrap gap-x-5 gap-y-1">
+        {horarios.map((h) => <li>{h.dias} <b class="font-semibold text-text-inverse">{h.horas}</b></li>)}
+      </ul>
+      <p class="flex flex-wrap gap-x-5 gap-y-1">
+        {redes.map((r) => <a class="fe-link font-semibold" href={r.url} target="_blank" rel="noopener noreferrer">{r.name}</a>)}
+        <span>© {anio} {siteSeo.legalName}</span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .fe-franja { height: 8px; width: min(28rem, 60%); background: var(--color-accent-primary); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .fe-link { color: var(--color-text-inverse-muted); transition: color 150ms; }
+  .fe-link:hover { color: var(--color-text-inverse); }
+  .fe-link:focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: 2px; }
+  .fe-ico { background: rgb(255 255 255 / 0.08); transition: background-color 150ms, color 150ms; }
+  .fe-ico:hover { background: var(--color-accent-primary); color: var(--color-text-on-accent); }
+  .fe-ico:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+</style>

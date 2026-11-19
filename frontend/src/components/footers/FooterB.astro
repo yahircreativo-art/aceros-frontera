@@ -1,0 +1,76 @@
+---
+/**
+ * FOOTER B · "Sucursales al pie"
+ * Verde profundo. Arriba, una franja amarilla para cotizar por WhatsApp.
+ * Al centro, las 6 sucursales agrupadas por ciudad con dirección, teléfono
+ * y "Cómo llegar" (la información que más se busca al final de la página).
+ * Abajo, logo, navegación, redes y pie legal.
+ *
+ * Uso: <FooterB />
+ */
+import Logo from '../Logo.astro';
+import Button from '../ui/Button.astro';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl, sucursalesPorCiudad, telHref, rutaUrl, anio, lema, navegacion, horarios, redes, nombreCorto } from './footers-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+const ciudades = sucursalesPorCiudad();
+---
+
+<footer id="pie" class="fb bg-green-950 text-text-inverse">
+
+  <div class="container-page py-14">
+    <!-- Sucursales -->
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-3">
+      {ciudades.map((c) => (
+        <section class="min-w-0" aria-labelledby={`fb-${c.ciudad}`}>
+          <h2 id={`fb-${c.ciudad}`} class="flex items-baseline justify-between border-b border-white/20 pb-3 font-display text-3xl font-bold uppercase">
+            {c.ciudad}
+            <span class="font-sans text-xs font-semibold normal-case text-text-inverse-muted">{c.sucursales.length === 1 ? '1 sucursal' : `${c.sucursales.length} sucursales`}</span>
+          </h2>
+          <ul class="mt-2">
+            {c.sucursales.map((s) => (
+              <li class="fb-suc border-b border-white/10 py-4">
+                <b class="block">{nombreCorto(s.nombre)}</b>
+                <span class="block type-body-s text-text-inverse-muted">{s.direccion}, {s.colonia}</span>
+                <span class="mt-2 flex flex-wrap gap-x-5 gap-y-1 type-body-s">
+                  <a class="fb-link" href={telHref(s.telefonos[0])}><svg viewBox="0 0 24 24" class="size-4 text-text-accent" aria-hidden="true"><use href={icono('phone')} /></svg>{s.telefonos[0]}</a>
+                  <a class="fb-link" href={rutaUrl(s)} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" class="size-4 text-text-accent" aria-hidden="true"><use href={icono('pin')} /></svg>Cómo llegar</a>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <!-- Marca, navegación y horario -->
+    <div class="mt-14 grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-start">
+      <div class="flex flex-col gap-4">
+        <Logo large />
+        <ul class="flex flex-wrap gap-x-5 gap-y-1 type-body-s font-semibold">
+          {redes.map((r) => <li><a class="fb-link" href={r.url} target="_blank" rel="noopener noreferrer">{r.name}</a></li>)}
+          <li><a class="fb-link" href={`mailto:${siteSeo.email}`}>{siteSeo.email}</a></li>
+        </ul>
+      </div>
+      <nav aria-label="Pie de página" class="md:justify-self-center">
+        <ul class="flex flex-wrap gap-x-6 gap-y-2 type-body-s">
+          {navegacion.map((e) => <li><a class="fb-link" href={rutaInterna(e.href)}>{e.label}</a></li>)}
+        </ul>
+      </nav>
+      <dl class="grid gap-1 type-body-s">
+        {horarios.map((h) => (
+          <div class="flex justify-between gap-6"><dt class="text-text-inverse-muted">{h.dias}</dt><dd class="font-semibold">{h.horas}</dd></div>
+        ))}
+      </dl>
+    </div>
+
+    <p class="mt-12 border-t border-white/20 pt-6 type-caption text-text-inverse-muted">© {anio} {siteSeo.legalName}. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<style>
+  .fb-link { display: inline-flex; align-items: center; gap: 0.4rem; transition: color 150ms; }
+  .fb-link:hover { color: var(--color-text-accent); }
+  .fb-link:focus-visible { outline: 2px solid var(--color-accent-primary); outline-offset: 2px; }
+</style>

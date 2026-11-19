@@ -1,0 +1,122 @@
+---
+/**
+ * FOOTER C · "Regla de taller"
+ * Fondo claro. El borde superior es una regla de acero con marcas cada
+ * centímetro. Arriba, el estado de la matriz en vivo ("Cucapah abierta
+ * hasta 17:30", hora de Tijuana) junto a los datos de contacto; al fondo,
+ * "ACEROS FRONTERA" a todo lo ancho en letra de contorno que se rellena de
+ * abajo hacia arriba al aparecer.
+ *
+ * Sin JavaScript se ve el horario en lugar del estado; con "reducir
+ * movimiento" el nombre aparece ya relleno.
+ *
+ * Uso: <FooterC />
+ */
+import Logo from '../Logo.astro';
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl, sucursales, anio, lema, columnas, horarios, redes, direccion, nombreCorto } from './footers-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+const matriz = sucursales[0];
+---
+
+<footer id="pie" data-fc class="fc relative overflow-hidden bg-neutral-100 text-text-primary">
+  <div aria-hidden="true" class="fc-regla"></div>
+
+  <div class="container-page pt-14 pb-6">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div class="min-w-0">
+        <span class="fc-logo chamfer inline-flex bg-neutral-950 px-5 py-4 [--chamfer:14px]"><Logo /></span>
+        <p class="mt-6 font-display text-[clamp(2rem,4vw,3rem)] leading-none font-extrabold uppercase">{lema}</p>
+
+        <p data-fc-estado data-horarios={JSON.stringify(matriz.horarios)} class="fc-estado mt-6 type-body-s font-semibold">
+          {nombreCorto(matriz.nombre)}: {horarios[0].dias} {horarios[0].horas}
+        </p>
+        <address class="mt-2 type-body-s not-italic text-text-secondary">{direccion}</address>
+      </div>
+
+      <div class="grid min-w-0 grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,1.3fr)]">
+        {columnas.map((c) => (
+          <div>
+            <h2 class="text-xs font-semibold text-text-muted">{c.titulo}</h2>
+            <ul class="mt-3 grid gap-2.5 type-body-s">
+              {c.enlaces.map((e) => (
+                <li><a class="fc-link" href={rutaInterna(e.href)} target={e.externo ? '_blank' : undefined} rel={e.externo ? 'noopener noreferrer' : undefined}>{e.label}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div class="col-span-2 sm:col-span-1">
+          <h2 class="text-xs font-semibold text-text-muted">Contacto</h2>
+          <ul class="mt-3 grid gap-2.5 type-body-s">
+            <li><a class="fc-link" href={whatsappUrl()} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" class="size-4 text-green-700" aria-hidden="true"><use href={icono('whatsapp')} /></svg>{siteSeo.whatsappDisplay}</a></li>
+            <li><a class="fc-link" href={`tel:${siteSeo.phoneHref}`}><svg viewBox="0 0 24 24" class="size-4 text-green-700" aria-hidden="true"><use href={icono('phone')} /></svg>{siteSeo.phone}</a></li>
+            <li><a class="fc-link" href={`mailto:${siteSeo.email}`}><svg viewBox="0 0 24 24" class="size-4 shrink-0 text-green-700" aria-hidden="true"><use href={icono('mail')} /></svg>{siteSeo.email}</a></li>
+            {redes.map((r) => <li><a class="fc-link" href={r.url} target="_blank" rel="noopener noreferrer">{r.name}</a></li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nombre a todo lo ancho -->
+  <p aria-hidden="true" class="fc-nombre font-display font-extrabold uppercase">Aceros Frontera</p>
+
+  <div class="container-page flex flex-col gap-2 border-t border-neutral-300 py-5 type-caption text-text-muted sm:flex-row sm:justify-between">
+    <p>© {anio} {siteSeo.legalName}. Todos los derechos reservados.</p>
+    <p>{sucursales.length} sucursales en Baja California</p>
+  </div>
+</footer>
+
+<script>
+  import { estado, type Horario } from '../../lib/horario';
+
+  const root = document.querySelector<HTMLElement>('[data-fc]');
+  if (root) {
+    const el = root.querySelector<HTMLElement>('[data-fc-estado]')!;
+    const nombre = el.textContent!.split(':')[0];
+    const e = estado(JSON.parse(el.dataset.horarios!) as Horario[]);
+    el.textContent = `${nombre}: ${e.texto.replace(' · cierra a las ', ', hasta las ').replace(' · ', ', ')}`;
+    el.classList.toggle('is-abierta', e.abierta);
+
+    new IntersectionObserver(([x], o) => {
+      if (x.isIntersecting) { root.classList.add('is-visto'); o.disconnect(); }
+    }, { threshold: 0.2 }).observe(root.querySelector('.fc-nombre')!);
+  }
+</script>
+
+<style>
+  /* Regla: marca larga cada 10, media cada 5 y corta cada 1 (en px de 8). */
+  .fc-regla {
+    height: 22px; background-color: var(--color-accent-primary);
+    background-image:
+      linear-gradient(90deg, var(--color-neutral-950) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-neutral-950) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-neutral-950) 1px, transparent 1px);
+    background-size: 80px 14px, 40px 9px, 8px 5px;
+    background-position: 0 0, 0 0, 0 0;
+    background-repeat: repeat-x;
+    border-bottom: 1px solid var(--color-neutral-950);
+  }
+
+  .fc-estado { position: relative; padding-left: 1.1rem; }
+  .fc-estado::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 0.6rem; height: 0.6rem; border: 2px solid var(--color-neutral-500); }
+  .fc-estado.is-abierta::before { background: var(--color-green-700); border-color: var(--color-green-700); }
+
+  .fc-link { display: inline-flex; align-items: center; gap: 0.45rem; transition: color 150ms; }
+  .fc-link:hover { color: var(--color-green-700); text-decoration: underline; text-underline-offset: 3px; }
+  .fc-link:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
+
+  .fc-nombre {
+    margin-top: 1.5rem; padding-inline: var(--container-gutter, 1rem);
+    font-size: 13.4vw; line-height: 0.78; white-space: nowrap; letter-spacing: -0.01em;
+    color: transparent; -webkit-text-stroke: 1.5px var(--color-neutral-950);
+    background: linear-gradient(to top, var(--color-green-800) 50%, transparent 50%) bottom / 100% 200% no-repeat;
+    background-clip: text; -webkit-background-clip: text;
+    background-position: 0 0;
+    transition: background-position 1.4s cubic-bezier(0.65, 0, 0.35, 1) 200ms;
+  }
+  .fc.is-visto .fc-nombre { background-position: 0 100%; }
+  :global(html:not(.js)) .fc-nombre { background-position: 0 100%; }
+  @media (prefers-reduced-motion: reduce) { .fc-nombre { transition: none; background-position: 0 100%; } }
+</style>

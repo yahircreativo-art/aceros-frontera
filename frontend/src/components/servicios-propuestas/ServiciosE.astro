@@ -1,0 +1,94 @@
+---
+/**
+ * SERVICIOS E · "Recorrido con foto fija"
+ * Fondo claro. En escritorio, la foto queda fija a la izquierda mientras
+ * bajas por los servicios de la derecha; cambia (con un barrido de abajo
+ * hacia arriba) al servicio que llega al centro de la pantalla. Una regla
+ * vertical junto a la foto marca el avance. En celular, cada servicio lleva
+ * su propia foto.
+ *
+ * Sin JavaScript se ve la primera foto y todos los servicios sin atenuar;
+ * con "reducir movimiento" la foto cambia sin barrido.
+ *
+ * Uso: <ServiciosE />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { servicios, infoUrl, cotaServicios } from './servicios-data';
+---
+
+<section id="servicios" data-sve class="sve relative scroll-mt-24 bg-neutral-100 py-20 text-text-primary lg:py-28">
+  <div class="container-page">
+    <Cota texto={cotaServicios} class="text-text-brand" />
+    <h2 class="mt-5 max-w-[18ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">Del mostrador a tu obra</h2>
+
+    <div class="mt-12 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      <!-- Foto fija (escritorio) -->
+      <div class="sve-fija relative hidden lg:block">
+        <div class="sticky top-28 flex gap-4">
+          <div class="sve-regla relative w-[3px] shrink-0 bg-neutral-300" aria-hidden="true"><i data-sve-avance></i></div>
+          <div class="sve-marco chamfer relative aspect-[4/5] max-h-[calc(100svh-9rem)] w-full overflow-hidden bg-neutral-950 [--chamfer:36px]">
+            {servicios.map((s, i) => (
+              <img data-sve-foto={i} src={s.imagen} alt="" loading="lazy" decoding="async" class:list={['sve-foto absolute inset-0 size-full object-cover', { 'is-on': i === 0 }]} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Servicios -->
+      <ol class="sve-lista min-w-0">
+        {servicios.map((s, i) => (
+          <li id={s.id} data-sve-paso={i} class:list={['sve-paso scroll-mt-28 border-t border-neutral-300 py-10 lg:flex lg:min-h-[60svh] lg:flex-col lg:justify-center', { 'is-on': i === 0 }]}>
+            <img src={s.imagen} alt="" loading="lazy" decoding="async" class="chamfer mb-6 aspect-[16/10] w-full object-cover [--chamfer:18px] lg:hidden" />
+            <h3 class="font-display text-[clamp(2rem,3.4vw,3.25rem)] leading-[0.92] font-extrabold uppercase">{s.titulo}</h3>
+            <p class="mt-4 max-w-md type-body-l text-text-secondary">{s.descripcion}</p>
+            <Button href={infoUrl(s)} target="_blank" variant="primary" size="md" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-6 self-start" />
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-sve]');
+  if (root) {
+    const pasos = [...root.querySelectorAll<HTMLElement>('[data-sve-paso]')];
+    const fotos = [...root.querySelectorAll<HTMLElement>('[data-sve-foto]')];
+    const avance = root.querySelector<HTMLElement>('[data-sve-avance]')!;
+    let actual = 0;
+
+    const activar = (i: number) => {
+      if (i === actual) return;
+      fotos[actual].classList.remove('is-on');
+      fotos[i].classList.add('is-on');
+      pasos.forEach((p, k) => p.classList.toggle('is-on', k === i));
+      actual = i;
+      avance.style.setProperty('--p', String((i + 1) / pasos.length));
+    };
+    avance.style.setProperty('--p', String(1 / pasos.length));
+
+    /* El paso que cruza la franja central de la pantalla es el activo. */
+    const obs = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) activar(pasos.indexOf(e.target as HTMLElement));
+    }), { rootMargin: '-45% 0px -45% 0px' });
+    pasos.forEach((p) => obs.observe(p));
+  }
+</script>
+
+<style>
+  .sve-foto { clip-path: inset(100% 0 0 0); transition: clip-path 700ms cubic-bezier(0.65, 0, 0.35, 1); }
+  .sve-foto.is-on { clip-path: inset(0 0 0 0); z-index: 1; }
+  .sve-foto:not(.is-on) { transition-delay: 700ms; transition-duration: 0ms; }
+
+  .sve-regla i { position: absolute; inset: 0; background: var(--color-green-800); transform: scaleY(var(--p, 0)); transform-origin: top; transition: transform 500ms ease; }
+
+  .sve-paso { transition: opacity 400ms; }
+  @media (min-width: 64rem) {
+    :global(html.js) .sve-paso:not(.is-on) { opacity: 0.35; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sve-foto, .sve-foto:not(.is-on), .sve-regla i, .sve-paso { transition: none; }
+  }
+</style>

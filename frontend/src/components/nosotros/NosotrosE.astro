@@ -53,8 +53,8 @@ import { servicios, logosMarcas, enlaces } from './nosotros-data';
         <div class="noe-pista flex w-max gap-6">
           {[0, 1].map((copia) =>
             logosMarcas.map((m) => (
-              <span class="noe-logo grid h-16 w-36 shrink-0 place-items-center rounded-xl bg-white px-4" aria-hidden={copia === 1 ? 'true' : undefined}>
-                <img src={m.imagen} alt={copia === 0 ? m.nombre : ''} loading="lazy" class="max-h-10 w-auto object-contain" />
+              <span class="noe-logo grid shrink-0 place-items-center rounded-xl px-4" aria-hidden={copia === 1 ? 'true' : undefined}>
+                <img src={m.imagen} alt={copia === 0 ? m.nombre : ''} loading="lazy" class="max-h-32 w-auto object-contain" />
               </span>
             )),
           )}
