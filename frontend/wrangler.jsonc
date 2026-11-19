@@ -1,0 +1,11 @@
+{
+  // Sitio estático de Astro publicado como Worker de Cloudflare (solo assets).
+  // "name" debe coincidir con el nombre del Worker en el panel de Cloudflare.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aceros-frontera",
+  "compatibility_date": "2026-11-19",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
