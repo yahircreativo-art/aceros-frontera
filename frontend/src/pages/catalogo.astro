@@ -2,11 +2,13 @@
 import Base from "../layouts/Base.astro";
 import Header from "../components/navbars/NavbarC.astro";
 import Footer from "../components/Footer.astro";
-import Catalog from "../components/catalog/Catalog";
+import CatalogoFiltros from "../components/catalog/CatalogoFiltros";
 import PromocionesDestacadas from "../components/catalog/PromocionesDestacadas";
 import CategoriasCatalogo from "../components/catalog/CategoriasCatalogo.astro";
 import SeccionesPromociones from "../components/catalog/SeccionesPromociones.astro";
-import { obtenerProductos, paraTarjetas } from "../lib/productos";
+import { obtenerProductos } from "../lib/productos";
+import { articulosDeProductos } from "../lib/catalogo-productos";
+import { siteSeo } from "../lib/seo";
 import { esBanner, obtenerPromociones } from "../lib/destacados";
 
 const productos = await obtenerProductos();
@@ -47,11 +49,11 @@ const supabasePromosBucket =
         />
       ) : null}
 
-      {/* La tarjeta de categorías se monta ligeramente sobre la franja de promociones. */}
-      <div
-        class={`container-page relative ${promocionesBanner.length ? "-mt-12 lg:-mt-18" : ""}`}
-      >
-        <CategoriasCatalogo />
+      {/* Categorías en mosaicos, debajo de la franja de promociones. */}
+      <div class="bg-surface-canvas pt-6 lg:pt-8">
+        <div class="container-page">
+          <CategoriasCatalogo />
+        </div>
       </div>
     </section>
 
@@ -64,13 +66,20 @@ const supabasePromosBucket =
 
     <section
       id="catalogo"
-      class="scroll-mt-24 bg-surface-canvas pt-4 pb-16"
+      aria-labelledby="catalogo-titulo"
+      class="scroll-mt-24 overflow-x-clip bg-surface-canvas pt-10 pb-16 lg:pt-14"
     >
       <div class="container-page">
-        <Catalog
-          client:idle
-          productos={paraTarjetas(productos)}
-        />
+        <h2 id="catalogo-titulo" class="font-display text-4xl font-extrabold uppercase text-text-primary">Todos los productos</h2>
+        <div class="mt-8">
+          <CatalogoFiltros
+            client:visible
+            articulos={articulosDeProductos(productos)}
+            titulo="el catálogo"
+            whatsapp={siteSeo.whatsapp}
+            etiquetaTipo="Categoría"
+          />
+        </div>
       </div>
     </section>
   </main>

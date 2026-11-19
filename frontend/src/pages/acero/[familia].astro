@@ -13,6 +13,8 @@ import Footer from '../../components/Footer.astro';
 import Button from '../../components/ui/Button.astro';
 import Cota from '../../components/ui/Cota.astro';
 import Pictogram from '../../components/ui/Pictogram.astro';
+import CatalogoFiltros from '../../components/catalog/CatalogoFiltros';
+import { fuentesMedidas, piezasDeFamilia } from '../../data/medidas-acero';
 import PlanoLinea from '../../components/catalogo-propuestas/PlanoLinea.astro';
 import { prepararFamilias, type FamiliaCatalogo } from '../../components/catalogo-propuestas/catalogo-data';
 import { familias, categoriaDeFamilia, slugFamilia } from '../../data/familias';
@@ -33,6 +35,7 @@ const productos = await obtenerProductos();
 const todas = prepararFamilias(productos);
 const familia = todas.find((f) => f.titulo === titulo) as FamiliaCatalogo;
 const otras = todas.filter((f) => f.titulo !== titulo);
+const piezas = piezasDeFamilia(titulo);
 const grupos = sucursalesPorCiudad();
 const totalSucursales = grupos.reduce((n, g) => n + g.sucursales.length, 0);
 
@@ -92,8 +95,20 @@ const cotizar = whatsappUrl(`Hola, quiero cotizar ${familia.titulo.toLocaleLower
       </div>
     </section>
 
+    {piezas.length > 0 && (
+      <section aria-labelledby="fam-catalogo" class="overflow-x-clip pt-10 lg:pt-14">
+        <div class="container-page">
+          <h2 id="fam-catalogo" class="font-display text-4xl font-extrabold uppercase text-text-primary">Catálogo de medidas</h2>
+          <Cota texto={`${piezas.length} medidas con peso teórico`} class="mt-3 text-text-secondary" />
+          <div class="mt-8">
+            <CatalogoFiltros client:visible articulos={piezas} titulo={familia.titulo} whatsapp={siteSeo.whatsapp} fuentes={fuentesMedidas} unidadConteo="medidas" plurales={{ 'Ángulo': 'Ángulos', Cuadrado: 'Cuadrados', Viga: 'Vigas', 'Polín': 'Polín monten' }} />
+          </div>
+        </div>
+      </section>
+    )}
+
     <section aria-labelledby="fam-productos" class="container-page py-14 lg:py-20">
-      <h2 id="fam-productos" class="font-display text-4xl font-extrabold uppercase text-text-primary">Qué manejamos</h2>
+      <h2 id="fam-productos" class="font-display text-4xl font-extrabold uppercase text-text-primary">{piezas.length ? 'Más productos de la familia' : 'Qué manejamos'}</h2>
       <ul class="mt-8 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {familia.items.map((item) => (
           <li>

@@ -1,145 +1,54 @@
 ---
-import { obtenerCategorias } from "../../lib/productos";
+/**
+ * Categorías del catálogo en línea (/catalogo), montadas sobre la franja de
+ * promociones. Mosaicos con pictograma y número real de productos; el último
+ * lleva a "Todos los productos". En celular se desplazan de lado.
+ */
+import { obtenerProductos } from "../../lib/productos";
 import { rutaInterna } from "../../lib/asset-url";
-import { rutaCategoria } from "../../lib/categorias";
+import { iconoCategoria, rutaCategoria } from "../../lib/categorias";
+import TarjetaCategoria from "./TarjetaCategoria.astro";
 
-/* Usa la misma descarga del catálogo que el resto del build (sin petición extra ni límite propio). */
-const categorias = await obtenerCategorias();
-
-const listaCategoriasOrdenadas = [...categorias].sort((a, b) => a.localeCompare(b, "es"));
+/* Usa la misma descarga del catálogo que el resto del build. */
+const productos = await obtenerProductos();
+const conteo = new Map<string, number>();
+for (const p of productos) {
+  const c = String(p.Categoria ?? "").trim();
+  if (c) conteo.set(c, (conteo.get(c) ?? 0) + 1);
+}
+const categorias = [...conteo.keys()].sort((a, b) => a.localeCompare(b, "es"));
 ---
 
 {
-  listaCategoriasOrdenadas.length ? (
-    <section
-      id="categorias"
-      data-categorias="lleno"
-      data-expandido="false"
-      class="scroll-mt-24 mt-2 px-3 py-4 sm:px-5"
-    >
-      <div class="relative overflow-hidden rounded-panel">
-        <div
-          id="categorias-track"
-          class="flex overflow-x-auto rounded-panel scrollbar-hide [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style="scroll-behavior: smooth"
-        >
-          <ul class="categorias-lista flex flex-nowrap gap-2 sm:gap-3 px-2 py-2" role="list">
-            {listaCategoriasOrdenadas.map((categoria) => (
-              <li class="w-auto shrink-0">
-                <a
-                  href={rutaInterna(`${rutaCategoria(categoria, categorias)}#catalogo`)}
-                  data-categoria-card={categoria}
-                  class="categoria-card flex h-full w-auto items-center justify-center px-4 py-3 text-center whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-400"
-                >
-                  <span class="relative z-[2] text-[11px] font-bold uppercase tracking-tight text-ink-900 sm:text-xs">
-                    {categoria}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div class="mt-2 flex justify-end">
-        <button
-          type="button"
-          data-categorias-toggle
-          aria-expanded="false"
-          aria-controls="categorias-track"
-          class="inline-flex cursor-pointer items-center gap-1 rounded-field px-2 py-1 text-2xs font-bold uppercase tracking-wide text-brand-700 transition-colors hover:text-brand-500"
-        >
-          Ver todas las categorías
-        </button>
-      </div>
-    </section>
+  categorias.length ? (
+    <nav id="categorias" aria-label="Categorías del catálogo" class="scroll-mt-24 py-4">
+      <ul class="cat-lista">
+        {categorias.map((categoria) => (
+          <li>
+            <TarjetaCategoria
+              href={rutaInterna(`${rutaCategoria(categoria, categorias)}/`)}
+              nombre={categoria}
+              total={conteo.get(categoria) ?? 0}
+              icono={iconoCategoria(categoria)}
+            />
+          </li>
+        ))}
+        <li>
+          <TarjetaCategoria href="#catalogo" nombre="Todos los productos" total={productos.length} icono="herramienta" oscura />
+        </li>
+      </ul>
+    </nav>
   ) : null
 }
 
 <style>
-  @property --catalogo-borde-angulo {
-    syntax: "<angle>";
-    inherits: false;
-    initial-value: 0deg;
+  .cat-lista {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .categoria-card {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-panel);
-    transition: border-color 200ms ease, background-color 200ms ease;
-  }
-
-  .categoria-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    padding: 2px;
-    border-radius: inherit;
-    background: conic-gradient(
-      from var(--catalogo-borde-angulo),
-      var(--color-brand-600),
-      var(--color-brand-400),
-      var(--color-brand-400),
-      var(--color-brand-600)
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 200ms ease;
-    animation: catalogo-borde-giro 3s linear infinite;
-    pointer-events: none;
-  }
-
-  .categoria-card:hover::before,
-  .categoria-card:focus-visible::before {
-    opacity: 1;
-  }
-
-  .categoria-card:hover {
-    border-color: transparent;
-  }
-
-  @keyframes catalogo-borde-giro {
-    to {
-      --catalogo-borde-angulo: 360deg;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .categoria-card::before {
-      animation: none;
-    }
-  }
-
-  /* Desplegado: la fila única crece a varias filas centradas. */
-  [data-expandido="true"] #categorias-track {
-    overflow-x: visible;
-  }
-
-  [data-expandido="true"] .categorias-lista {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  @media (min-width: 40rem) { .cat-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .cat-lista { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 80rem) { .cat-lista { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  .cat-lista > li { min-width: 0; }
 </style>
-
-<script>
-  document.querySelectorAll<HTMLElement>('[data-categorias-toggle]').forEach((boton) => {
-    const seccion = boton.closest<HTMLElement>('[data-categorias]');
-    if (!seccion) return;
-
-    boton.addEventListener('click', () => {
-      const expandido = seccion.dataset.expandido === 'true';
-
-      seccion.dataset.expandido = String(!expandido);
-      boton.setAttribute('aria-expanded', String(!expandido));
-      boton.textContent = expandido ? 'Ver todas las categorías' : 'Ver menos';
-    });
-  });
-</script>

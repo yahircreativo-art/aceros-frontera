@@ -1,11 +1,21 @@
 ---
+/**
+ * Página de una categoría del catálogo en línea (Supabase): mismo esquema que
+ * las familias de acero (/acero/<familia>/). Encabezado con título y botón de
+ * Cotizar y, debajo, el catálogo con filtro lateral, cantidad y lista.
+ */
 import Base from "../../layouts/Base.astro";
 import Header from "../../components/navbars/NavbarC.astro";
 import Footer from "../../components/Footer.astro";
-import Catalog from "../../components/catalog/Catalog";
-import { obtenerProductos, paraTarjetas } from "../../lib/productos";
-import { rutasCategorias } from "../../lib/categorias";
-import { ciudadesSeo, recortarTexto } from "../../lib/seo";
+import Button from "../../components/ui/Button.astro";
+import Cota from "../../components/ui/Cota.astro";
+import CatalogoFiltros from "../../components/catalog/CatalogoFiltros";
+import { obtenerProductos } from "../../lib/productos";
+import { iconoCategoria, rutasCategorias } from "../../lib/categorias";
+import TarjetaCategoria from "../../components/catalog/TarjetaCategoria.astro";
+import { articulosDeProductos } from "../../lib/catalogo-productos";
+import { rutaInterna } from "../../lib/asset-url";
+import { ciudadesSeo, recortarTexto, siteSeo, whatsappUrl } from "../../lib/seo";
 
 export async function getStaticPaths() {
   const productos = await obtenerProductos();
@@ -25,36 +35,108 @@ export async function getStaticPaths() {
 }
 
 const { categoria, categorias, productos } = Astro.props;
-const canonicalPath = rutasCategorias(categorias).get(categoria) ?? "/catalogo";
-const total = productos.filter((p) => String(p.Categoria ?? "").trim() === categoria).length;
+const rutas = rutasCategorias(categorias);
+const canonicalPath = rutas.get(categoria) ?? "/catalogo";
+/* La página solo lleva los productos de su categoría. */
+const productosCategoria = productos.filter((p) => String(p.Categoria ?? "").trim() === categoria);
+const articulos = articulosDeProductos(productosCategoria);
+const total = articulos.length;
+const nombreMinus = categoria.toLocaleLowerCase("es-MX");
+
 const title = recortarTexto(`${categoria} en Tijuana`, 60 - " | Aceros Frontera".length) + " | Aceros Frontera";
 const description = recortarTexto(
-  `${total} productos de ${categoria.toLocaleLowerCase("es-MX")} en el catálogo de Aceros Frontera. Busca por nombre o clave y cotiza por WhatsApp en ${ciudadesSeo}.`,
+  `${total} productos de ${nombreMinus} en Aceros Frontera. Filtra por tipo, marca o medida y cotiza por WhatsApp en ${ciudadesSeo}.`,
   158,
 );
-/* La cuadrícula solo necesita los productos de esta categoría (antes recibía el catálogo completo). */
-const productosCategoria = productos.filter((p) => String(p.Categoria ?? "").trim() === categoria);
+
+/* Hasta cuatro fotos reales de la categoría para el encabezado. */
+const fotos = productosCategoria.filter((p) => p.Imagen).slice(0, 4);
+const otras = categorias.filter((c) => c !== categoria).sort((a, b) => a.localeCompare(b, "es"));
+
+const sitio = Astro.site ?? new URL(siteSeo.baseUrl);
+const absoluta = (r: string) => new URL(rutaInterna(r), sitio).toString();
+const extraLd = [
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { name: "Catálogo", item: absoluta("/catalogo/") },
+      { name: categoria, item: absoluta(`${canonicalPath}/`.replace(/\/+$/, "/")) },
+    ].map((paso, i) => ({ "@type": "ListItem", position: i + 1, ...paso })),
+  },
+];
 ---
 
-<Base
-  page="catalogo"
-  title={title}
-  description={description}
-  canonicalPath={canonicalPath}
->
+<Base page="catalogo" title={title} description={description} canonicalPath={canonicalPath} extraLd={extraLd}>
   <Header productos={productos} />
 
-  <main id="contenido">
-    <section id="catalogo" class="scroll-mt-24 bg-surface-canvas pt-4 pb-16">
-      <div class="container-page">
-        <Catalog
-          client:load
-          productos={paraTarjetas(productosCategoria)}
-          categoriaInicial={categoria}
-        />
+  <main id="contenido" class="bg-surface-canvas">
+    <section class="bg-neutral-950 text-text-inverse">
+      <div class="cat-hero container-page grid items-center gap-10 py-12 lg:py-16">
+        <div class="min-w-0">
+          <nav aria-label="Ruta de navegación" class="type-body-s text-text-inverse-muted">
+            <a href={rutaInterna("/catalogo/")} class="type-label text-text-accent hover:underline">Catálogo</a>
+            <span aria-hidden="true" class="mx-2">/</span>
+            <span>{categoria}</span>
+          </nav>
+          <h1 class="mt-6 font-display text-5xl leading-[0.95] font-extrabold uppercase sm:text-6xl">
+            {categoria} en {ciudadesSeo}
+          </h1>
+          <Cota texto={`${total} productos con clave`} class="mt-5 text-text-accent" />
+          <p class="mt-6 max-w-xl type-body-l text-text-inverse-muted">
+            Filtra por tipo, marca o medida, elige cuántas piezas necesitas y
+            envíanos tu lista por WhatsApp. Recoge en cualquiera de nuestras sucursales.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <Button href={whatsappUrl(`Hola, quiero cotizar ${nombreMinus}.`)} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+            <Button href="/sucursales/" variant="outline" size="lg" label="Ver sucursales" />
+          </div>
+        </div>
+        {fotos.length >= 2 && (
+          <ul class="grid grid-cols-2 gap-2" aria-hidden="true">
+            {fotos.map((p) => (
+              <li class="chamfer grid aspect-square place-items-center bg-neutral-100 p-4 [--chamfer:16px]">
+                <img src={p.Imagen!} alt="" width="240" height="240" loading="eager" decoding="async" class="size-full object-contain mix-blend-multiply" />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
+
+    <section aria-labelledby="cat-productos" class="overflow-x-clip pt-10 pb-16 lg:pt-14">
+      <div class="container-page">
+        <h2 id="cat-productos" class="font-display text-4xl font-extrabold uppercase text-text-primary">Productos</h2>
+        <div class="mt-8">
+          <CatalogoFiltros client:visible articulos={articulos} titulo={categoria} whatsapp={siteSeo.whatsapp} etiquetaTipo="Categoría" />
+        </div>
+      </div>
+    </section>
+
+    {otras.length > 0 && (
+      <section aria-labelledby="cat-otras" class="border-t border-border-default py-14">
+        <div class="container-page">
+          <h2 id="cat-otras" class="font-display text-4xl font-extrabold uppercase text-text-primary">Otras categorías</h2>
+          <ul class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {otras.map((c) => (
+              <li class="min-w-0">
+                <TarjetaCategoria
+                  href={rutaInterna(`${rutas.get(c)}/`)}
+                  nombre={c}
+                  total={productos.filter((p) => String(p.Categoria ?? "").trim() === c).length}
+                  icono={iconoCategoria(c)}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )}
   </main>
 
   <Footer />
 </Base>
+
+<style>
+  .cat-hero { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 64rem) { .cat-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); } }
+</style>

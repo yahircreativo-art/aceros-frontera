@@ -33,8 +33,3 @@ export async function obtenerCategorias(): Promise<string[]> {
     a.localeCompare(b, 'es'),
   );
 }
-
-/** Solo los campos que usan las tarjetas del catálogo (sin la descripción larga), para no inflar el HTML de las islas. */
-export function paraTarjetas(productos: Producto[]): Producto[] {
-  return productos.map(({ Descripcion: _descripcion, ...resto }) => ({ ...resto, Descripcion: null }));
-}

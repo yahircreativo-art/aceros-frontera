@@ -34,7 +34,7 @@ Deploy: `../.github/workflows/deploy-pages.yml` builds `frontend/` on push to `m
 
 - **Data at build time.** Each page calls `await obtenerProductos()` (`src/lib/productos.ts` → `supabase-productos.ts`, which maps Spanish columns such as `"Categorías"` and `"Imágenes"` to the `Producto` type in `lib/types.ts`).
   - `getStaticPaths` in `catalogo/[categoria]` and `producto/[slug]` generates one page per category or product (`lib/categorias.ts`, `lib/rutas-producto.ts`).
-  - The search (`components/catalog/HeaderSearch.tsx`) loads `/buscar.json` on first focus; never pass the full product list to an island (use `paraTarjetas()` for `Catalog.tsx`).
+  - The search (`components/catalog/HeaderSearch.tsx`) loads `/buscar.json` on first focus; never pass raw `Producto` lists to an island. Every catalog (`/catalogo`, `/catalogo/<categoria>`, `/acero/<familia>`) uses `catalog/CatalogoFiltros.tsx` (sidebar filters, quantity, WhatsApp quote list) with `ArticuloCatalogo` items (`lib/catalogo.ts`); Supabase products are converted by `lib/catalogo-productos.ts`, which reads type, brand, presentation and size from the product name.
   - Promos come from `lib/destacados.ts` (Supabase table + storage bucket).
 - **Base path.** Never write internal URLs or `public/` paths by hand.
   - Use `rutaInterna()` and `assetUrl()` from `src/lib/asset-url.ts`.
@@ -43,7 +43,7 @@ Deploy: `../.github/workflows/deploy-pages.yml` builds `frontend/` on push to `m
   - `PageId` is derived from the JSON (`lib/seo.ts`). `Base.astro` receives `page` and renders `components/Seo.astro` (meta, canonical with trailing slash, OG, JSON-LD: organization + one `HardwareStore` per branch + `WebSite` + `WebPage`). Pages can pass `image`, `ogType` and `extraLd` (e.g. `Product`, `BreadcrumbList`) through `Base`.
   - `astro.config.mjs` reads the domain from that JSON. The sitemap comes from `@astrojs/sitemap` and `robots.txt` from `src/pages/robots.txt.ts`.
   - `siteSeo` and `whatsappUrl(msg)` come from `lib/seo.ts`. Every quote request opens WhatsApp; there is no email backend.
-- **Real business data** lives in `src/data/`: `sucursales.ts` (6 branches with phones, hours, coordinates, plus `telHref`, `rutaUrl`, `mapaEmbed`), `familias.ts` (7 product families with pictograms and `rutaFamilia()`), `nosotros.ts` and `vacantes.ts`. Use only this data. Do not invent figures or claims.
+- **Real business data** lives in `src/data/`: `sucursales.ts` (6 branches with phones, hours, coordinates, plus `telHref`, `rutaUrl`, `mapaEmbed`), `familias.ts` (7 product families with pictograms and `rutaFamilia()`), `medidas-acero.ts` (steel sizes and theoretical weights copied from the tables on acerosfrontera.com; feeds `catalog/CatalogoFiltros.tsx` on `/acero/<familia>/`), `nosotros.ts` and `vacantes.ts`. Use only this data. Do not invent figures or claims.
 - **Layout.**
   - `layouts/Base.astro` sets `html.js` early and runs the `.reveal` → `.is-visible` scroll observer and the parallax of `.pattern-placa`. It also holds the floating WhatsApp and email buttons.
   - The header is **not** in `Base`: every page imports `navbars/NavbarC.astro` as `Header` and passes it `productos`. It is 72 px tall, so section anchors use `scroll-mt-24`.
