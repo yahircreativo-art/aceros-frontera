@@ -33,22 +33,6 @@ const avisos = [
 ---
 
 <header data-ne class="ne sticky top-0 z-40 text-text-inverse">
-  <!-- Cinta -->
-  <div class="ne-ticker bg-green-700" aria-label="Avisos">
-    <div class="overflow-hidden">
-      <div class="ne-track flex w-max gap-10 py-2">
-        {[0, 1].map((copia) => (
-          <ul class="flex shrink-0 gap-10" aria-hidden={copia === 1 ? 'true' : undefined}>
-            {avisos.map((a) => (
-              <li class="flex items-center gap-10 whitespace-nowrap type-caption uppercase tracking-[0.12em]">
-                {a}<span class="text-accent-primary" aria-hidden="true">◆</span>
-              </li>
-            ))}
-          </ul>
-        ))}
-      </div>
-    </div>
-  </div>
 
   <!-- Barra -->
   <div class="ne-bar relative">
