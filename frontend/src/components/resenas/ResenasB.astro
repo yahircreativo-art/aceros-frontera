@@ -1,0 +1,150 @@
+---
+/**
+ * RESEÑAS B · "Una a la vez"
+ * Fondo claro. Una sola reseña en grande, con la tipografía de titulares,
+ * como cita de obra. Debajo, un cajetín de plano: quién la escribió, cuándo
+ * y "Reseña 3 de 8", con botones para avanzar o regresar. Cambia sola cada
+ * 7 s (barra de avance) y se detiene al pasar el cursor, al enfocar o fuera
+ * de pantalla.
+ *
+ * Sin JavaScript se ve la primera reseña; con "reducir movimiento" no avanza sola.
+ *
+ * Uso: <ResenasB />
+ */
+import { assetUrl } from '../../lib/asset-url';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Estrellas from './Estrellas.astro';
+import AvisoEjemplo from './AvisoEjemplo.astro';
+import { resenas5, fichaGoogle, cotaGoogle, sucursalDe } from './resenas-data';
+
+const icono = (id: string) => `${assetUrl('/icons.svg')}#${id}`;
+/* Lo que cambia en el cajetín al pasar de reseña. */
+const info = resenas5.map((r) => ({ n: r.nombre, f: `${r.fuente}, ${r.fecha}`, s: sucursalDe(r) }));
+---
+
+<section id="resenas" data-rsb class="rsb relative scroll-mt-24 overflow-hidden bg-neutral-100 py-20 text-text-primary lg:py-28">
+  <script type="application/json" data-rsb-info set:html={JSON.stringify(info)} />
+  <div class="container-page">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <Cota texto={cotaGoogle} class="text-text-brand" />
+        <h2 class="mt-5 font-display text-[clamp(2.5rem,5vw,4rem)] leading-[0.9] font-extrabold uppercase">Clientes de 5 estrellas</h2>
+      </div>
+      <AvisoEjemplo />
+    </div>
+
+    <div class="rsb-hoja chamfer relative mt-10 bg-neutral-0 [--chamfer:32px]">
+      <div class="relative min-h-[18rem] px-6 pt-10 pb-10 sm:min-h-[16rem] lg:px-14 lg:pt-14 lg:pb-14" aria-live="polite">
+        {resenas5.map((r, i) => (
+          <figure data-rsb-item={i} class:list={['rsb-item', { 'is-on': i === 0 }]} hidden={i !== 0}>
+            <Estrellas n={r.estrellas} class="text-accent-primary" tam="size-5" />
+            <blockquote class="mt-5 font-display text-[clamp(1.75rem,3.6vw,3rem)] leading-[1.05] font-bold uppercase">
+              <p>{r.texto}</p>
+            </blockquote>
+          </figure>
+        ))}
+      </div>
+
+      <!-- Cajetín -->
+      <div class="rsb-cajetin grid grid-cols-2 border-t border-neutral-950 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <div class="rsb-celda col-span-2 sm:col-span-1">
+          <small>Cliente</small>
+          <b data-rsb-nombre>{resenas5[0].nombre}</b>
+        </div>
+        <div class="rsb-celda border-t border-neutral-950 sm:border-t-0 sm:border-l">
+          <small>Fuente</small>
+          <span data-rsb-fuente>{resenas5[0].fuente}, {resenas5[0].fecha}</span>
+        </div>
+        <div class="rsb-celda border-t border-l border-neutral-950 sm:border-t-0">
+          <small>Reseña</small>
+          <span><span data-rsb-num>1</span> de {resenas5.length}</span>
+        </div>
+        <div class="rsb-controles col-span-2 flex border-t border-neutral-950 sm:col-span-1 sm:border-t-0 sm:border-l">
+          <button type="button" data-rsb-ant class="rsb-btn" aria-label="Reseña anterior">
+            <svg viewBox="0 0 24 24" class="size-5 rotate-180" aria-hidden="true"><use href={icono('arrow-right')} /></svg>
+          </button>
+          <button type="button" data-rsb-sig class="rsb-btn border-l border-neutral-950" aria-label="Reseña siguiente">
+            <svg viewBox="0 0 24 24" class="size-5" aria-hidden="true"><use href={icono('arrow-right')} /></svg>
+          </button>
+        </div>
+      </div>
+      <span aria-hidden="true" class="rsb-avance absolute bottom-0 left-0 h-[3px] w-full bg-green-800"></span>
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center gap-4">
+      <Button href={fichaGoogle.url} target="_blank" variant="primary" size="md" icon="star" iconPosition="left" label="Ver todas en Google" />
+      <p class="type-body-s text-text-secondary">Reseñas de la <span data-rsb-suc>{sucursalDe(resenas5[0])}</span>.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rsb]');
+  if (root) {
+    const items = [...root.querySelectorAll<HTMLElement>('[data-rsb-item]')];
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const hoja = $('.rsb-hoja');
+    const avance = $('.rsb-avance');
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const PASO = 7000;
+    let actual = 0, reloj = 0, pausa = false, visible = false;
+
+    const info = JSON.parse(root.querySelector('[data-rsb-info]')!.textContent!) as { n: string; f: string; s: string }[];
+
+    const ir = (i: number) => {
+      actual = (i + items.length) % items.length;
+      items.forEach((el, k) => {
+        el.hidden = k !== actual;
+        el.classList.toggle('is-on', k === actual);
+      });
+      const d = info[actual];
+      if (d) {
+        $('[data-rsb-nombre]').textContent = d.n;
+        $('[data-rsb-fuente]').textContent = d.f;
+        $('[data-rsb-suc]').textContent = d.s;
+      }
+      $('[data-rsb-num]').textContent = String(actual + 1);
+      programar();
+    };
+
+    const programar = () => {
+      window.clearTimeout(reloj);
+      avance.classList.remove('is-corre');
+      if (quieto || pausa || !visible) return;
+      void avance.offsetWidth;
+      avance.classList.add('is-corre');
+      reloj = window.setTimeout(() => ir(actual + 1), PASO);
+    };
+
+    root.style.setProperty('--rsb-paso', `${PASO}ms`);
+    $('[data-rsb-ant]').addEventListener('click', () => ir(actual - 1));
+    $('[data-rsb-sig]').addEventListener('click', () => ir(actual + 1));
+    const pausar = (si: boolean) => { pausa = si; programar(); };
+    hoja.addEventListener('pointerenter', () => pausar(true));
+    hoja.addEventListener('pointerleave', () => pausar(false));
+    hoja.addEventListener('focusin', () => pausar(true));
+    hoja.addEventListener('focusout', (e) => { if (!hoja.contains(e.relatedTarget as Node)) pausar(false); });
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; programar(); }, { threshold: 0.4 }).observe(hoja);
+  }
+</script>
+
+<style>
+  .rsb-hoja { box-shadow: inset 0 0 0 1px var(--color-neutral-950); }
+  .rsb-item.is-on { animation: rsb-entra 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @keyframes rsb-entra { from { opacity: 0; transform: translateY(12px); } }
+
+  .rsb-celda { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.85rem 1.25rem; min-width: 0; font-size: 0.9375rem; }
+  .rsb-celda small { font-size: 0.6875rem; font-weight: 600; color: var(--color-text-muted); }
+  .rsb-celda b { font-weight: 700; }
+  .rsb-btn { display: grid; flex: 1; place-items: center; min-width: 3.75rem; min-height: 3.5rem; cursor: pointer; transition: background-color 150ms; }
+  .rsb-controles { padding-right: 1.5rem; }
+  .rsb-btn:hover { background: var(--color-accent-primary); }
+  .rsb-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-border-focus); }
+
+  .rsb-avance { transform: scaleX(0); transform-origin: left; }
+  .rsb-avance.is-corre { animation: rsb-avance var(--rsb-paso, 7s) linear forwards; }
+  @keyframes rsb-avance { to { transform: scaleX(1); } }
+
+  @media (prefers-reduced-motion: reduce) { .rsb-item.is-on { animation: none; } }
+</style>

@@ -144,7 +144,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
         const [seccion, l] = (a.dataset.propuestaLetra ?? '').split(':');
         a.classList.toggle('is-favorita', e[seccion] === l);
       });
-      resumen.textContent = Object.keys(titulos).map((s) => `${titulos[s]} ${e[s]}`).join(', ');
+      resumen.textContent = Object.keys(titulos).map((s) => `${titulos[s]} ${e[s] || 'sin publicar'}`).join(', ');
     };
     pintar();
 
@@ -160,7 +160,7 @@ const publicadas = Object.fromEntries(propuestas.map((p) => [p.id, p.actual]));
     });
     panel.querySelector('[data-propuestas-copiar]')?.addEventListener('click', async () => {
       const e = eleccion();
-      const texto = ['Propuestas elegidas para la portada:', ...Object.keys(titulos).map((s) => `- ${titulos[s]}: ${e[s]}${e[s] === publicadas[s] ? ' (la publicada)' : ''}`)].join('\n');
+      const texto = ['Propuestas elegidas para la portada:', ...Object.keys(titulos).map((s) => `- ${titulos[s]}: ${e[s] || 'sin publicar'}${e[s] && e[s] === publicadas[s] ? ' (la publicada)' : ''}`)].join('\n');
       try {
         await navigator.clipboard.writeText(texto);
         aviso.textContent = 'Resumen copiado. Pégalo en WhatsApp o en un correo.';

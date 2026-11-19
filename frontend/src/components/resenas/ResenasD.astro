@@ -1,0 +1,116 @@
+---
+/**
+ * RESEÑAS D · "Calificación y temas"
+ * Fondo claro. A la izquierda, la calificación real de la ficha de Google
+ * en grande (4,5) con sus estrellas, y botones para leer las reseñas o
+ * dejar una. A la derecha, las reseñas con filtros por tema (atención,
+ * surtido, cortes y armex, entregas): al elegir uno, la lista se reacomoda.
+ *
+ * Sin JavaScript se ven todas las reseñas y los filtros se ocultan.
+ *
+ * Uso: <ResenasD />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Estrellas from './Estrellas.astro';
+import AvisoEjemplo from './AvisoEjemplo.astro';
+import { resenas5, fichaGoogle, calificacionTexto, temas, iniciales, sucursalDe, type Resena } from './resenas-data';
+
+const usados = Object.entries(temas).filter(([t]) => resenas5.some((r) => r.tema === t)) as [Resena['tema'], string][];
+
+---
+
+<section id="resenas" data-rsd class="rsd relative scroll-mt-24 bg-neutral-0 py-20 text-text-primary lg:py-28">
+  <div class="container-page grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
+    <!-- Calificación -->
+    <div class="min-w-0 lg:sticky lg:top-28 lg:self-start">
+      <h2 class="font-display text-[clamp(2.5rem,5vw,4rem)] leading-[0.9] font-extrabold uppercase">Opiniones de clientes</h2>
+      <div class="rsd-cal chamfer mt-8 bg-neutral-950 p-6 text-text-inverse [--chamfer:20px]">
+        <p class="flex items-end gap-4">
+          <span class="font-display text-[5.5rem] leading-[0.8] font-extrabold">{calificacionTexto}</span>
+          <span class="pb-1">
+            <Estrellas n={fichaGoogle.calificacion} class="text-accent-primary" tam="size-5" />
+            <small class="mt-1 block type-caption text-text-inverse-muted">de 5 en Google</small>
+          </span>
+        </p>
+        <Cota texto="Ficha de la sucursal Cucapah, Tijuana" ancho="completo" class="mt-6 text-text-accent" />
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <Button href={fichaGoogle.url} target="_blank" variant="primary" size="md" icon="star" iconPosition="left" label="Leer en Google" />
+        <Button href={fichaGoogle.url} target="_blank" variant="outline" size="md" label="Dejar una reseña" />
+      </div>
+      <AvisoEjemplo class="mt-6" />
+    </div>
+
+    <!-- Lista con filtros -->
+    <div class="min-w-0">
+      <div data-rsd-filtros class="rsd-filtros flex flex-wrap gap-2" role="group" aria-label="Filtrar reseñas por tema">
+        <button type="button" data-rsd-tema="todas" aria-pressed="true" class="rsd-filtro chamfer [--chamfer:7px]">Todas <span>{resenas5.length}</span></button>
+        {usados.map(([t, nombre]) => (
+          <button type="button" data-rsd-tema={t} aria-pressed="false" class="rsd-filtro chamfer [--chamfer:7px]">
+            {nombre} <span>{resenas5.filter((r) => r.tema === t).length}</span>
+          </button>
+        ))}
+      </div>
+
+      <ul data-rsd-lista class="mt-6 grid grid-cols-[minmax(0,1fr)] gap-px bg-neutral-200 sm:grid-cols-2" aria-live="polite">
+        {resenas5.map((r) => (
+          <li data-rsd-item data-tema={r.tema} class="rsd-item flex flex-col gap-4 bg-neutral-0 p-6">
+            <div class="flex items-center justify-between gap-3">
+              <Estrellas n={r.estrellas} class="text-accent-primary" />
+              <span class="rsd-tag chamfer [--chamfer:5px]">{temas[r.tema]}</span>
+            </div>
+            <p class="type-body-m text-text-secondary">{r.texto}</p>
+            <p class="mt-auto flex items-center gap-3">
+              <span class="chamfer grid size-9 shrink-0 place-items-center bg-neutral-950 font-display font-bold text-text-inverse [--chamfer:6px]" aria-hidden="true">{iniciales(r.nombre)}</span>
+              <span class="min-w-0 text-sm">
+                <b class="block truncate">{r.nombre}</b>
+                <small class="text-text-muted">{r.fecha}, {sucursalDe(r)}</small>
+              </span>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rsd]');
+  if (root) {
+    root.classList.add('is-js');
+    const botones = [...root.querySelectorAll<HTMLButtonElement>('[data-rsd-tema]')];
+    const items = [...root.querySelectorAll<HTMLElement>('[data-rsd-item]')];
+    botones.forEach((b) =>
+      b.addEventListener('click', () => {
+        const tema = b.dataset.rsdTema;
+        botones.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        items.forEach((it) => {
+          const ver = tema === 'todas' || it.dataset.tema === tema;
+          it.hidden = !ver;
+          if (ver) { it.classList.remove('is-entra'); void it.offsetWidth; it.classList.add('is-entra'); }
+        });
+      }),
+    );
+  }
+</script>
+
+<style>
+  .rsd-filtros { display: none; }
+  .rsd.is-js .rsd-filtros { display: flex; }
+
+  .rsd-filtro {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.9rem; cursor: pointer;
+    font-size: 0.875rem; font-weight: 600; background: var(--color-neutral-100); transition: background-color 150ms, color 150ms;
+  }
+  .rsd-filtro span { font-size: 0.75rem; color: var(--color-text-muted); }
+  .rsd-filtro:hover { background: var(--color-neutral-200); }
+  .rsd-filtro[aria-pressed='true'] { background: var(--color-green-800); color: var(--color-text-inverse); }
+  .rsd-filtro[aria-pressed='true'] span { color: var(--color-text-accent); }
+  .rsd-filtro:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+  .rsd-tag { padding: 0.2rem 0.5rem; font-size: 0.6875rem; font-weight: 600; background: var(--color-neutral-100); color: var(--color-text-secondary); }
+  .rsd-item.is-entra { animation: rsd-entra 350ms ease; }
+  @keyframes rsd-entra { from { opacity: 0; transform: translateY(8px); } }
+  @media (prefers-reduced-motion: reduce) { .rsd-item.is-entra { animation: none; } }
+</style>

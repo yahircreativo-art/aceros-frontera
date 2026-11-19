@@ -1,0 +1,56 @@
+---
+/**
+ * RESEÑAS A · "Muro de tarjetas"
+ * Fondo negro. Titular a la izquierda con la calificación real de Google en
+ * la cota y, debajo, las reseñas de 5 estrellas en columnas tipo mosaico
+ * (cada tarjeta mide lo que su texto). Las tarjetas suben escalonadas al
+ * entrar en pantalla (.reveal de Base.astro).
+ *
+ * Uso: <ResenasA />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Estrellas from './Estrellas.astro';
+import AvisoEjemplo from './AvisoEjemplo.astro';
+import { resenas5, fichaGoogle, cotaGoogle, iniciales, sucursalDe } from './resenas-data';
+---
+
+<section id="resenas" class="rsa relative scroll-mt-24 overflow-hidden bg-neutral-950 py-20 text-text-inverse lg:py-28">
+  <div aria-hidden="true" class="pattern-diamante absolute inset-0"></div>
+
+  <div class="container-page relative">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div class="min-w-0">
+        <Cota texto={cotaGoogle} class="text-text-accent" />
+        <h2 class="mt-5 max-w-[16ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">
+          Lo que dicen quienes ya compraron
+        </h2>
+        <AvisoEjemplo class="mt-5" />
+      </div>
+      <Button href={fichaGoogle.url} target="_blank" variant="secondary" size="lg" icon="star" iconPosition="left" label="Ver reseñas en Google" />
+    </div>
+
+    <ul class="rsa-muro mt-14 columns-1 gap-4 sm:columns-2 lg:columns-3">
+      {resenas5.map((r, i) => (
+        <li class="rsa-card reveal chamfer mb-4 break-inside-avoid bg-neutral-900 p-6 [--chamfer:18px]" style={`--reveal-delay:${(i % 3) * 90}ms`}>
+          <Estrellas n={r.estrellas} class="text-accent-primary" />
+          <blockquote class="mt-4 type-body-m text-text-inverse">
+            <p>{r.texto}</p>
+          </blockquote>
+          <footer class="mt-6 flex items-center gap-3 border-t border-white/10 pt-4">
+            <span class="rsa-avatar chamfer grid size-10 shrink-0 place-items-center bg-green-800 font-display text-lg font-bold [--chamfer:6px]" aria-hidden="true">{iniciales(r.nombre)}</span>
+            <span class="min-w-0">
+              <cite class="block truncate font-semibold not-italic">{r.nombre}</cite>
+              <small class="block type-caption text-text-inverse-muted">{r.fuente}, {r.fecha}{sucursalDe(r) && `, ${sucursalDe(r)}`}</small>
+            </span>
+          </footer>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .rsa-card { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); transition: background-color 200ms; }
+  .rsa-card:hover { background: var(--color-neutral-800); }
+</style>

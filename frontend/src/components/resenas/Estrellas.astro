@@ -1,0 +1,31 @@
+---
+/**
+ * Estrellas de una calificación (icono "star" de /icons.svg). Acepta
+ * decimales: 4.5 dibuja cuatro llenas y media. Color: currentColor.
+ */
+import { assetUrl } from '../../lib/asset-url';
+
+interface Props {
+  n: number;
+  class?: string;
+  /** Tamaño del icono (clase de Tailwind). */
+  tam?: string;
+}
+const { n, class: clase = '', tam = 'size-4' } = Astro.props;
+const href = `${assetUrl('/icons.svg')}#star`;
+const etiqueta = `${n.toLocaleString('es-MX')} de 5 estrellas`;
+---
+
+<span class:list={['inline-flex gap-0.5', clase]} role="img" aria-label={etiqueta}>
+  {[1, 2, 3, 4, 5].map((i) => {
+    const lleno = Math.max(0, Math.min(1, n - (i - 1)));
+    return (
+      <span class:list={['relative inline-block', tam]} aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="absolute inset-0 size-full opacity-25"><use href={href} /></svg>
+        {lleno > 0 && (
+          <svg viewBox="0 0 24 24" class="absolute inset-0 size-full" style={lleno < 1 ? `clip-path: inset(0 ${100 - lleno * 100}% 0 0)` : undefined}><use href={href} /></svg>
+        )}
+      </span>
+    );
+  })}
+</span>

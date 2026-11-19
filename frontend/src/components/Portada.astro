@@ -28,9 +28,11 @@ interface Props {
   Nosotros: any;
   Categorias: any;
   Contacto: any;
+  /** Opcional: la sección de reseñas aún no se publica. */
+  Resenas?: any;
 }
 
-const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categorias, Contacto } = Astro.props;
+const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categorias, Contacto, Resenas } = Astro.props;
 ---
 
 <Base page={page} canonicalPath={canonicalPath}>
@@ -49,6 +51,7 @@ const { page = 'home', canonicalPath, productos, Header, Hero, Nosotros, Categor
 
     <Sucursales />
     <BolsaTrabajo />
+    {Resenas && <div data-propuesta="resenas" class="contents"><Resenas /></div>}
     <div data-propuesta="contacto" class="contents"><Contacto /></div>
     <CtaFinal />
   </main>

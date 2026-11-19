@@ -1,0 +1,230 @@
+---
+/**
+ * HERO I · "Peso teórico"
+ * Fondo verde profundo. A la derecha, una herramienta de taller: eliges la
+ * pieza (ángulo, cuadrado, polín o viga), la medida, el largo y cuántas
+ * piezas, y ves su sección dibujada como plano (con sus cotas en mm) y el
+ * peso teórico total. "Cotizar esta pieza" abre WhatsApp con el pedido ya
+ * escrito. Medidas y kg/m de src/data/medidas-acero.ts (tablas publicadas
+ * en acerosfrontera.com).
+ *
+ * Sin JavaScript se ve el cálculo de la pieza inicial.
+ *
+ * Uso: <HeroI />
+ */
+import { rutaInterna } from '../../lib/asset-url';
+import { siteSeo, whatsappUrl } from '../../lib/seo';
+import { piezasAcero } from '../../data/medidas-acero';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { seccion2d } from './heros-data';
+
+const tipos = [...new Set(piezasAcero.map((p) => p.tipo))];
+/* Lo mínimo que necesita el navegador. */
+const datos = piezasAcero.map((p) => ({ t: p.tipo, n: p.nombre, k: p.kgm, m: p.medida, d: p.dibujo }));
+const inicial = piezasAcero.find((p) => p.tipo === 'Viga') ?? piezasAcero[0];
+const LARGO = 6.1;
+const PIEZAS = 4;
+const sec = seccion2d(inicial.dibujo);
+const formato = (n: number) => n.toLocaleString('es-MX', { maximumFractionDigits: 1 });
+const mensaje = (nombre: string, piezas: number, largo: number) =>
+  `Hola, quiero cotizar ${piezas} pieza(s) de ${nombre} de ${formato(largo)} m.`;
+---
+
+<section id="inicio" data-hi class="hi relative isolate overflow-hidden bg-green-950 text-text-inverse">
+  <div aria-hidden="true" class="pattern-diamante absolute inset-0 -z-10"></div>
+  <script type="application/json" data-hi-datos set:html={JSON.stringify({ datos, wa: siteSeo.whatsapp })} />
+
+  <div class="container-page grid min-h-[calc(100svh-10rem)] grid-cols-[minmax(0,1fr)] items-center gap-12 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:py-20">
+    <div class="min-w-0">
+      <h1 class="font-display text-[clamp(3rem,6.5vw,6rem)] leading-[0.88] font-extrabold uppercase">
+        Sabes qué pieza. Calcula cuánto pesa
+      </h1>
+      <Cota texto={`Pesos teóricos de ${piezasAcero.length} medidas de acero`} ancho="completo" class="mt-6 max-w-md text-text-accent" />
+      <p class="mt-7 max-w-lg type-body-l text-text-inverse-muted">
+        Ángulos, cuadrados, polines y vigas con las medidas de nuestras tablas. Calcula el peso para
+        planear tu flete y cotiza la pieza en un mensaje.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-4">
+        <Button href={rutaInterna('/catalogo')} variant="secondary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+        <Button href={whatsappUrl()} target="_blank" variant="dark" size="lg" icon="whatsapp" iconPosition="right" label="Hablar con un asesor" />
+      </div>
+    </div>
+
+    <!-- Calculadora -->
+    <form data-hi-form class="hi-calc chamfer min-w-0 bg-neutral-950 [--chamfer:24px]" onsubmit="return false">
+      <fieldset class="hi-tipos grid grid-cols-4 border-b border-white/15">
+        <legend class="sr-only">Tipo de pieza</legend>
+        {tipos.map((t) => (
+          <label class="hi-tipo">
+            <input type="radio" name="tipo" value={t} checked={t === inicial.tipo} class="sr-only" />
+            <span>{t}</span>
+          </label>
+        ))}
+      </fieldset>
+
+      <div class="grid grid-cols-[minmax(0,1fr)] gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_11rem] sm:p-6">
+        <div class="grid min-w-0 content-start gap-4">
+          <label class="hi-campo">
+            <span>Medida</span>
+            <select name="medida" data-hi-medida>
+              {piezasAcero.filter((p) => p.tipo === inicial.tipo).map((p) => (
+                <option value={p.nombre} selected={p.nombre === inicial.nombre}>{p.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="hi-campo">
+              <span>Largo (m)</span>
+              <input name="largo" type="number" inputmode="decimal" min="0.1" max="24" step="0.1" value={LARGO} />
+            </label>
+            <label class="hi-campo">
+              <span>Piezas</span>
+              <input name="piezas" type="number" inputmode="numeric" min="1" max="999" step="1" value={PIEZAS} />
+            </label>
+          </div>
+          <p data-hi-medida-txt class="type-caption text-text-inverse-muted">{inicial.medida}</p>
+        </div>
+
+        <!-- Sección dibujada como plano -->
+        <figure class="hi-dibujo relative grid aspect-square w-full max-w-56 justify-self-center sm:max-w-none place-items-center border border-white/15 text-accent-primary">
+          <svg data-hi-svg viewBox="-40 -40 180 180" class="size-full" fill="none" aria-hidden="true">
+            <g data-hi-g transform={`translate(${(100 - (sec.ancho * 100) / Math.max(sec.ancho, sec.alto)) / 2} ${(100 - (sec.alto * 100) / Math.max(sec.ancho, sec.alto)) / 2}) scale(${100 / Math.max(sec.ancho, sec.alto)})`}>
+              <path data-hi-path d={sec.path} class="hi-sec" pathLength="1" vector-effect="non-scaling-stroke" />
+            </g>
+            <g class="hi-cotas">
+              <path data-hi-cota-h d="" />
+              <path data-hi-cota-v d="" />
+              <text data-hi-txt-h text-anchor="middle"></text>
+              <text data-hi-txt-v text-anchor="middle"></text>
+            </g>
+          </svg>
+          <figcaption class="sr-only">Sección de la pieza</figcaption>
+        </figure>
+      </div>
+
+      <div class="hi-total flex flex-wrap items-end justify-between gap-4 border-t border-white/15 p-5 sm:p-6">
+        <p aria-live="polite">
+          <small class="block type-caption text-text-inverse-muted">Peso teórico total</small>
+          <span class="font-display text-[clamp(2.75rem,6vw,4rem)] leading-none font-extrabold"><span data-hi-kg>{formato(inicial.kgm * LARGO * PIEZAS)}</span> kg</span>
+          <small class="mt-1 block type-caption text-text-inverse-muted"><span data-hi-kgm>{formato(inicial.kgm)}</span> kg por metro</small>
+        </p>
+        <Button data-hi-cotizar href={whatsappUrl(mensaje(inicial.nombre, PIEZAS, LARGO))} target="_blank" variant="secondary" size="md" icon="whatsapp" iconPosition="right" label="Cotizar esta pieza" />
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { seccion2d } from './heros-data';
+  import type { FormaDibujo } from '../../data/medidas-acero';
+
+  type Dato = { t: string; n: string; k: number; m: string; d: FormaDibujo };
+  const root = document.querySelector<HTMLElement>('[data-hi]');
+  if (root) {
+    const { datos, wa } = JSON.parse(root.querySelector('[data-hi-datos]')!.textContent!) as { datos: Dato[]; wa: string };
+    const form = root.querySelector<HTMLFormElement>('[data-hi-form]')!;
+    const medida = root.querySelector<HTMLSelectElement>('[data-hi-medida]')!;
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const fmt = (n: number) => n.toLocaleString('es-MX', { maximumFractionDigits: 1 });
+
+    const llenarMedidas = (tipo: string) => {
+      medida.replaceChildren(...datos.filter((d) => d.t === tipo).map((d) => new Option(d.n, d.n)));
+    };
+
+    const dibujar = (d: Dato) => {
+      const s = seccion2d(d.d);
+      const k = 100 / Math.max(s.ancho, s.alto);
+      const w = s.ancho * k;
+      const h = s.alto * k;
+      const x = (100 - w) / 2;
+      const y = (100 - h) / 2;
+      $('[data-hi-g]').setAttribute('transform', `translate(${x} ${y}) scale(${k})`);
+      $('[data-hi-path]').setAttribute('d', s.path);
+      /* Cotas: horizontal abajo, vertical a la izquierda, con remates. */
+      const yb = y + h + 16;
+      const xl = x - 16;
+      $('[data-hi-cota-h]').setAttribute('d', `M${x} ${y + h + 6}V${yb + 6}M${x + w} ${y + h + 6}V${yb + 6}M${x} ${yb}H${x + w}M${x - 3} ${yb + 3}l6 -6M${x + w - 3} ${yb + 3}l6 -6`);
+      $('[data-hi-cota-v]').setAttribute('d', `M${x - 6} ${y}H${xl - 6}M${x - 6} ${y + h}H${xl - 6}M${xl} ${y}V${y + h}M${xl - 3} ${y + 3}l6 -6M${xl - 3} ${y + h + 3}l6 -6`);
+      const th = $<SVGTextElement>('[data-hi-txt-h]');
+      th.setAttribute('x', String(x + w / 2));
+      th.setAttribute('y', String(yb + 14));
+      th.textContent = `${fmt(s.ancho)} mm`;
+      const tv = $<SVGTextElement>('[data-hi-txt-v]');
+      tv.setAttribute('transform', `translate(${xl - 8} ${y + h / 2}) rotate(-90)`);
+      tv.textContent = `${fmt(s.alto)} mm`;
+      const sec = $<SVGPathElement>('[data-hi-path]');
+      sec.classList.remove('is-trazo');
+      void sec.getBoundingClientRect();
+      sec.classList.add('is-trazo');
+    };
+
+    const num = (nombre: string, min: number, max: number, def: number) => {
+      const v = Number((form.elements.namedItem(nombre) as HTMLInputElement).value);
+      return Number.isFinite(v) && v > 0 ? Math.min(Math.max(v, min), max) : def;
+    };
+
+    let previa = '';
+    const calcular = () => {
+      const d = datos.find((x) => x.n === medida.value) ?? datos[0];
+      const largo = num('largo', 0.1, 24, 6.1);
+      const piezas = Math.round(num('piezas', 1, 999, 1));
+      $('[data-hi-kg]').textContent = fmt(d.k * largo * piezas);
+      $('[data-hi-kgm]').textContent = fmt(d.k);
+      $('[data-hi-medida-txt]').textContent = d.m;
+      const msg = `Hola, quiero cotizar ${piezas} pieza(s) de ${d.n} de ${fmt(largo)} m.`;
+      $<HTMLAnchorElement>('[data-hi-cotizar]').href = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
+      if (d.n !== previa) { previa = d.n; dibujar(d); }
+    };
+
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === 'tipo') llenarMedidas(t.value);
+      calcular();
+    });
+    form.addEventListener('input', calcular);
+    calcular();
+  }
+</script>
+
+<style>
+  .hi-calc { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15); }
+
+  .hi-tipo { display: grid; cursor: pointer; }
+  .hi-tipo span {
+    display: grid; place-items: center; min-height: 3.25rem; padding-inline: 0.25rem;
+    font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; text-transform: uppercase;
+    color: var(--color-text-inverse-muted); border-bottom: 3px solid transparent; transition: color 150ms, background-color 150ms;
+  }
+  .hi-tipo + .hi-tipo span { border-left: 1px solid rgb(255 255 255 / 0.15); }
+  .hi-tipo:hover span { color: var(--color-text-inverse); }
+  .hi-tipo input:checked + span { color: var(--color-text-inverse); border-bottom-color: var(--color-accent-primary); background: rgb(255 255 255 / 0.04); }
+  .hi-tipo input:focus-visible + span { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+  .hi-campo { display: grid; gap: 0.35rem; min-width: 0; }
+  .hi-campo > span { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-inverse-muted); }
+  .hi-campo select, .hi-campo input {
+    width: 100%; min-width: 0; padding: 0.7rem 0.8rem; color: var(--color-text-inverse);
+    background: rgb(255 255 255 / 0.06); border: 0; box-shadow: inset 0 -2px 0 rgb(255 255 255 / 0.3);
+    font: 600 1rem var(--font-sans); outline: none;
+  }
+  /* La lista desplegable del navegador, oscura. Las <option> las crea el script
+     (sin el atributo de alcance de Astro), por eso van con :global. */
+  .hi-campo select { color-scheme: dark; cursor: pointer; }
+  .hi-campo :global(option) { color: var(--color-text-inverse); background: var(--color-neutral-900); }
+  .hi-campo select:focus-visible, .hi-campo input:focus-visible { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+
+  .hi-dibujo {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 12px 12px;
+  }
+  .hi-sec { stroke: currentColor; stroke-width: 1.6; fill: rgb(234 192 43 / 0.12); stroke-linejoin: miter; }
+  .hi-sec.is-trazo { stroke-dasharray: 1; stroke-dashoffset: 1; animation: hi-trazo 900ms cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+  @keyframes hi-trazo { to { stroke-dashoffset: 0; } }
+  .hi-cotas path { stroke: var(--color-text-inverse); stroke-width: 0.8; opacity: 0.6; }
+  .hi-cotas text { fill: var(--color-text-inverse); font: 600 9px var(--font-sans); opacity: 0.85; }
+
+  @media (prefers-reduced-motion: reduce) { .hi-sec.is-trazo { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; } }
+</style>

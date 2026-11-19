@@ -1,0 +1,175 @@
+---
+/**
+ * HERO H · "Pieza en la mesa"
+ * Fondo claro de hoja de dibujo. A la izquierda, el titular; a la derecha,
+ * una lámina técnica grande donde se traza en isométrico una pieza real
+ * (viga IPR, PTR, ángulo, monten, tubo, lámina R-72) con su cota y sus notas.
+ * El cajetín de abajo dice qué pieza es y permite elegir otra; las piezas
+ * rotan solas cada pocos segundos y se detienen al pasar el cursor o al
+ * enfocar con teclado. Geometría en src/lib/planos.ts.
+ *
+ * Sin JavaScript o con "reducir movimiento" se ve la primera pieza completa.
+ *
+ * Uso: <HeroH />
+ */
+import { rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import { piezasPlano } from '../../lib/planos';
+import PlanoLinea from '../catalogo-propuestas/PlanoLinea.astro';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { coberturaTexto } from './heros-data';
+---
+
+<section id="inicio" data-hh class="hh relative isolate overflow-hidden bg-neutral-100 text-text-primary">
+  <div aria-hidden="true" class="hh-reticula absolute inset-0 -z-10"></div>
+
+  <div class="container-page grid min-h-[calc(100svh-10rem)] grid-cols-[minmax(0,1fr)] items-center gap-12 py-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:py-20">
+    <div class="min-w-0">
+      <Cota texto={coberturaTexto} class="text-text-brand" />
+      <h1 class="mt-6 font-display text-[clamp(3.25rem,7.5vw,7rem)] leading-[0.88] font-extrabold uppercase">
+        La pieza exacta para tu proyecto
+      </h1>
+      <p class="mt-7 max-w-lg type-body-l text-text-secondary">
+        Vigas, perfiles, tubería, lámina y placa en mayoreo y menudeo. Dinos la medida y el largo, y te
+        cotizamos por WhatsApp.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-4">
+        <Button href={whatsappUrl()} target="_blank" variant="primary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button href={rutaInterna('/catalogo')} variant="outline" size="lg" label="Ver catálogo" />
+      </div>
+    </div>
+
+    <!-- Lámina técnica -->
+    <figure class="hh-lamina chamfer relative min-w-0 bg-neutral-0 [--chamfer:28px]">
+      <div class="hh-margen relative aspect-[4/3] w-full">
+        {piezasPlano.map((p, i) => (
+          <div data-hh-pieza={i} class:list={['hh-pieza absolute inset-0 grid place-items-center p-[6%] text-green-800', { 'is-on is-trazado': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>
+            <PlanoLinea plano={p.plano} nombre={p.nombre} class="h-full w-full" />
+          </div>
+        ))}
+      </div>
+
+      <!-- Cajetín -->
+      <figcaption class="hh-cajetin grid grid-cols-[minmax(0,1fr)] border-t border-neutral-950 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
+        <div class="hh-celda">
+          <small>Pieza</small>
+          <b data-hh-nombre class="font-display text-2xl uppercase leading-none">{piezasPlano[0].nombre}</b>
+          <span data-hh-spec class="type-caption text-text-muted">{piezasPlano[0].spec}</span>
+        </div>
+        <div class="hh-celda border-t border-neutral-950 sm:border-t-0 sm:border-l">
+          <small>Uso</small>
+          <span data-hh-texto class="type-body-s text-text-secondary">{piezasPlano[0].texto}</span>
+        </div>
+        <div class="hh-celda hh-elegir border-t border-neutral-950 sm:col-span-2" role="group" aria-label="Elegir pieza">
+          {piezasPlano.map((p, i) => (
+            <button type="button" data-hh-ir={i} aria-pressed={i === 0 ? 'true' : 'false'} class="hh-tab">
+              <span>{p.nombre}</span><i aria-hidden="true"></i>
+            </button>
+          ))}
+        </div>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<script>
+  import { piezasPlano } from '../../lib/planos';
+
+  const root = document.querySelector<HTMLElement>('[data-hh]');
+  if (root) {
+    const piezas = [...root.querySelectorAll<HTMLElement>('[data-hh-pieza]')];
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-hh-ir]')];
+    const nombre = root.querySelector<HTMLElement>('[data-hh-nombre]')!;
+    const spec = root.querySelector<HTMLElement>('[data-hh-spec]')!;
+    const texto = root.querySelector<HTMLElement>('[data-hh-texto]')!;
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const PASO = 5200;
+    let actual = 0;
+    let reloj = 0;
+    let detenido = false;
+    let visible = true;
+
+    const mostrar = (i: number) => {
+      actual = (i + piezas.length) % piezas.length;
+      piezas.forEach((p, k) => {
+        const on = k === actual;
+        p.classList.toggle('is-on', on);
+        p.toggleAttribute('aria-hidden', !on);
+        /* Quitar y volver a poner .is-trazado redibuja la pieza. */
+        p.classList.remove('is-trazado');
+        if (on) requestAnimationFrame(() => requestAnimationFrame(() => p.classList.add('is-trazado')));
+      });
+      tabs.forEach((t, k) => {
+        t.setAttribute('aria-pressed', String(k === actual));
+        t.classList.remove('is-corre');
+      });
+      const p = piezasPlano[actual];
+      nombre.textContent = p.nombre;
+      spec.textContent = p.spec;
+      texto.textContent = p.texto;
+      programar();
+    };
+
+    const programar = () => {
+      window.clearTimeout(reloj);
+      tabs[actual].classList.remove('is-corre');
+      if (quieto || detenido || !visible) return;
+      void tabs[actual].offsetWidth;
+      tabs[actual].classList.add('is-corre');
+      reloj = window.setTimeout(() => mostrar(actual + 1), PASO);
+    };
+
+    root.style.setProperty('--hh-paso', `${PASO}ms`);
+    tabs.forEach((t, i) => t.addEventListener('click', () => mostrar(i)));
+
+    const lamina = root.querySelector<HTMLElement>('.hh-lamina')!;
+    const pausar = (si: boolean) => { detenido = si; programar(); };
+    lamina.addEventListener('pointerenter', () => pausar(true));
+    lamina.addEventListener('pointerleave', () => pausar(false));
+    lamina.addEventListener('focusin', () => pausar(true));
+    lamina.addEventListener('focusout', (e) => { if (!lamina.contains(e.relatedTarget as Node)) pausar(false); });
+
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; programar(); }).observe(root);
+  }
+</script>
+
+<style>
+  .hh-reticula {
+    background-image:
+      linear-gradient(to right, rgb(0 74 52 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(0 74 52 / 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(90deg, transparent, #000 45%);
+  }
+
+  .hh-lamina { box-shadow: inset 0 0 0 1px var(--color-neutral-950); }
+  /* Margen de la hoja: doble línea como en un plano impreso. */
+  .hh-margen::before { content: ""; position: absolute; inset: 14px; border: 1px solid rgb(0 74 52 / 0.25); pointer-events: none; }
+
+  .hh-pieza { opacity: 0; transition: opacity 400ms ease; }
+  .hh-pieza.is-on { opacity: 1; }
+
+  .hh-celda { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.85rem 1.1rem; min-width: 0; }
+  .hh-celda small { font-size: 0.6875rem; font-weight: 600; color: var(--color-text-muted); }
+
+  .hh-elegir { flex-direction: row; flex-wrap: wrap; gap: 0.25rem 0.5rem; padding-block: 0.6rem; padding-right: 2.25rem; }
+  .hh-tab {
+    position: relative; padding: 0.4rem 0.6rem 0.55rem; cursor: pointer;
+    font-size: 0.8125rem; font-weight: 600; color: var(--color-text-secondary);
+    transition: color 150ms;
+  }
+  .hh-tab:hover { color: var(--color-text-primary); }
+  .hh-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-border-focus); }
+  .hh-tab i { position: absolute; left: 0.6rem; right: 0.6rem; bottom: 0.2rem; height: 3px; background: var(--color-neutral-200); }
+  .hh-tab i::after { content: ""; position: absolute; inset: 0; background: var(--color-green-800); transform: scaleX(0); transform-origin: left; }
+  .hh-tab[aria-pressed='true'] { color: var(--color-text-primary); }
+  .hh-tab[aria-pressed='true'] i::after { transform: scaleX(1); }
+  .hh-tab.is-corre i::after { transform: scaleX(0); animation: hh-avance var(--hh-paso, 5s) linear forwards; }
+  @keyframes hh-avance { to { transform: scaleX(1); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hh-pieza { transition: none; }
+    .hh-tab.is-corre i::after { animation: none; transform: scaleX(1); }
+  }
+</style>

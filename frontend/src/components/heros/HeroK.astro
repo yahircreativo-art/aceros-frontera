@@ -1,0 +1,143 @@
+---
+/**
+ * HERO K · "Hoja de corte"
+ * Fondo verde de marca. Debajo del titular hay una placa de acero con los
+ * servicios acomodados como piezas en una hoja de corte (nesting). Al
+ * aparecer, un punto de soplete recorre el contorno de cada pieza, una tras
+ * otra; al cerrar el corte, la pieza se levanta de la placa y muestra su
+ * servicio. Servicios reales en heros-data.ts.
+ *
+ * Sin JavaScript o con "reducir movimiento" las piezas se ven ya cortadas.
+ *
+ * Uso: <HeroK />
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { servicios } from './heros-data';
+
+/* Acomodo en la placa (12 columnas en escritorio). */
+const acomodo = ['lg:col-span-5 lg:row-span-2', 'lg:col-span-4', 'lg:col-span-3', 'lg:col-span-3', 'lg:col-span-4'];
+---
+
+<section id="inicio" data-hk class="hk relative isolate overflow-hidden bg-green-800 text-text-inverse">
+  <div aria-hidden="true" class="pattern-placa absolute inset-0 -z-10 opacity-[0.06]"></div>
+
+  <div class="container-page flex min-h-[calc(100svh-10rem)] flex-col justify-center gap-12 py-16 lg:py-20">
+    <div class="grid grid-cols-[minmax(0,1fr)] items-end gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <h1 class="min-w-0 font-display text-[clamp(3.25rem,7.5vw,7rem)] leading-[0.88] font-extrabold uppercase">
+        Cortamos, armamos y te lo llevamos
+      </h1>
+      <div class="min-w-0">
+        <p class="type-body-l text-text-inverse">
+          Además del acero y la ferretería, preparamos tu material para que llegue listo a la obra.
+        </p>
+        <div class="mt-7 flex flex-wrap gap-4">
+          <Button href={whatsappUrl('Hola, quiero cotizar un corte de placa o armex.')} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar un servicio" />
+          <Button href={rutaInterna('/catalogo')} variant="dark" size="lg" label="Ver catálogo" />
+        </div>
+      </div>
+    </div>
+
+    <div class="min-w-0">
+      <Cota texto="Placa A36 de 3/16″ a 1″ de espesor" ancho="completo" class="mb-3 text-text-accent" />
+      <ul class="hk-placa chamfer grid grid-cols-[minmax(0,1fr)] gap-[10px] bg-neutral-950 p-[10px] [--chamfer:22px] sm:grid-cols-2 lg:grid-cols-12">
+        {servicios.map((s, i) => (
+          <li data-hk-pieza class:list={['hk-pieza relative min-w-0', acomodo[i], { 'sm:col-span-2': i === 0 }]} style={`--i:${i}`}>
+            <div class="hk-cuerpo chamfer flex h-full flex-col gap-3 p-5 [--chamfer:14px] lg:p-6">
+              <span class="hk-ico text-accent-primary">
+                {s.pictograma ? (
+                  <Pictogram name={s.pictograma} class={i === 0 ? 'size-12' : 'size-9'} />
+                ) : (
+                  <svg viewBox="0 0 24 24" class={i === 0 ? 'size-12' : 'size-9'} aria-hidden="true"><use href={`${assetUrl('/icons.svg')}#${s.icono}`} /></svg>
+                )}
+              </span>
+              <h2 class:list={['font-display font-bold uppercase leading-none', i === 0 ? 'mt-auto text-4xl lg:text-5xl' : 'text-2xl']}>{s.titulo}</h2>
+              <p class="type-body-s text-text-inverse-muted">{s.texto}</p>
+            </div>
+            <svg data-hk-corte class="hk-corte pointer-events-none absolute inset-0 size-full overflow-visible" fill="none" aria-hidden="true">
+              <path data-hk-trazo pathLength="1" />
+              <circle data-hk-chispa r="4" />
+            </svg>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-hk]');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root && !quieto) {
+    const piezas = [...root.querySelectorAll<HTMLElement>('[data-hk-pieza]')];
+    const CH = 14;
+
+    /* El contorno sigue la forma real de la pieza (con chaflán), en píxeles. */
+    const contorno = (el: HTMLElement) => {
+      const { width: w, height: h } = el.getBoundingClientRect();
+      const svg = el.querySelector<SVGSVGElement>('[data-hk-corte]')!;
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      const d = `M0 0H${w}V${h - CH}L${w - CH} ${h}H0Z`;
+      svg.querySelector('[data-hk-trazo]')!.setAttribute('d', d);
+      return svg.querySelector<SVGPathElement>('[data-hk-trazo]')!;
+    };
+    const ro = new ResizeObserver((es) => es.forEach((e) => contorno(e.target as HTMLElement)));
+    piezas.forEach((p) => ro.observe(p));
+
+    root.classList.add('is-js');
+
+    const DURA = 1100;
+    const cortar = (p: HTMLElement) =>
+      new Promise<void>((listo) => {
+        const trazo = contorno(p);
+        const chispa = p.querySelector<SVGCircleElement>('[data-hk-chispa]')!;
+        const largo = trazo.getTotalLength();
+        p.classList.add('is-cortando');
+        const t0 = performance.now();
+        const paso = (t: number) => {
+          const k = Math.min((t - t0) / DURA, 1);
+          const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+          trazo.style.strokeDashoffset = String(1 - e);
+          const pt = trazo.getPointAtLength(largo * e);
+          chispa.setAttribute('cx', String(pt.x));
+          chispa.setAttribute('cy', String(pt.y));
+          if (k < 1) requestAnimationFrame(paso);
+          else {
+            p.classList.remove('is-cortando');
+            p.classList.add('is-cortada');
+            listo();
+          }
+        };
+        requestAnimationFrame(paso);
+      });
+
+    new IntersectionObserver(async ([e], o) => {
+      if (!e.isIntersecting) return;
+      o.disconnect();
+      for (const p of piezas) {
+        await cortar(p);
+      }
+    }, { threshold: 0.35 }).observe(root.querySelector('.hk-placa')!);
+  }
+</script>
+
+<style>
+  .hk-cuerpo { background: var(--color-neutral-900); transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 450ms; }
+  .hk-corte { display: none; }
+  .hk-corte path { stroke: var(--color-accent-primary); stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .hk-corte circle { fill: #fff; opacity: 0; filter: drop-shadow(0 0 6px var(--color-accent-primary)) drop-shadow(0 0 2px #fff); }
+
+  /* Con JS: las piezas empiezan "dentro" de la placa y se levantan al cortarse. */
+  .hk.is-js .hk-corte { display: block; }
+  .hk.is-js .hk-cuerpo { background: var(--color-neutral-950); }
+  .hk.is-js .hk-cuerpo > * { opacity: 0.18; transition: opacity 450ms ease; }
+  .hk.is-js .is-cortando circle { opacity: 1; }
+  .hk.is-js .is-cortada .hk-corte path { stroke: rgb(255 255 255 / 0.25); stroke-width: 1; transition: stroke 600ms; }
+  .hk.is-js .is-cortada .hk-cuerpo { background: var(--color-neutral-900); transform: translate(-4px, -4px); }
+  .hk.is-js .is-cortada .hk-cuerpo > * { opacity: 1; }
+
+  .hk-pieza:focus-within .hk-cuerpo { box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
+</style>
