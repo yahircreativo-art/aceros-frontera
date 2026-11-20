@@ -1,0 +1,75 @@
+---
+/**
+ * Subtítulo con producto que rota (la misma animación de la palabra del Hero E):
+ * "Todo en [perfiles] para tu obra" → lámina → varilla…
+ * Cada 2.2 s la palabra sale hacia arriba, entra la siguiente desde abajo y la
+ * caja se ajusta a su ancho. Subrayado amarillo de marca.
+ *
+ * Sin JS o con "reducir movimiento": se queda la primera palabra.
+ * Los lectores de pantalla leen la lista completa (sr-only).
+ *
+ * <SubtituloRota tono="oscuro" />   (fondo negro: palabra amarilla)
+ * <SubtituloRota tono="claro" />    (fondo blanco: palabra verde, como el Hero E)
+ */
+interface Props {
+  tono?: 'oscuro' | 'claro';
+  palabras?: string[];
+  class?: string;
+}
+const {
+  tono = 'oscuro',
+  palabras = ['perfiles', 'lámina', 'varilla', 'armex', 'placa', 'tubería', 'herramienta'],
+  class: clase = '',
+} = Astro.props;
+const lista = `${palabras.slice(0, -1).join(', ')} y ${palabras.at(-1)}`;
+---
+
+<p data-rota-sub class:list={['rs font-display font-extrabold uppercase leading-none', `rs-${tono}`, clase]}>
+  Todo en{' '}<span class="rs-caja" data-rota-caja aria-hidden="true">{palabras.map((p, i) => <span class:list={['rs-palabra', { 'is-on': i === 0 }]}>{p}</span>)}</span><span class="sr-only">{lista}</span>{' '}para tu obra
+</p>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-rota-sub]').forEach((root) => {
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const palabras = [...root.querySelectorAll<HTMLElement>('.rs-palabra')];
+    const caja = root.querySelector<HTMLElement>('[data-rota-caja]')!;
+    let p = 0;
+    const ajustar = () => (caja.style.width = `${palabras[p].offsetWidth}px`);
+    ajustar();
+    /* Las fuentes pueden llegar después: se vuelve a medir. */
+    document.fonts?.ready.then(ajustar);
+    window.addEventListener('resize', ajustar);
+    if (quieto) return;
+
+    let visible = true;
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(root);
+    window.setInterval(() => {
+      if (!visible || document.hidden) return;
+      const anterior = palabras[p];
+      anterior.classList.replace('is-on', 'is-off');
+      window.setTimeout(() => anterior.classList.remove('is-off'), 600);
+      p = (p + 1) % palabras.length;
+      palabras[p].classList.add('is-on');
+      ajustar();
+    }, 2200);
+  });
+</script>
+
+<style>
+  .rs { font-size: clamp(1.6rem, 3.4vw, 2.75rem); letter-spacing: 0.01em; }
+  .rs-oscuro { color: var(--color-text-inverse); --rs-palabra: var(--color-accent-primary); }
+  .rs-claro { color: var(--color-text-primary); --rs-palabra: var(--color-green-700); }
+
+  .rs-caja {
+    position: relative; display: inline-block; height: 1.02em; vertical-align: bottom; overflow: hidden;
+    color: var(--rs-palabra); transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .rs-palabra { position: absolute; left: 0; bottom: 0; white-space: nowrap; transform: translateY(100%); }
+  .rs-palabra.is-on { position: relative; display: inline-block; transform: none; transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .rs-palabra.is-off { transform: translateY(-100%); transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .rs-caja::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.02em; height: 0.08em; background: var(--color-accent-primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rs-caja, .rs-palabra { transition: none !important; }
+  }
+</style>

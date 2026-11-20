@@ -485,6 +485,15 @@
 @utility btn-chamfer {
   position: relative;
   isolation: isolate;
+  /* Hover: el botón sube un poco (solo con mouse; deshabilitado no se mueve). */
+  transition: color 150ms, border-color 150ms, box-shadow 200ms, translate 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled, [aria-disabled="true"]) { translate: 0 -3px; }
+  }
+  &:active { translate: 0 0; transition-duration: 80ms; }
+  @media (prefers-reduced-motion: reduce) {
+    &, &:hover, &:active { translate: none !important; }
+  }
   &::before {
     content: "";
     position: absolute;

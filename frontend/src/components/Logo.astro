@@ -1,24 +1,59 @@
 ---
 import { assetUrl, rutaInterna } from '../lib/asset-url';
 
+/**
+ * Las dos versiones del logo. Cada una trae su archivo, su tamaño real
+ * (para que el navegador reserve el espacio) y su alto en cada uso.
+ * El alto se elige por versión porque la horizontal es 4 veces más ancha
+ * que alta y la vertical casi cuadrada: con el mismo alto se verían muy distintas.
+ */
+const VERSIONES = {
+  horizontal: {
+    src: '/images/LOGO.webp', // 300×79, sin margen
+    ancho: 300,
+    alto: 79,
+    clases: { navbar: 'h-10 lg:h-12', compact: 'h-9', large: 'h-14' },
+  },
+  vertical: {
+    src: '/images/logo-vertical-recortado.webp', // Logo-vertical.webp sin el margen transparente
+    ancho: 462,
+    alto: 378,
+    clases: { navbar: 'h-16 lg:h-24', compact: 'h-12', large: 'h-32' },
+  },
+} as const;
+
+type Version = keyof typeof VERSIONES;
+
+/** Versión que se usa en todo el sitio cuando no se indica otra. Cámbiala aquí. */
+const VERSION_POR_DEFECTO: Version = 'horizontal';
+
 interface Props {
+  /** 'horizontal' (LOGO.webp) o 'vertical' (Logo-vertical). Si no se pasa, usa VERSION_POR_DEFECTO. */
+  version?: Version;
+  /** Navbars con barra más baja (B y D). */
   compact?: boolean;
-  /** Figma Logo: 44 px en el Navbar, 56 px en el Footer. */
+  /** Footers. */
   large?: boolean;
+  /**
+   * Alto propio con clases de Tailwind; manda sobre el alto automático.
+   * Ej.: <Logo alto="h-16 lg:h-28" /> → 64 px en celular, 112 px en escritorio.
+   */
+  alto?: string;
 }
 
-const { compact = false, large = false } = Astro.props;
-const logoSrc = assetUrl('/images/LOGO.webp');
-const alto = compact ? 'h-8' : large ? 'h-14' : 'h-11';
+const { version = VERSION_POR_DEFECTO, compact = false, large = false, alto: altoPropio } = Astro.props;
+const logo = VERSIONES[version];
+const uso = compact ? 'compact' : large ? 'large' : 'navbar';
+const alto = altoPropio ?? logo.clases[uso];
 ---
 
-<a href={rutaInterna('/')} class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera — ir al inicio">
+<a href={rutaInterna('/')} class="inline-flex shrink-0 items-center" aria-label="Aceros Frontera, ir al inicio">
   <img
-    src={logoSrc}
-    alt=""
+    src={assetUrl(logo.src)}
+    alt="Logo Aceros Frontera"
     class={`${alto} w-auto`}
-    width="286"
-    height="72"
+    width={logo.ancho}
+    height={logo.alto}
     decoding="async"
   />
 </a>

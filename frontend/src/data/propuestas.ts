@@ -19,7 +19,7 @@ export interface Propuesta {
 
 export const propuestas: Propuesta[] = [
   { id: 'navbar', titulo: 'Navbar', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'C' },
-  { id: 'hero', titulo: 'Hero', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'], actual: 'G' },
+  { id: 'hero', titulo: 'Hero', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'], actual: 'G' },
   { id: 'nosotros', titulo: 'Nosotros', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'A' },
   { id: 'catalogo', titulo: 'Catálogo', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'B' },
   /* '' = la sección de siempre (components/home/Servicios.astro). */

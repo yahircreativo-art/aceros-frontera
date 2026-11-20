@@ -20,12 +20,12 @@ export const enlaces = [
 
 /** Servicios (mismos id/anclas que components/home/Servicios.astro). */
 export const servicios = [
-  { id: 'venta-y-distribucion', titulo: 'Venta y distribución', desc: 'Acero a todo Baja California desde 6 sucursales.', imagen: '/images/dsc06636.webp' },
-  { id: 'productos-a-la-medida', titulo: 'Productos a la medida', desc: 'Armex, anillos, lámina R-72 y steel deck.', imagen: '/images/dsc06679.webp' },
-  { id: 'corte-de-placa', titulo: 'Corte de placa', desc: 'Cortamos placa a tu especificación.', imagen: '/images/dsc06752.webp' },
-  { id: 'venta-de-pintura', titulo: 'Venta de pintura', desc: 'Marcas líderes para obra, herrería e industria.', imagen: '/images/dsc06771.webp' },
-  { id: 'fabricacion-de-armex', titulo: 'Armex y castillos', desc: 'Fabricación propia lista para obra.', imagen: '/images/dsc06588.webp' },
-  { id: 'venta-y-servicio-de-herramienta', titulo: 'Servicio de herramienta', desc: 'Venta, garantía y reparación.', imagen: '/images/dsc06784.webp' },
+  { id: 'fabricacion-de-lamina', titulo: 'Fabricación de lámina', desc: 'Lámina R-72 y steel deck a la medida.', imagen: '/images/dsc06679.webp' },
+  { id: 'fabricacion-de-armex', titulo: 'Armex', desc: 'Armados de varilla listos para obra.', imagen: '/images/dsc06636.webp' },
+  { id: 'estribos', titulo: 'Estribos', desc: 'Estribos y anillos doblados en serie.', imagen: '/images/dsc06588.webp' },
+  { id: 'corte-de-placa', titulo: 'Corte de placa', desc: 'Placa A36 cortada a tu especificación.', imagen: '/images/dsc06752.webp' },
+  { id: 'venta-y-distribucion', titulo: 'Distribución de acero', desc: 'Acero a todo Baja California desde 6 sucursales.', imagen: '/images/hero-bg.webp' },
+  { id: 'venta-y-servicio-de-herramienta', titulo: 'Centro de servicio autorizado', desc: 'Makita, Bosch y Lincoln Electric.', imagen: '/images/dsc06784.webp' },
 ].map((s) => ({ ...s, href: rutaInterna(`/#${s.id}`), imagen: assetUrl(s.imagen) }));
 
 /** Foto representativa por familia (para los paneles con imagen). */

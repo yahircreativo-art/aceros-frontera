@@ -1,0 +1,234 @@
+---
+/**
+ * HERO M · "Del plano a la obra"
+ * Igual que el Hero G (texto a la izquierda, obra en línea con cámara virtual),
+ * pero solo con el edificio y una sola vez: cuando la estructura queda
+ * terminada, una foto real se abre como fondo de todo el hero. La abre una
+ * diagonal de 20° (con filo amarillo) que cruza de derecha a izquierda.
+ *
+ * Sin JavaScript o con "reducir movimiento": edificio quieto y foto visible.
+ *
+ * Uso: <HeroM />
+ *   intensidad: opacidad de las líneas (0–1). Por defecto 0.32.
+ *   foto / fotoAlt: imagen que aparece al terminar (ruta dentro de public/).
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import { escenas, escenasCamara, ANCHO_ESCENA, ALTO_ESCENA } from '../../lib/construcciones';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import SubtituloRota from './SubtituloRota.astro';
+import { sucursales } from '../../data/sucursales';
+
+interface Props {
+  intensidad?: number;
+  foto?: string;
+  fotoAlt?: string;
+}
+const {
+  intensidad = 0.32,
+  foto = '/images/hero-bg.webp',
+  fotoAlt = 'Fachada de una sucursal de Aceros Frontera',
+} = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+const edificio = escenasCamara.find((e) => e.id === 'edificio')!;
+const estatica = escenas.find((e) => e.id === 'edificio')!;
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))];
+const cobertura = `Acero y ferretería en ${ciudades.slice(0, -1).join(', ')} y ${ciudades.at(-1)}`;
+---
+
+<section
+  id="inicio"
+  data-hm
+  class="hm relative isolate overflow-hidden bg-neutral-950 text-text-inverse"
+  style={`--hm-intensidad:${intensidad}`}
+>
+  <script type="application/json" data-hm-datos set:html={JSON.stringify([edificio])} />
+
+  <!-- Fondo -->
+  <div aria-hidden="true" class="hm-reticula absolute inset-0 -z-30"></div>
+
+  <!-- Versión quieta (sin JS / movimiento reducido) -->
+  <svg viewBox={`0 0 ${ANCHO_ESCENA} ${ALTO_ESCENA}`} class="hm-estatica absolute -z-20" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {estatica.trazos.map((t) => <path d={t.d} class={t.tipo === 'cara' ? 'obra-cara' : 'obra-det'} />)}
+  </svg>
+
+  <!-- Lienzo de la cámara (lo llena el script) -->
+  <svg data-hm-lienzo class="hm-lienzo absolute inset-0 -z-20 size-full" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke={`url(#hm-tinta-${uid})`} aria-hidden="true">
+    <defs>
+      <linearGradient id={`hm-tinta-${uid}`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="800">
+        <stop offset="0" stop-color="#ffffff" />
+        <stop offset="0.82" stop-color="#dfe5e2" />
+        <stop offset="1" style="stop-color: var(--color-accent-primary)" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Foto: se abre con una diagonal de 20° cuando termina la obra -->
+  <figure class="hm-foto absolute inset-0 -z-[15] m-0">
+    <span class="hm-foto-filo" aria-hidden="true"></span>
+    <span class="hm-foto-marco">
+      <img src={assetUrl(foto)} alt={fotoAlt} width="1920" height="1080" loading="eager" decoding="async" class="size-full object-cover" />
+    </span>
+  </figure>
+
+  <div aria-hidden="true" class="hm-velo absolute inset-0 -z-10"></div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+    <div data-hm-texto class="relative z-10 w-full min-w-0 max-w-3xl">
+      <div class="w-fit max-w-full">
+        <h1
+          class="font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase"
+          style="text-shadow: 0 4px 30px rgb(0 0 0 / 60%)"
+        >
+          <span class="block">Hacemos</span>{' '}
+          <span class="block">posible</span>{' '}
+          <span class="block">tu proyecto</span>
+        </h1>
+        <SubtituloRota tono="oscuro" class="mt-4" />
+        <Cota texto={cobertura} ancho="completo" class="hm-cota mt-5 text-text-accent" />
+      </div>
+
+      <p data-escribe="parrafo" class="mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-inverse">
+        Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
+        menudeo, fabricación de armex, corte de placa y servicio a domicilio.
+      </p>
+
+      <div class="mt-10 flex flex-wrap gap-4">
+        <Button data-escribe="boton" href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button data-escribe="boton" href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+      </div>
+    </div>
+
+    <!-- Cajetín del plano: qué se dibuja y cuánto falta -->
+    <div class="hm-cajetin absolute bottom-6 right-[clamp(1rem,4vw,2rem)] z-20 hidden sm:grid">
+      <span class="hm-celda"><small>Obra</small><b>{edificio.nombre}</b></span>
+      <span class="hm-celda"><small>Estado</small><b data-hm-estado>Terminada</b></span>
+      <span class="hm-celda hm-celda-barra"><span class="hm-barra" data-hm-barra><i></i></span></span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { iniciarObra } from '../../lib/obra-camara';
+  import { escribir } from '../../lib/maquina-escribir';
+  import type { EscenaCamara } from '../../lib/construcciones';
+
+  const texto = document.querySelector<HTMLElement>('[data-hm-texto]');
+  if (texto) window.setTimeout(() => escribir(texto), 60);
+
+  const root = document.querySelector<HTMLElement>('[data-hm]');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root && !quieto) {
+    const escenas = JSON.parse(root.querySelector('[data-hm-datos]')!.textContent!) as EscenaCamara[];
+    const lienzo = root.querySelector<SVGSVGElement>('[data-hm-lienzo]')!;
+    const estado = root.querySelector<HTMLElement>('[data-hm-estado]')!;
+    const barra = root.querySelector<HTMLElement>('[data-hm-barra]')!;
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+
+    root.classList.add('is-camara');
+    estado.textContent = 'En obra';
+    const obra = iniciarObra({
+      svg: lienzo,
+      escenas,
+      unaVez: true,
+      centroX: () => (escritorio.matches ? 0.68 : 0.5),
+      escala: () => (escritorio.matches ? 1 : 2.2),
+      alAvanzar: (_i, p) => barra.style.setProperty('--p', Math.min(p, 1).toFixed(3)),
+      alTerminar: () => {
+        estado.textContent = 'Terminada';
+        root.classList.add('is-terminada');
+      },
+    });
+
+    new IntersectionObserver(([e]) => obra.pausar(!e.isIntersecting)).observe(root);
+  }
+</script>
+
+<style>
+  .hm-reticula {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .hm-estatica, .hm-lienzo { --fondo: var(--color-neutral-950); opacity: var(--hm-intensidad, 0.32); transition: opacity 1.2s ease; }
+  .hm-estatica { right: -4%; bottom: -2%; height: 112%; width: auto; aspect-ratio: 600 / 470; stroke: #fff; }
+  @media (max-width: 63.99rem) { .hm-estatica { right: 50%; height: 90%; bottom: 0; transform: translateX(50%); } }
+  .hm.is-camara .hm-estatica { display: none; }
+  .hm-lienzo { display: none; contain: strict; transform: translateZ(0); }
+  .hm.is-camara .hm-lienzo { display: block; }
+  /* Con la foto abierta, las líneas quedan como un eco tenue detrás. */
+  .hm.is-terminada .hm-lienzo, .hm:not(.is-camara) .hm-estatica { opacity: calc(var(--hm-intensidad, 0.32) * 0.45); }
+
+  .hm :global(.obra-cara), .hm :global(.obra-det) { stroke-dasharray: 1 1; }
+  .hm :global(.obra-cara) { stroke-width: 1.3; fill: var(--fondo); }
+  .hm :global(.obra-det) { stroke-width: 0.8; fill: none; }
+  .hm-estatica :global(.obra-cara), .hm-estatica :global(.obra-det) { stroke-dasharray: none; }
+
+  /* --- Foto de fondo que se abre con una diagonal de 20° -------------------
+     La foto cubre todo el hero. La diagonal se mide con el alto del propio
+     contenedor (cqh): tan(20°) × alto = 36.4cqh, así el ángulo es exacto en
+     cualquier tamaño de pantalla. */
+  .hm-foto { --diag: 36.4cqh; container-type: size; }
+  .hm-foto-marco, .hm-foto-filo {
+    position: absolute; inset: 0; display: block;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, calc(0px - var(--diag)) 100%);
+  }
+  /* Filo amarillo: la misma diagonal, 12 px por delante del borde de la foto.
+     Solo existe durante la apertura; sin animación nunca se ve. */
+  .hm-foto-filo { background: var(--color-accent-primary); translate: -12px 0; visibility: hidden; }
+  .hm.is-camara .hm-foto-filo { visibility: visible; }
+  .hm-foto-marco { overflow: hidden; background: var(--color-neutral-950); }
+  .hm-foto img { object-position: 62% 40%; transform-origin: 62% 40%; }
+
+  /* Con JS y movimiento, la foto espera fuera (a la derecha) DESDE EL PRIMER CUADRO:
+     html.js se pone antes de pintar, así no se ve nada antes de que corra el script. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .hm:not(.is-terminada) .hm-foto-marco,
+    :global(html.js) .hm:not(.is-terminada) .hm-foto-filo {
+      clip-path: polygon(calc(100% + var(--diag) + 12px) 0, 100% 0, 100% 100%, calc(100% + 12px) 100%);
+    }
+    :global(html.js) .hm:not(.is-terminada) .hm-foto img { scale: 1.12; }
+    /* El dibujo quieto tampoco se asoma antes de que arranque la cámara. */
+    :global(html.js) .hm-estatica { display: none; }
+  }
+  .hm.is-camara.is-terminada .hm-foto-marco, .hm.is-camara.is-terminada .hm-foto-filo {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, calc(0px - var(--diag)) 100%);
+    transition: clip-path 1.5s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .hm.is-camara.is-terminada .hm-foto-filo { transition-duration: 1.35s; }
+  .hm.is-camara.is-terminada .hm-foto-marco { transition-delay: 0.08s; }
+  .hm.is-camara.is-terminada .hm-foto img { scale: 1; transition: scale 3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s; }
+
+  /* Velo: oscurece solo donde va el texto, para que la foto se vea casi completa. */
+  .hm-velo {
+    background:
+      linear-gradient(90deg, rgb(11 13 12 / 88%) 0%, rgb(11 13 12 / 62%) 34%, rgb(11 13 12 / 12%) 62%, transparent 80%),
+      linear-gradient(0deg, rgb(11 13 12 / 55%) 0%, transparent 28%);
+  }
+  @media (max-width: 63.99rem) {
+    /* Celular/tablet: el texto ocupa todo el ancho; la foto se ve arriba y se oscurece hacia el texto. */
+    .hm-velo { background: linear-gradient(180deg, rgb(11 13 12 / 45%) 0%, rgb(11 13 12 / 72%) 40%, rgb(11 13 12 / 82%) 100%); }
+    .hm-lienzo { opacity: calc(var(--hm-intensidad, 0.32) * 1.4); }
+    .hm-foto img { object-position: 58% 30%; }
+  }
+
+  :global(html.js) .hm-cota { opacity: 0; animation: hm-cota 500ms ease 700ms forwards; }
+  @keyframes hm-cota { from { opacity: 0; clip-path: inset(0 50% 0 50%); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+  /* Cajetín */
+  .hm-cajetin { grid-template-columns: auto auto auto; border: 1px solid rgb(255 255 255 / 25%); background: rgb(11 13 12 / 70%); color: var(--color-text-inverse); }
+  .hm-celda { display: flex; flex-direction: column; justify-content: center; gap: 0.1rem; padding: 0.5rem 0.9rem; font-size: 0.8125rem; line-height: 1.2; }
+  .hm-celda + .hm-celda { border-left: 1px solid rgb(255 255 255 / 25%); }
+  .hm-celda small { font-size: 0.6875rem; color: var(--color-text-inverse-muted); }
+  .hm-celda b { font-weight: 600; min-width: 5.5rem; }
+  .hm-celda-barra { justify-content: center; }
+  .hm-barra { position: relative; display: block; width: 6rem; height: 3px; background: rgb(255 255 255 / 15%); }
+  .hm-barra i { position: absolute; inset: 0; background: var(--color-accent-primary); transform: scaleX(var(--p, 1)); transform-origin: left; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .hm-cota { opacity: 1; animation: none; }
+  }
+</style>

@@ -26,6 +26,8 @@ import HeroI from '../../components/heros/HeroI.astro';
 import HeroJ from '../../components/heros/HeroJ.astro';
 import HeroK from '../../components/heros/HeroK.astro';
 import HeroL from '../../components/heros/HeroL.astro';
+import HeroM from '../../components/heros/HeroM.astro';
+import HeroN from '../../components/heros/HeroN.astro';
 import NosotrosA from '../../components/nosotros/NosotrosA.astro';
 import NosotrosB from '../../components/nosotros/NosotrosB.astro';
 import NosotrosC from '../../components/nosotros/NosotrosC.astro';
@@ -76,7 +78,7 @@ const { seleccion, vista } = Astro.props as { seleccion: Seleccion; vista: Secci
 
 const componentes: Record<SeccionPropuesta, Record<string, any>> = {
   navbar: { A: NavbarA, B: NavbarB, C: NavbarC, D: NavbarD, E: NavbarE },
-  hero: { A: HeroA, B: HeroB, C: HeroC, D: HeroD, E: HeroE, F: HeroF, G: HeroG, H: HeroH, I: HeroI, J: HeroJ, K: HeroK, L: HeroL },
+  hero: { A: HeroA, B: HeroB, C: HeroC, D: HeroD, E: HeroE, F: HeroF, G: HeroG, H: HeroH, I: HeroI, J: HeroJ, K: HeroK, L: HeroL, M: HeroM, N: HeroN },
   nosotros: { A: NosotrosA, B: NosotrosB, C: NosotrosC, D: NosotrosD, E: NosotrosE },
   catalogo: { A: CatalogoA, B: CatalogoB, C: CatalogoC, D: CatalogoD, E: CatalogoE },
   resenas: { A: ResenasA, B: ResenasB, C: ResenasC, D: ResenasD, E: ResenasE },

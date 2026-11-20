@@ -1,31 +1,48 @@
 ---
 /**
  * NOSOTROS C · "Collage que se arma" (ref. Join)
- * Sección alta con un escenario fijo (sticky). Al hacer scroll, 8 fotos que
- * empiezan dispersas, grandes y giradas fuera de la pantalla viajan hasta
- * formar un collage alrededor del titular; las palabras del titular se
- * encienden una a una y al final aparecen el párrafo y el botón. Una de las
- * fotos es el personaje sobre fondo amarillo.
- * Todo lo mueve una sola variable --p (progreso del scroll) en CSS.
+ * Mientras la sección va entrando a la pantalla, 8 fotos que empiezan
+ * dispersas, grandes y giradas viajan hasta formar un collage alrededor del
+ * centro; las cifras se encienden una a una y al final aparece el enlace. Todo termina cuando la sección queda centrada en la pantalla,
+ * así nunca se llega a una sección vacía. Una de las fotos es el personaje
+ * sobre fondo amarillo.
+ *
+ * En el centro, en lugar de titular y párrafo, los datos de la empresa:
+ * una cifra principal (3,000+ productos) y debajo una retícula de 3 × 2 con
+ * números grandes. Las cifras se encienden una a una mientras se arma el
+ * collage y cuentan desde 0; al quedar centrado, ya terminaron.
+ *
+ * Todo lo mueve una sola variable --p (progreso de entrada) en CSS.
  */
-import { textos, fotos, enlaces } from './nosotros-data';
+import { textos, fotos, enlaces, sucursales, ciudades, logosMarcas } from './nosotros-data';
+import { familias } from '../../data/familias';
 
 /* x, y, w, h en % del escenario; r = giro inicial */
-const piezas = [
+const piezas: { src: string; x: number; y: number; w: number; h: number; r: number; personaje?: boolean }[] = [
   { src: fotos.bodega, x: 4, y: 7, w: 21, h: 27, r: -14 },
   { src: fotos.castillos, x: 28, y: 3, w: 15, h: 20, r: 10 },
   { src: fotos.pintura, x: 57, y: 5, w: 13, h: 18, r: -8 },
   { src: fotos.armex, x: 74, y: 8, w: 22, h: 27, r: 12 },
-  { src: fotos.placa, x: 3, y: 63, w: 17, h: 25, r: 9 },
-  { src: fotos.herramienta, x: 22, y: 71, w: 14, h: 20, r: -12 },
-  { src: fotos.sucursal, x: 62, y: 67, w: 17, h: 23, r: 7 },
+  { src: fotos.placa, x: 3, y: 67, w: 17, h: 24, r: 9 },
+  { src: fotos.herramienta, x: 21, y: 76, w: 14, h: 19, r: -12 },
+  { src: fotos.sucursal, x: 64, y: 76, w: 16, h: 20, r: 7 },
   { src: fotos.personaje, x: 82, y: 56, w: 14, h: 36, r: -9, personaje: true },
 ];
-const palabras = 'Abastecemos cada obra de Baja California'.split(' ');
+/* Datos reales: cifras que publica la empresa (acerosfrontera.com) o que salen de los datos del sitio. */
+const principal = { n: 3000, sufijo: '+', etiqueta: 'productos en existencia' };
+const datos = [
+  { n: 25, sufijo: '+', etiqueta: 'años de experiencia' },
+  { n: sucursales.length, etiqueta: 'sucursales' },
+  { n: ciudades.length, etiqueta: 'ciudades de Baja California' },
+  { n: logosMarcas.length, etiqueta: 'marcas aliadas' },
+  { n: familias.length, etiqueta: 'familias de producto' },
+  { n: 3, etiqueta: 'centros de servicio autorizado' },
+];
+const formato = new Intl.NumberFormat('es-MX');
 ---
 
 <section id="nosotros" data-noc class="noc relative scroll-mt-28 bg-neutral-50 text-text-primary">
-  <div class="noc-escenario sticky top-0 h-svh overflow-hidden">
+  <div data-noc-escenario class="noc-escenario relative h-svh overflow-hidden">
     {
       piezas.map((p, i) => {
         const dx = (p.x + p.w / 2 - 50) * 1.4;
@@ -41,13 +58,23 @@ const palabras = 'Abastecemos cada obra de Baja California'.split(' ');
       })
     }
 
-    <div class="noc-centro absolute inset-0 grid place-items-center px-6 text-center">
-      <div class="max-w-xl">
+    <!-- En escritorio el contenido arranca justo bajo las fotos de arriba (22 % del alto) para que
+         la retícula termine antes de las fotos de abajo; el enlace cabe en el hueco entre ellas. -->
+    <div class="noc-centro absolute inset-0 grid place-items-center content-start px-6 pt-[37svh] text-center lg:pt-[23vh]">
+      <div class="w-full max-w-2xl lg:max-w-[40rem] xl:max-w-3xl">
         <p class="noc-tarde type-overline text-text-brand">{textos.eyebrow}</p>
-        <h2 class="mt-3 font-display text-[clamp(2.5rem,5.5vw,4.75rem)] leading-[0.95] font-bold">
-          {palabras.map((w, i) => <span class="noc-palabra" style={`--w:${i}`}>{w} </span>)}
-        </h2>
-        <p class="noc-tarde mt-5 type-body-m text-text-secondary">{textos.parrafo}</p>
+        <p class="noc-dato noc-dato-xl mt-2" style="--w:0">
+          <span class="noc-num"><span data-noc-cuenta={principal.n}>{formato.format(principal.n)}</span><small>{principal.sufijo}</small></span>
+          <span class="noc-etq">{principal.etiqueta}</span>
+        </p>
+        <ul class="noc-datos mt-4">
+          {datos.map((d, i) => (
+            <li class="noc-dato" style={`--w:${i + 1}`}>
+              <span class="noc-num"><span data-noc-cuenta={d.n}>{formato.format(d.n)}</span>{d.sufijo && <small>{d.sufijo}</small>}</span>
+              <span class="noc-etq">{d.etiqueta}</span>
+            </li>
+          ))}
+        </ul>
         <a href={enlaces.sucursales} class="noc-tarde group mt-6 inline-flex items-center gap-2 type-button-m">
           Conoce nuestras sucursales
           <span class="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
@@ -60,24 +87,51 @@ const palabras = 'Abastecemos cada obra de Baja California'.split(' ');
 <script>
   import { progresoScroll } from '../../lib/scroll-progreso';
   const sec = document.querySelector<HTMLElement>('[data-noc]');
-  if (sec) progresoScroll(sec, 'fijo');
+  if (sec) {
+    const escenario = sec.querySelector<HTMLElement>('[data-noc-escenario]')!;
+    const numeros = [...sec.querySelectorAll<HTMLElement>('[data-noc-cuenta]')];
+    const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const formato = new Intl.NumberFormat('es-MX');
+    if (!quieto) numeros.forEach((n) => (n.textContent = '0'));
+
+    /* Los números cuentan desde 0 cuando el collage va a la mitad de su armado;
+       al quedar centrado ya terminaron. Sin movimiento se quedan en la cifra final. */
+    let contado = quieto;
+    const contar = () => {
+      contado = true;
+      numeros.forEach((n, i) => {
+        const fin = Number(n.dataset.nocCuenta);
+        const dur = 1100 + Math.min(900, fin) * 0.4; // los números grandes tardan un poco más
+        window.setTimeout(() => {
+          const t0 = performance.now();
+          const tic = (t: number) => {
+            const p = Math.min(1, (t - t0) / dur);
+            n.textContent = formato.format(Math.round(fin * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) requestAnimationFrame(tic);
+          };
+          requestAnimationFrame(tic);
+        }, 120 + i * 90);
+      });
+    };
+
+    /* 'entrada': 0 cuando asoma por abajo, 1 cuando queda centrado. */
+    progresoScroll(escenario, 'entrada', (p) => {
+      if (!contado && p >= 0.4) contar();
+    });
+  }
 </script>
 
 <style>
-  /* Altura extra = recorrido del scroll mientras el escenario queda fijo */
-  .noc { height: 260svh; }
-  :global(html:not(.js)) .noc { height: auto; }
-  :global(html:not(.js)) .noc-escenario { position: relative; }
-
-  /* --e: avance del armado (0 → 1 en el primer 60 % del recorrido) */
-  .noc-escenario { --e: min(1, calc(var(--p, 1) / 0.6)); --t: max(0, calc((var(--p, 1) - 0.55) / 0.3)); }
+  /* --e: avance del armado (completo al 75 % de la entrada).
+     --t: párrafo y botón (del 60 % al 90 %): al quedar centrada ya está todo. */
+  .noc-escenario { --e: min(1, calc(var(--p, 1) / 0.75)); --t: max(0, calc((var(--p, 1) - 0.6) / 0.3)); }
 
   .noc-foto {
     position: absolute; margin: 0; overflow: hidden; border-radius: 0.75rem;
     box-shadow: 0 20px 40px -18px rgb(8 18 13 / 45%);
     translate: calc((1 - var(--e)) * var(--dx)) calc((1 - var(--e)) * var(--dy));
     rotate: calc((1 - var(--e)) * var(--r));
-    scale: calc(1.5 - var(--e) * 0.5 + max(0, var(--p, 1) - 0.6) * 0.15);
+    scale: calc(1.5 - var(--e) * 0.5 + max(0, var(--p, 1) - 0.75) * 0.15);
     will-change: translate, rotate, scale;
   }
   .noc-foto img { transition: scale 600ms cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -85,20 +139,59 @@ const palabras = 'Abastecemos cada obra de Baja California'.split(' ');
   .noc-personaje { background: var(--color-accent-primary); overflow: visible; }
   .noc-personaje img { margin-top: -18%; height: 118%; }
 
-  .noc-palabra {
-    display: inline-block; white-space: pre;
-    opacity: calc(0.12 + min(1, max(0, var(--e) * 8 - 2 - var(--w))) * 0.88);
+  /* --- Datos en el centro -------------------------------------------------- */
+  .noc-dato { display: flex; flex-direction: column; align-items: center; gap:1rem; }
+  .noc-datos {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--color-border-default);
   }
+  .noc-datos .noc-dato { padding: clamp(0.6rem, 1.6vh, 1rem) 0.5rem 0; }
+  .noc-datos .noc-dato:nth-child(n + 4) { border-top: 1px solid var(--color-border-default); margin-top: clamp(0.6rem, 1.6vh, 1rem); }
+  .noc-datos .noc-dato:not(:nth-child(3n + 1)) { border-left: 1px solid var(--color-border-default); }
+  .noc-num {
+    display: flex; align-items: flex-start;
+    font-family: var(--font-display); font-weight: 800; line-height: 0.85; letter-spacing: -0.01em;
+    font-size: clamp(2.5rem, min(4.5vw, 6.5vh), 4rem); font-variant-numeric: tabular-nums;
+    color: var(--color-green-800);
+  }
+  .noc-num small { font-size: 0.5em; line-height: 1; margin-left: 0.04em; color: var(--color-accent-primary); }
+  .noc-dato-xl .noc-num { font-size: clamp(4.5rem, min(10vw, 12.5vh), 8rem); color: var(--color-text-primary); }
+  .noc-etq {
+    font-family: var(--font-display); font-weight: 700; text-transform: uppercase; line-height: 1.1;
+    font-size: clamp(0.8rem, 1.1vw, 1rem); letter-spacing: 0.03em; color: var(--color-text-secondary); text-wrap: balance;
+  }
+  .noc-dato-xl .noc-etq { font-size: clamp(1rem, 1.6vw, 1.375rem); color: var(--color-text-primary); }
+  /* Escritorio: cifras y etiquetas más grandes (el tamaño sigue al alto de la pantalla para no chocar con las fotos de abajo). */
+  @media (min-width: 64rem) {
+    .noc-num { font-size: clamp(3rem, min(5.5vw, 8.5vh), 5.75rem); }
+    .noc-dato-xl .noc-num { font-size: clamp(5rem, min(11vw, 15vh), 10rem); }
+    .noc-etq { font-size: clamp(0.95rem, min(1.3vw, 2vh), 1.25rem); }
+    .noc-dato-xl .noc-etq { font-size: clamp(1.15rem, min(1.8vw, 2.8vh), 1.75rem); }
+  }
+  /* Las cifras se encienden una a una mientras se arma el collage (igual que antes las palabras). */
+  .noc-dato { opacity: calc(0.12 + min(1, max(0, var(--e) * 9 - 2 - var(--w))) * 0.88); }
+
   .noc-tarde { opacity: min(1, var(--t)); translate: 0 calc((1 - min(1, var(--t))) * 16px); }
 
   @media (max-width: 47.99rem) {
-    .noc { height: 220svh; }
     .noc-foto { border-radius: 0.5rem; }
-    .noc-centro { background: radial-gradient(closest-side, rgb(248 251 249 / 92%), rgb(248 251 249 / 0%)); }
+  }
+  /* Celular y iPad: degradado blanco de abajo hacia arriba sobre las fotos inferiores,
+     para que no se vean detrás de las cifras y el texto se lea bien. El contenido arranca
+     bajo las fotos de arriba (37 % del alto) y el blanco sólido llega justo hasta ahí. */
+  @media (max-width: 63.99rem) {
+    .noc-centro {
+      background: linear-gradient(
+        to top,
+        var(--color-neutral-50) 0%,
+        var(--color-neutral-50) 63%,
+        rgb(248 251 249 / 80%) 68%,
+        rgb(248 251 249 / 0%) 80%
+      );
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .noc { height: auto; }
-    .noc-escenario { position: relative; --e: 1; --t: 1; }
+    .noc-escenario { --e: 1; --t: 1; }
   }
 </style>

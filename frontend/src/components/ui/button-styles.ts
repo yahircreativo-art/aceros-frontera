@@ -25,7 +25,7 @@ interface ButtonClassesOptions {
 }
 
 const BASE =
-  'inline-flex items-center justify-center gap-3 whitespace-nowrap transition-colors disabled:cursor-not-allowed aria-disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center gap-3 whitespace-nowrap disabled:cursor-not-allowed aria-disabled:cursor-not-allowed';
 
 /* Las variantes rellenas pintan su fondo con --btn-bg (lo usa btn-chamfer o bg-(--btn-bg)). */
 const DESHABILITADO_RELLENO =
@@ -72,8 +72,10 @@ export function buttonClasses({
 }: ButtonClassesOptions = {}): string {
   /* link y tab no llevan caja: se ignora el relleno/chaflán del tamaño. */
   const tamano = variant === 'link' || variant === 'tab' ? '' : TAMANOS[size];
+  /* btn-chamfer ya trae su transición (colores + subida en hover); transition-colors la pisaría. */
+  const transicion = tamano.includes('btn-chamfer') ? '' : 'transition-colors';
 
-  return [BASE, VARIANTES[variant], tamano, fullWidth ? 'w-full' : '', className]
+  return [BASE, transicion, VARIANTES[variant], tamano, fullWidth ? 'w-full' : '', className]
     .filter(Boolean)
     .join(' ');
 }

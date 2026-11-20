@@ -1,0 +1,235 @@
+---
+/**
+ * HERO N · "Obra en cámara" en papel
+ * El Hero G invertido: fondo blanco y líneas negras. Solo cambian los colores
+ * que dependen del fondo; acentos amarillos, botones y animación son los mismos.
+ *
+ * Como el Hero F (la obra en grande, tenue, detrás del texto), pero con una
+ * cámara virtual: cada escena tiene sus propias tomas (arranca de cerca y
+ * abajo, gira alrededor de la obra, sube y se aleja) mientras se construye.
+ * Parece 3D pero no lo es: son las mismas líneas SVG, re-proyectadas en cada
+ * cuadro (src/lib/obra-camara.ts). El cursor gira la cámara unos grados.
+ *
+ * Sin JavaScript o con "reducir movimiento" se ve el edificio quieto.
+ *
+ * Uso: <HeroN />
+ *   intensidad: opacidad de las líneas (0–1). Por defecto 0.32.
+ *   personaje:  muestra al personaje a la derecha.
+ */
+import { assetUrl, rutaInterna } from '../../lib/asset-url';
+import { whatsappUrl } from '../../lib/seo';
+import { escenas, escenasCamara, ANCHO_ESCENA, ALTO_ESCENA } from '../../lib/construcciones';
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import SubtituloRota from './SubtituloRota.astro';
+import { sucursales } from '../../data/sucursales';
+
+interface Props {
+  intensidad?: number;
+  personaje?: boolean;
+}
+const { intensidad = 0.32, personaje = false } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 7);
+const estatica = escenas[0];
+const ciudades = [...new Set(sucursales.map((s) => s.ciudad))];
+/* Dice en texto visible qué vendemos y dónde (lo que el eslogan no dice). */
+const cobertura = `Acero y ferretería en ${ciudades.slice(0, -1).join(', ')} y ${ciudades.at(-1)}`;
+---
+
+<section
+  id="inicio"
+  data-hn
+  class="hn relative isolate overflow-hidden bg-neutral-0 text-text-primary"
+  style={`--hn-intensidad:${intensidad}`}
+>
+  <script type="application/json" data-hn-datos set:html={JSON.stringify(escenasCamara)} />
+
+  <!-- Fondo -->
+  <div aria-hidden="true" class="hn-reticula absolute inset-0 -z-30"></div>
+
+  <!-- Versión quieta (sin JS / movimiento reducido) -->
+  <svg data-hn-estatica viewBox={`0 0 ${ANCHO_ESCENA} ${ALTO_ESCENA}`} class="hn-estatica absolute -z-20" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {estatica.trazos.map((t) => <path d={t.d} class={t.tipo === 'cara' ? 'obra-cara' : 'obra-det'} />)}
+  </svg>
+
+  <!-- Lienzo de la cámara (lo llena el script) -->
+  <svg data-hn-lienzo class="hn-lienzo absolute inset-0 -z-20 size-full" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke={`url(#hn-tinta-${uid})`} aria-hidden="true">
+    <defs>
+      <linearGradient id={`hn-tinta-${uid}`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="800">
+        <stop offset="0" style="stop-color: var(--color-neutral-950)" />
+        <stop offset="0.82" style="stop-color: var(--color-neutral-800)" />
+        <stop offset="1" style="stop-color: var(--color-accent-primary)" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div aria-hidden="true" class="hn-velo absolute inset-0 -z-10"></div>
+  <!-- Degradado verde sutil, de abajo hacia arriba (sobre blanco va más bajo que en el Hero G) -->
+  <div aria-hidden="true" class="hn-verde pointer-events-none absolute inset-0 -z-10"></div>
+
+  <div class="container-page relative flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+    <div data-hn-texto class="relative z-10 w-full min-w-0 max-w-3xl">
+      <div class="w-fit max-w-full">
+      <h1
+        class="font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase"
+        style="text-shadow: 0 4px 30px rgb(255 255 255 / 70%)"
+      >
+        <span class="block">Hacemos</span>{' '}
+        <span class="block">posible</span>{' '}
+        <span class="block">tu proyecto</span>
+      </h1>
+      <SubtituloRota tono="claro" class="mt-4" />
+      <Cota texto={cobertura} ancho="completo" class="hn-cota mt-5 text-text-brand" />
+      </div>
+
+      <p data-escribe="parrafo" class="mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-primary">
+        Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
+        menudeo, fabricación de armex, corte de placa y servicio a domicilio.
+      </p>
+
+      <div class="mt-10 flex flex-wrap gap-4">
+        <Button data-escribe="boton" href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
+        <Button data-escribe="boton" href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
+      </div>
+    </div>
+
+    {
+      personaje && (
+        <img
+          src={assetUrl('/images/personaje.webp')}
+          alt="Personaje de Aceros Frontera con los brazos cruzados"
+          width="780"
+          height="1400"
+          loading="eager"
+          class="hn-personaje pointer-events-none absolute bottom-0 right-[clamp(1rem,4vw,2rem)] z-10 hidden h-[85%] w-auto lg:block"
+        />
+      )
+    }
+
+    <!-- Cajetín del plano: qué obra se está dibujando y cuál sigue -->
+    <div class="hn-cajetin absolute bottom-6 right-[clamp(1rem,4vw,2rem)] z-20 hidden sm:grid">
+      <span class="hn-celda"><small>Obra</small><b data-hn-nombre>{escenasCamara[0].nombre}</b></span>
+      <span class="hn-celda"><small>Plano</small><b><span data-hn-num>1</span> de {escenasCamara.length}</b></span>
+      <span class="hn-celda hn-celda-ir">
+        {escenasCamara.map((e, i) => (
+          <button type="button" data-hn-ir={i} class="hn-punto" aria-label={`Ver ${e.nombre}`}><i></i></button>
+        ))}
+      </span>
+    </div>
+  </div>
+
+</section>
+
+<script>
+  import { iniciarObra } from '../../lib/obra-camara';
+  import { escribir } from '../../lib/maquina-escribir';
+
+  /* Texto que se escribe solo (párrafo → botones). El título se ve desde el primer instante. */
+  const texto = document.querySelector<HTMLElement>('[data-hn-texto]');
+  if (texto) window.setTimeout(() => escribir(texto), 60);
+  import type { EscenaCamara } from '../../lib/construcciones';
+
+  const root = document.querySelector<HTMLElement>('[data-hn]');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root && !quieto) {
+    const escenas = JSON.parse(root.querySelector('[data-hn-datos]')!.textContent!) as EscenaCamara[];
+    const lienzo = root.querySelector<SVGSVGElement>('[data-hn-lienzo]')!;
+    const num = root.querySelector<HTMLElement>('[data-hn-num]')!;
+    const nombre = root.querySelector<HTMLElement>('[data-hn-nombre]')!;
+    const puntos = [...root.querySelectorAll<HTMLButtonElement>('[data-hn-ir]')];
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+
+    root.classList.add('is-camara');
+    const obra = iniciarObra({
+      svg: lienzo,
+      escenas,
+      centroX: () => (escritorio.matches ? 0.7 : 0.5),
+      /* En celular la obra va mucho más grande (puede salirse de la pantalla). */
+      escala: () => (escritorio.matches ? 1 : 2.2),
+      alCambiar: (i) => {
+        num.textContent = String(i + 1);
+        nombre.textContent = escenas[i].nombre;
+        puntos.forEach((p, k) => {
+          p.classList.toggle('is-on', k === i);
+          p.classList.toggle('is-hecho', k < i);
+        });
+      },
+      alAvanzar: (i, p) => puntos[i]?.style.setProperty('--p', p.toFixed(3)),
+    });
+    puntos.forEach((p, i) => p.addEventListener('click', () => obra.ir(i)));
+
+    /* Fuera de pantalla no se calcula nada */
+    new IntersectionObserver(([e]) => obra.pausar(!e.isIntersecting)).observe(root);
+  }
+</script>
+
+<style>
+  .hn-reticula {
+    background-image:
+      linear-gradient(to right, rgb(11 13 12 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(11 13 12 / 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .hn-estatica, .hn-lienzo { --fondo: var(--color-neutral-0); opacity: var(--hn-intensidad, 0.32); }
+  .hn-estatica { right: -4%; bottom: -2%; height: 112%; width: auto; aspect-ratio: 600 / 470; stroke: var(--color-neutral-950); }
+  @media (max-width: 63.99rem) { .hn-estatica { right: 50%; height: 90%; bottom: 0; transform: translateX(50%); } }
+  .hn.is-camara .hn-estatica { display: none; }
+  .hn-lienzo { display: none; contain: strict; transform: translateZ(0); }
+  .hn.is-camara .hn-lienzo { display: block; }
+
+  /* Las rutas las crea el script: estilos globales dentro de este hero. */
+  .hn :global(.obra-cara), .hn :global(.obra-det) { stroke-dasharray: 1 1; }
+  .hn :global(.obra-cara) { stroke-width: 1.3; fill: var(--fondo); }
+  .hn :global(.obra-det) { stroke-width: 0.8; fill: none; }
+  .hn-estatica :global(.obra-cara), .hn-estatica :global(.obra-det) { stroke-dasharray: none; }
+
+  .hn :global(.obra-humo circle) { fill: none; stroke: var(--color-neutral-950); stroke-width: 1; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .hn :global(.obra-humo.is-on circle) { animation: hn-humo 2.4s ease-out infinite; animation-delay: calc(var(--k) * 0.6s); }
+  @keyframes hn-humo {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(18px, -60px) scale(1.6); }
+  }
+
+  .hn-velo {
+    background:
+      linear-gradient(90deg, rgb(255 255 255 / 92%) 0%, rgb(255 255 255 / 72%) 38%, rgb(255 255 255 / 15%) 70%, transparent 100%),
+      linear-gradient(0deg, rgb(255 255 255 / 70%) 0%, transparent 30%);
+  }
+  @media (max-width: 63.99rem) {
+    .hn-velo { background: linear-gradient(180deg, rgb(255 255 255 / 70%) 0%, rgb(255 255 255 / 50%) 55%, rgb(255 255 255 / 30%) 100%); }
+    .hn-lienzo { opacity: calc(var(--hn-intensidad, 0.32) * 1.4); }
+  }
+
+  .hn-verde {
+    background: linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--color-green-800) 14%, transparent) 0%,
+      color-mix(in srgb, var(--color-green-800) 4%, transparent) 35%,
+      transparent 65%
+    );
+  }
+
+  .hn-punto { position: relative; display: block; width: 1.75rem; height: 12px; cursor: pointer; }
+  .hn-punto::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 3px; translate: 0 -50%; background: rgb(11 13 12 / 15%); }
+  .hn-punto i { position: absolute; inset-inline: 0; top: 50%; height: 3px; translate: 0 -50%; background: var(--color-accent-primary); transform: scaleX(0); transform-origin: left; }
+  .hn-punto.is-on i { transform: scaleX(var(--p, 0)); }
+  .hn-punto.is-hecho i { transform: scaleX(1); }
+
+  .hn-personaje { filter: drop-shadow(0 20px 40px rgb(0 0 0 / 60%)); }
+
+  /* La cota aparece cuando el titular termina de escribirse */
+  :global(html.js) .hn-cota { opacity: 0; animation: hn-cota 500ms ease 700ms forwards; }
+  @keyframes hn-cota { from { opacity: 0; clip-path: inset(0 50% 0 50%); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+  /* Cajetín: el recuadro de datos de un plano técnico */
+  .hn-cajetin { grid-template-columns: auto auto auto; border: 1px solid rgb(11 13 12 / 25%); background: rgb(255 255 255 / 75%); color: var(--color-text-primary); }
+  .hn-celda { display: flex; flex-direction: column; justify-content: center; gap: 0.1rem; padding: 0.5rem 0.9rem; font-size: 0.8125rem; line-height: 1.2; }
+  .hn-celda + .hn-celda { border-left: 1px solid rgb(11 13 12 / 25%); }
+  .hn-celda small { font-size: 0.6875rem; color: var(--color-text-secondary); }
+  .hn-celda b { font-weight: 600; min-width: 7.5rem; }
+  .hn-celda:nth-child(2) b { min-width: 0; }
+  .hn-celda-ir { flex-direction: row; align-items: center; gap: 0.35rem; }
+  @media (prefers-reduced-motion: reduce) { :global(html.js) .hn-cota { opacity: 1; animation: none; } }
+</style>

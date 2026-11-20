@@ -18,34 +18,28 @@ export interface Servicio {
 
 export const servicios: Servicio[] = [
   {
-    id: 'venta-y-distribucion',
-    titulo: 'Venta y distribución de acero',
+    id: 'fabricacion-de-lamina',
+    titulo: 'Fabricación de lámina',
     descripcion:
-      'Con 6 sucursales y centros de distribución en Tijuana, Mexicali y Ensenada, proveemos acero a todo Baja California.',
-    imagen: assetUrl('/images/dsc06636.webp'),
-    pictograma: 'viga',
-  },
-  {
-    id: 'productos-a-la-medida',
-    titulo: 'Productos a la medida',
-    descripcion:
-      'Fabricamos ARMEX, anillos para castillos, lámina R-72 y steel deck, y ofrecemos corte de placa a tu especificación.',
+      'Rolamos lámina acanalada R-72 y steel deck para techos, muros y entrepisos, cortada al largo exacto que necesitas.',
     imagen: assetUrl('/images/dsc06679.webp'),
     pictograma: 'lamina',
   },
   {
-    id: 'venta-de-pintura',
-    titulo: 'Venta de pintura',
-    descripcion: 'Las mejores marcas de pintura en distintas presentaciones para obra, herrería e industria.',
-    imagen: assetUrl('/images/dsc06771.webp'),
-    pictograma: 'bote',
+    id: 'fabricacion-de-armex',
+    titulo: 'Armex',
+    descripcion:
+      'Armados de varilla para castillos, cadenas y trabes, en medidas estándar y a la medida de tu proyecto, listos para colocar.',
+    imagen: assetUrl('/images/dsc06636.webp'),
+    pictograma: 'varilla',
   },
   {
-    id: 'fabricacion-de-armex',
-    titulo: 'Armex, castillos y anillos',
-    descripcion: 'Somos fabricantes de ARMEX y anillos para castillos, en medidas estándar y especiales.',
+    id: 'estribos',
+    titulo: 'Estribos',
+    descripcion:
+      'Estribos y anillos doblados en serie con medidas uniformes, listos para armar castillos y columnas y adelantar tu colado.',
     imagen: assetUrl('/images/dsc06588.webp'),
-    pictograma: 'varilla',
+    pictograma: 'malla',
   },
   {
     id: 'corte-de-placa',
@@ -55,10 +49,17 @@ export const servicios: Servicio[] = [
     pictograma: 'placa',
   },
   {
-    id: 'venta-y-servicio-de-herramienta',
-    titulo: 'Venta y servicio de herramienta',
+    id: 'venta-y-distribucion',
+    titulo: 'Distribución de acero',
     descripcion:
-      'Venta y reparación de maquinaria. Centro de servicio autorizado de Makita, Bosch y Lincoln Electric.',
+      'Con 6 sucursales y centros de distribución en Tijuana, Mexicali y Ensenada, proveemos acero a todo Baja California.',
+    imagen: assetUrl('/images/hero-bg.webp'),
+    pictograma: 'viga',
+  },
+  {
+    id: 'venta-y-servicio-de-herramienta',
+    titulo: 'Centro de servicio autorizado',
+    descripcion: 'Venta y reparación de herramienta y maquinaria. Centro de servicio autorizado de Makita, Bosch y Lincoln Electric.',
     imagen: assetUrl('/images/dsc06784.webp'),
     pictograma: 'taladro',
   },

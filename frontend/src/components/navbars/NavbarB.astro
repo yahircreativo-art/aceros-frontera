@@ -22,7 +22,8 @@ const { productos } = Astro.props;
 const { familiasNav, catalogo } = prepararNav(productos);
 ---
 
-<header data-nb class="nb pointer-events-none sticky top-0 z-40 px-3 pt-3 sm:px-4">
+<!-- Alto 0: la isla flota sobre la primera sección en vez de dejar una franja vacía arriba. -->
+<header data-nb class="nb pointer-events-none sticky top-3 z-40 h-0 px-3 sm:px-4">
   <div data-nb-island class="nb-island pointer-events-auto mx-auto bg-neutral-950 text-text-inverse">
     <!-- Barra -->
     <div class="flex h-16 items-center gap-3 pl-4 pr-2 sm:pl-5">
@@ -170,6 +171,11 @@ const { familiasNav, catalogo } = prepararNav(productos);
   .nb.is-scrolled .nb-island { max-width: 58rem; }
   .nb .nb-island.is-open { max-width: 72rem; border-radius: 1.75rem; box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 30px 80px rgb(0 0 0 / 55%); }
   @media (max-width: 63.99rem) { .nb.is-scrolled .nb-island { max-width: 72rem; } }
+
+  /* La isla flota sobre la primera sección: esta se extiende por detrás (sin franja blanca)
+     y su contenido baja lo que mide la isla (12 px de aire + 64 px de barra). */
+  :global(.nb ~ main > :first-child:not(.contents)),
+  :global(.nb ~ main > .contents:first-child > :first-child) { padding-top: 4.75rem; }
 
   .nb-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 600ms var(--ease); }
   .is-open .nb-panel { grid-template-rows: 1fr; }

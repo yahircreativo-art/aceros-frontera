@@ -80,9 +80,13 @@ export interface OpcionesObra {
   escala?: () => number;
   alCambiar?: (indice: number) => void;
   alAvanzar?: (indice: number, progreso: number) => void;
+  /** Dibuja la primera escena una sola vez y se queda en el último cuadro (sin borrar ni pasar a la siguiente). */
+  unaVez?: boolean;
+  /** Con `unaVez`: se llama una vez, cuando la obra queda terminada. */
+  alTerminar?: () => void;
 }
 
-export function iniciarObra({ svg, escenas, centroX = () => 0.5, escala: escalaExtra = () => 1, alCambiar, alAvanzar }: OpcionesObra) {
+export function iniciarObra({ svg, escenas, centroX = () => 0.5, escala: escalaExtra = () => 1, alCambiar, alAvanzar, unaVez = false, alTerminar }: OpcionesObra) {
   const listas = escenas.map(preparar);
   const max = Math.max(...listas.map((l) => l.piezas.length));
   const capa = document.createElementNS(SVG, 'g');
@@ -130,6 +134,7 @@ export function iniciarObra({ svg, escenas, centroX = () => 0.5, escala: escalaE
   let pausado = false;
   let pausaDesde = 0;
   let raf = 0;
+  let terminada = false;
   alCambiar?.(0);
 
   const n = max;
@@ -144,14 +149,19 @@ export function iniciarObra({ svg, escenas, centroX = () => 0.5, escala: escalaE
     raf = requestAnimationFrame(cuadro);
     let t = (ahora - inicio) / 1000;
     let L = listas[indice];
-    if (t > L.total) {
+    if (unaVez) {
+      if (t >= L.dibujo) {
+        t = L.dibujo;
+        if (!terminada) { terminada = true; alTerminar?.(); }
+      }
+    } else if (t > L.total) {
       indice = (indice + 1) % listas.length;
       inicio = ahora;
       t = 0;
       L = listas[indice];
       alCambiar?.(indice);
     }
-    alAvanzar?.(indice, t / L.total);
+    alAvanzar?.(indice, unaVez ? t / L.dibujo : t / L.total);
 
     px += (tpx - px) * 0.04;
     py += (tpy - py) * 0.04;

@@ -9,14 +9,20 @@
  *
  * Sin JavaScript se ven todos los servicios abiertos, uno debajo de otro.
  *
+ * El servicio activo lleva el isotipo de la empresa en amarillo.
+ *
  * Uso: <ServiciosA />
  */
 import Button from '../ui/Button.astro';
 import Cota from '../ui/Cota.astro';
 import { servicios, infoUrl, cotaServicios } from './servicios-data';
+import { assetUrl } from '../../lib/asset-url';
+
+/* Isotipo de la empresa (la X) como máscara: se pinta de un solo color, amarillo. */
+const isotipo = `url("${assetUrl('/images/isotipo-mascara.webp')}")`;
 ---
 
-<section id="servicios" data-sva class="sva relative scroll-mt-24 bg-neutral-950 py-20 text-text-inverse lg:py-28">
+<section id="servicios" data-sva style={`--sva-isotipo:${isotipo}`} class="sva relative scroll-mt-24 bg-neutral-950 py-20 text-text-inverse lg:py-28">
   <div class="container-page">
     <Cota texto={cotaServicios} class="text-text-accent" />
     <h2 class="mt-5 max-w-[18ch] font-display text-[clamp(2.75rem,6vw,5rem)] leading-[0.9] font-extrabold uppercase">
@@ -69,22 +75,42 @@ import { servicios, infoUrl, cotaServicios } from './servicios-data';
     const escritorio = window.matchMedia('(min-width: 64rem)');
     let actual = 0;
 
+    /* Barrido sobre barrido: solo la lámina que sale queda debajo (is-sale); las demás
+       se esconden al instante. La que entra siempre arranca cerrada y hace su corte
+       diagonal completo, aunque la anterior no haya terminado. */
     const ir = (i: number, alternar = false) => {
       const cerrar = alternar && !escritorio.matches && i === actual && botones[i].getAttribute('aria-expanded') === 'true';
+      const cambia = i !== actual;
+      const sale = actual;
       actual = i;
       botones.forEach((b, k) => b.setAttribute('aria-expanded', String(!cerrar && k === i)));
+      if (!cambia) return;
       paneles.forEach((p, k) => {
         const on = k === i;
-        p.classList.toggle('is-on', on);
+        p.classList.remove('is-on', 'is-sale');
+        if (k === sale) p.classList.add('is-sale');
         p.toggleAttribute('aria-hidden', !on);
         p.querySelector('a')?.setAttribute('tabindex', on ? '0' : '-1');
       });
+      const entra = paneles[i];
+      if (!entra) return;
+      void entra.offsetWidth; // fija el estado cerrado antes de animar
+      entra.classList.add('is-on');
     };
 
+    /* Intención de hover: el cambio solo ocurre si el cursor se queda ~100 ms sobre un
+       servicio; al cruzar la lista rápido no se dispara nada. Clic y teclado: inmediato. */
+    let espera = 0;
+    const cancelar = () => window.clearTimeout(espera);
     botones.forEach((b, i) => {
-      b.addEventListener('click', () => ir(i, true));
-      b.addEventListener('pointerenter', () => { if (escritorio.matches) ir(i); });
-      b.addEventListener('focus', () => { if (escritorio.matches) ir(i); });
+      b.addEventListener('click', () => { cancelar(); ir(i, true); });
+      b.addEventListener('pointerenter', (e) => {
+        if (!escritorio.matches || e.pointerType === 'touch') return;
+        cancelar();
+        espera = window.setTimeout(() => ir(i), 100);
+      });
+      b.addEventListener('pointerleave', cancelar);
+      b.addEventListener('focus', () => { if (escritorio.matches) { cancelar(); ir(i); } });
     });
 
     /* Los botones de las láminas ocultas no reciben foco. */
@@ -102,17 +128,28 @@ import { servicios, infoUrl, cotaServicios } from './servicios-data';
 
 <style>
   .sva-lamina { min-height: 34rem; }
-  .sva-panel { clip-path: polygon(0 0, 0 0, -12% calc(100% - 36px), -12% 100%, 0 100%); transition: clip-path 700ms cubic-bezier(0.65, 0, 0.35, 1); z-index: 0; }
-  .sva-panel.is-on { z-index: 1; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0 100%); }
-  /* Corte diagonal: el panel entra barrido en ángulo. */
-  .sva-panel:not(.is-on) { transition-duration: 0ms; transition-delay: 700ms; }
+  /* Cerrada por defecto y sin transición: al dejar de estar activa se esconde al instante. */
+  .sva-panel { clip-path: polygon(0 0, 0 0, -12% calc(100% - 36px), -12% 100%, 0 100%); z-index: 0; transition: none; }
+  /* La que sale: completa, debajo de la que entra. */
+  .sva-panel.is-sale { z-index: 1; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0 100%); }
+  /* La que entra: corte diagonal, barrida en ángulo. */
+  .sva-panel.is-on { z-index: 2; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 36px), calc(100% - 36px) 100%, 0 100%); transition: clip-path 700ms cubic-bezier(0.65, 0, 0.35, 1); }
 
   .sva-item { color: var(--color-text-inverse-muted); cursor: pointer; transition: color 200ms, padding 300ms; }
   .sva-item:hover, .sva-item[aria-expanded='true'] { color: var(--color-text-inverse); }
   @media (min-width: 64rem) { .sva-item[aria-expanded='true'] { padding-left: 1rem; } }
   .sva-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
-  .sva-marca { width: 1.5rem; height: 3px; flex-shrink: 0; background: rgb(255 255 255 / 0.2); transition: background-color 200ms, width 300ms; }
-  .sva-item[aria-expanded='true'] .sva-marca { width: 3rem; background: var(--color-accent-primary); }
+  /* Marca del servicio activo: el isotipo de la empresa en amarillo (sin la línea).
+     Aparece girando un poco y creciendo desde el centro. */
+  .sva-marca {
+    width: clamp(2rem, 2.6vw, 2.5rem); aspect-ratio: 1; flex-shrink: 0;
+    background: var(--color-accent-primary);
+    -webkit-mask: var(--sva-isotipo) center / contain no-repeat;
+    mask: var(--sva-isotipo) center / contain no-repeat;
+    opacity: 0; scale: 0.6; rotate: -45deg;
+    transition: opacity 250ms ease, scale 400ms cubic-bezier(0.2, 0.8, 0.2, 1), rotate 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .sva-item[aria-expanded='true'] .sva-marca { opacity: 1; scale: 1; rotate: 0deg; }
 
   /* Acordeón de celular: con JS solo el abierto muestra su panel. */
   .sva.is-js .sva-movil { display: none; }
@@ -121,7 +158,7 @@ import { servicios, infoUrl, cotaServicios } from './servicios-data';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sva-panel, .sva-panel:not(.is-on) { transition: none; }
+    .sva-panel, .sva-panel.is-on { transition: none; }
     .sva-item, .sva-marca { transition: none; }
   }
 </style>
