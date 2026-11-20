@@ -1,0 +1,236 @@
+---
+/**
+ * RESEÑAS F · "Celular"
+ * Fondo claro. A la izquierda, el titular con la calificación real de Google.
+ * A la derecha, un celular con la ficha de la tienda: calificación arriba y
+ * la lista de reseñas que se desplaza sola. Cada 3 s una reseña "sale" del
+ * celular como tarjeta flotante y se acomoda a un lado (arriba a la
+ * derecha, a la izquierda, abajo a la derecha); la anterior de ese lugar
+ * se desvanece. Cada reseña lleva icono de usuario (hombre o mujer),
+ * nombre, estrellas, fecha y texto.
+ * En celular el teléfono va centrado y las tarjetas salen una a la vez
+ * sobre su parte de abajo.
+ *
+ * Se pausa fuera de pantalla y con la pestaña oculta. Sin JavaScript o con
+ * "reducir movimiento": tres tarjetas fijas y la lista quieta.
+ *
+ * ⚠ Las reseñas de src/data/resenas.ts hoy son de ejemplo: se muestra el
+ * aviso y no debe publicarse hasta cambiarlas por las reales.
+ *
+ * Uso: <ResenasF />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Estrellas from './Estrellas.astro';
+import AvisoEjemplo from './AvisoEjemplo.astro';
+import AvatarUsuario from './AvatarUsuario.astro';
+import { resenas5, fichaGoogle, cotaGoogle, calificacionTexto, sucursalDe } from './resenas-data';
+import { sucursales } from '../../data/sucursales';
+
+const tonos = ['verde', 'amarillo', 'negro'] as const;
+const tono = (i: number) => tonos[i % tonos.length];
+const sucursalFicha = sucursales.find((s) => s.id === fichaGoogle.sucursal)?.nombre ?? '';
+---
+
+<section id="resenas" data-rsf class="rsf relative scroll-mt-24 overflow-hidden bg-neutral-100 py-20 text-text-primary lg:py-24">
+  <div class="container-page grid grid-cols-[minmax(0,1fr)] items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <div class="min-w-0">
+      <Cota texto={cotaGoogle} class="text-text-brand" />
+      <h2 class="mt-5 max-w-[14ch] font-display text-[clamp(2.75rem,5.5vw,4.75rem)] leading-[0.9] font-extrabold uppercase">
+        Lo que dicen quienes ya compraron
+      </h2>
+      <p class="mt-5 max-w-md type-body-m text-text-secondary">
+        Herreros, constructores y clientes de mostrador que ya surten su obra con nosotros.
+      </p>
+      <AvisoEjemplo class="mt-5" />
+      <Button href={fichaGoogle.url} target="_blank" variant="primary" size="lg" icon="star" iconPosition="left" label="Ver reseñas en Google" class="mt-8" />
+    </div>
+
+    <!-- Escena: celular + tarjetas que salen de él -->
+    <div class="rsf-escena relative min-w-0" aria-label="Reseñas de clientes">
+      <!-- Celular (ilustración) -->
+      <div class="rsf-cel" aria-hidden="true">
+        <div class="rsf-pantalla">
+          <span class="rsf-isla"></span>
+          <div class="rsf-cabeza">
+            <p class="font-display text-lg leading-none font-extrabold uppercase">Aceros Frontera</p>
+            <p class="mt-1 text-[0.7rem] text-text-secondary">{sucursalFicha}</p>
+            <div class="mt-3 flex items-center gap-2">
+              <span class="font-display text-3xl leading-none font-extrabold">{calificacionTexto}</span>
+              <Estrellas n={fichaGoogle.calificacion} tam="size-3.5" class="text-accent-primary" />
+            </div>
+            <p class="rsf-pestana mt-3">Reseñas</p>
+          </div>
+          <div class="rsf-lista-ventana">
+            <ul class="rsf-lista">
+              {[...resenas5, ...resenas5].map((r, i) => (
+                <li class="rsf-fila">
+                  <span class="flex items-center gap-2">
+                    <AvatarUsuario genero={r.genero} tono={tono(i % resenas5.length)} class="size-7" />
+                    <span class="min-w-0">
+                      <span class="block truncate text-[0.72rem] font-semibold">{r.nombre}</span>
+                      <span class="flex items-center gap-1.5"><Estrellas n={r.estrellas} tam="size-2.5" class="text-accent-primary" /><span class="text-[0.6rem] text-text-secondary">{r.fecha}</span></span>
+                    </span>
+                  </span>
+                  <span class="rsf-fila-txt mt-1.5 block text-[0.68rem] leading-snug text-text-secondary">{r.texto}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjetas flotantes: las tres primeras ya colocadas (sin JS se quedan así) -->
+      <ul class="rsf-flotantes" role="list">
+        {resenas5.map((r, i) => (
+          <li data-rsf-tarjeta={i} class:list={['rsf-flota', i < 3 && `is-on rsf-s${i}`]}>
+            <article class="rsf-tarjeta chamfer [--chamfer:16px]">
+              <header class="flex items-center gap-3">
+                <AvatarUsuario genero={r.genero} tono={tono(i)} class="size-11" />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold">{r.nombre}</p>
+                  <p class="text-xs text-text-secondary">{sucursalDe(r)}</p>
+                </div>
+              </header>
+              <div class="mt-3 flex items-center gap-2">
+                <Estrellas n={r.estrellas} class="text-accent-primary" />
+                <span class="text-xs text-text-secondary">{r.fecha}</span>
+              </div>
+              <blockquote class="rsf-txt mt-2 type-body-s"><p>{r.texto}</p></blockquote>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rsf]');
+  const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root && !quieto) {
+    root.classList.add('is-vivo');
+    const tarjetas = [...root.querySelectorAll<HTMLElement>('[data-rsf-tarjeta]')];
+    const escritorio = window.matchMedia('(min-width: 64rem)');
+    const clasesLugar = ['rsf-s0', 'rsf-s1', 'rsf-s2'];
+    /* Escritorio: 3 lugares alrededor del celular. Celular: 1 lugar (una tarjeta a la vez). */
+    let lugares = 3;
+    let enLugar: number[] = [];
+    let siguiente = 0;
+    let lugar = 0;
+
+    const reiniciar = () => {
+      lugares = Math.min(escritorio.matches ? 3 : 1, tarjetas.length);
+      tarjetas.forEach((t) => t.classList.remove('is-on', 'is-off', ...clasesLugar));
+      enLugar = [];
+      for (let k = 0; k < lugares; k++) {
+        tarjetas[k].classList.add(clasesLugar[k], 'is-on');
+        enLugar.push(k);
+      }
+      siguiente = lugares % tarjetas.length;
+      lugar = 0;
+    };
+
+    const sacar = () => {
+      if (tarjetas.length <= lugares) return;
+      const vieja = tarjetas[enLugar[lugar]];
+      const claseVieja = clasesLugar[lugar];
+      vieja.classList.replace('is-on', 'is-off');
+      window.setTimeout(() => {
+        if (!vieja.classList.contains('is-on')) vieja.classList.remove('is-off', claseVieja);
+      }, 700);
+
+      const nueva = tarjetas[siguiente];
+      nueva.classList.remove('is-off', ...clasesLugar);
+      nueva.classList.add(clasesLugar[lugar]);
+      void nueva.offsetWidth; // parte desde dentro del celular
+      nueva.classList.add('is-on');
+      enLugar[lugar] = siguiente;
+
+      /* La siguiente: la que sigue en la lista que no esté a la vista. */
+      do siguiente = (siguiente + 1) % tarjetas.length;
+      while (enLugar.includes(siguiente));
+      lugar = (lugar + 1) % lugares;
+    };
+
+    /* Pausa fuera de pantalla o con la pestaña oculta. */
+    let visible = false;
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      root.classList.toggle('is-pausa', !visible);
+    }, { threshold: 0.2 }).observe(root);
+    window.setInterval(() => {
+      if (visible && !document.hidden) sacar();
+    }, 3000);
+    escritorio.addEventListener('change', reiniciar);
+    reiniciar();
+  }
+</script>
+
+<style>
+  /* --- Escena --- */
+  .rsf-escena { height: 40rem; display: grid; place-items: center; }
+
+  /* --- Celular (ilustración de un teléfono genérico) --- */
+  .rsf-cel {
+    position: relative; z-index: 1; width: 18.5rem; height: 37rem; padding: 0.6rem;
+    border-radius: 2.75rem; background: var(--color-neutral-950);
+    box-shadow: 0 40px 80px -30px rgb(8 18 13 / 55%), inset 0 0 0 2px rgb(255 255 255 / 12%);
+  }
+  .rsf-pantalla { position: relative; height: 100%; overflow: hidden; border-radius: 2.2rem; background: var(--color-neutral-0); display: flex; flex-direction: column; }
+  .rsf-isla { position: absolute; left: 50%; top: 0.6rem; width: 5.5rem; height: 1.4rem; translate: -50% 0; border-radius: 1rem; background: var(--color-neutral-950); z-index: 2; }
+  .rsf-cabeza { padding: 2.75rem 1.1rem 0; }
+  .rsf-pestana {
+    width: fit-content; padding-bottom: 0.4rem; border-bottom: 2px solid var(--color-green-800);
+    font-size: 0.72rem; font-weight: 700; color: var(--color-text-brand);
+  }
+  .rsf-lista-ventana {
+    position: relative; flex: 1; overflow: hidden; border-top: 1px solid var(--color-border-default);
+    mask-image: linear-gradient(to bottom, transparent, #000 1.5rem, #000 calc(100% - 3rem), transparent);
+  }
+  .rsf-fila { padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--color-border-default); }
+  .rsf-fila-txt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* La lista va duplicada: al subir la mitad vuelve a empezar sin brinco. */
+  .rsf.is-vivo .rsf-lista { animation: rsf-sube 40s linear infinite; }
+  .rsf.is-pausa .rsf-lista { animation-play-state: paused; }
+  @keyframes rsf-sube { to { translate: 0 -50%; } }
+
+  /* --- Tarjetas flotantes --- */
+  .rsf-flotantes { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  .rsf-flota {
+    position: absolute; width: min(19rem, 80%);
+    filter: drop-shadow(0 22px 30px rgb(8 18 13 / 22%));
+    opacity: 0; visibility: hidden;
+  }
+  .rsf-tarjeta { background: var(--color-neutral-0); padding: 1.1rem 1.2rem 1.25rem; }
+  .rsf-txt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--color-text-primary); }
+
+  /* Lugares (escritorio): arriba a la derecha, a la izquierda, abajo a la derecha;
+     así no tapan el nombre y la calificación de la pantalla.
+     --dx/--dy: desde dónde sale (el centro del celular). */
+  .rsf-s0 { right: 0; top: 6%; --dx: -9rem; --dy: 8rem; --r: 2.5deg; }
+  .rsf-s1 { left: 0; top: 40%; --dx: 9rem; --dy: -1rem; --r: -2.5deg; }
+  .rsf-s2 { right: 3%; bottom: 6%; --dx: -9rem; --dy: -8rem; --r: -1.5deg; }
+
+  .rsf-flota.is-on { opacity: 1; visibility: visible; rotate: var(--r); }
+  /* Con JS: salen desde el celular con un pequeño rebote y se van desvaneciendo. */
+  .rsf.is-vivo .rsf-flota { translate: var(--dx) var(--dy); scale: 0.55; rotate: 0deg; }
+  .rsf.is-vivo .rsf-flota.is-on {
+    translate: 0 0; scale: 1; rotate: var(--r);
+    transition: translate 800ms cubic-bezier(0.34, 1.35, 0.5, 1), scale 800ms cubic-bezier(0.34, 1.35, 0.5, 1), rotate 800ms ease, opacity 300ms ease;
+  }
+  .rsf.is-vivo .rsf-flota.is-off {
+    visibility: visible; opacity: 0; translate: 0 -1rem; scale: 0.95; rotate: var(--r);
+    transition: opacity 600ms ease, translate 600ms ease, scale 600ms ease;
+  }
+
+  /* Celular y tablet: teléfono más chico y una tarjeta a la vez, sobre su parte de abajo. */
+  @media (max-width: 63.99rem) {
+    .rsf-escena { height: 36rem; }
+    .rsf-cel { width: 16rem; height: 32rem; border-radius: 2.4rem; }
+    .rsf-pantalla { border-radius: 1.9rem; }
+    .rsf-s0, .rsf-s1, .rsf-s2 { left: 50%; right: auto; top: auto; bottom: 1.5rem; margin-left: min(-9.5rem, -40%); --dx: 0rem; --dy: -8rem; --r: 0deg; }
+    /* Sin JS solo se queda la primera. */
+    .rsf:not(.is-vivo) .rsf-s1, .rsf:not(.is-vivo) .rsf-s2 { display: none; }
+  }
+</style>

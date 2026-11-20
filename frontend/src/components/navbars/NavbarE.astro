@@ -211,22 +211,26 @@ const avisos = [
       vistas.forEach((v) => (v.hidden = v.dataset.neView !== vista));
       if (vista === 'catalogo') requestAnimationFrame(() => moverMarcador(tabs.find((t) => t.getAttribute('aria-selected') === 'true')!));
     };
+    /* Hover solo con mouse de verdad. En pantallas táctiles (iPad) el toque dispara un
+       "mouseenter" simulado que abría el menú y luego el clic lo cerraba: había que tocar
+       dos veces. Con pointerType === 'mouse' el toque solo pasa por el clic. */
+    const esMouse = (e: PointerEvent) => e.pointerType === 'mouse';
     triggers.forEach((t) => {
       const vista = t.dataset.neTrigger!;
       t.addEventListener('click', () => alternarMega(abierta === vista ? null : vista));
-      t.addEventListener('mouseenter', () => alternarMega(vista));
+      t.addEventListener('pointerenter', (e) => esMouse(e) && alternarMega(vista));
     });
-    root.querySelectorAll('[data-ne-plain]').forEach((a) => a.addEventListener('mouseenter', () => abierta !== 'buscar' && alternarMega(null)));
+    root.querySelectorAll<HTMLElement>('[data-ne-plain]').forEach((a) => a.addEventListener('pointerenter', (e) => esMouse(e) && abierta !== 'buscar' && alternarMega(null)));
     /* El buscador solo se cierra con clic fuera, Escape o la lupa: no al sacar el cursor mientras se escribe. */
-    root.addEventListener('mouseleave', () => {
-      if (abierta !== 'buscar') tCerrar = window.setTimeout(() => alternarMega(null), 300);
+    root.addEventListener('pointerleave', (e) => {
+      if (esMouse(e) && abierta !== 'buscar') tCerrar = window.setTimeout(() => alternarMega(null), 300);
     });
     lupa.addEventListener('click', () => {
       alternarMega(abierta === 'buscar' ? null : 'buscar');
       if (abierta === 'buscar') window.setTimeout(() => mega.querySelector<HTMLInputElement>('[data-ne-view="buscar"] input')?.focus(), 80);
     });
-    root.addEventListener('mouseenter', () => window.clearTimeout(tCerrar));
-    document.addEventListener('mousedown', (e) => {
+    root.addEventListener('pointerenter', () => window.clearTimeout(tCerrar));
+    document.addEventListener('pointerdown', (e) => {
       if (mega.classList.contains('is-open') && !root.contains(e.target as Node)) alternarMega(null);
     });
 
@@ -245,7 +249,7 @@ const avisos = [
       moverMarcador(t);
     };
     tabs.forEach((t) => {
-      t.addEventListener('mouseenter', () => activar(t));
+      t.addEventListener('pointerenter', (e) => esMouse(e) && activar(t));
       t.addEventListener('click', () => activar(t));
       t.addEventListener('keydown', (e) => {
         const d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;

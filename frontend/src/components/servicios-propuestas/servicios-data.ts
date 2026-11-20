@@ -70,3 +70,9 @@ export const infoUrl = (s: Servicio) => whatsappUrl(`Hola, quiero información s
 
 /** Dato real para la cota. */
 export const cotaServicios = `${servicios.length} servicios para tu obra o taller`;
+
+/** Encabezado de la sección "Infraestructura que respalda" (home/Servicios.astro y propuestas F–J). */
+export const encabezado = {
+  titulo: 'Infraestructura que respalda',
+  descripcion: 'Cobertura, versatilidad en transformación y soporte técnico para optimizar tus tiempos y reducir mermas.',
+};

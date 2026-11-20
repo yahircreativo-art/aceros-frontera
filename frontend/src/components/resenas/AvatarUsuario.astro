@@ -1,0 +1,44 @@
+---
+/**
+ * Icono de usuario para las reseñas: silueta de hombre (cabello corto) o de
+ * mujer (cabello largo), en un cuadro con esquina cortada.
+ *
+ * <AvatarUsuario genero="mujer" tono="amarillo" class="size-10" />
+ */
+interface Props {
+  genero?: 'hombre' | 'mujer';
+  tono?: 'verde' | 'amarillo' | 'negro';
+  class?: string;
+}
+const { genero = 'hombre', tono = 'verde', class: clase = 'size-10' } = Astro.props;
+---
+
+<span class:list={['av chamfer inline-grid shrink-0 place-items-center overflow-hidden [--chamfer:6px]', `av-${tono}`, clase]} aria-hidden="true">
+  <svg viewBox="0 0 40 40" class="size-full">
+    {genero === 'mujer' ? (
+      <>
+        <!-- Cabello largo detrás de la cabeza -->
+        <path class="av-pelo" d="M10.5 30 C9 22 10 10.5 20 10 C30 10.5 31 22 29.5 30 Z" />
+        <path class="av-piel" d="M8 40 C8 32 13 28.5 20 28.5 C27 28.5 32 32 32 40 Z" />
+        <circle class="av-piel" cx="20" cy="18.5" r="6.5" />
+        <!-- Fleco -->
+        <path class="av-pelo" d="M13.3 17.5 C13.5 12.5 17 11 20.5 11.2 C24 11.4 26.5 13.5 26.7 17 C23.5 16.6 20 15 18 13.6 C17 15.6 15.5 16.9 13.3 17.5 Z" />
+      </>
+    ) : (
+      <>
+        <path class="av-piel" d="M7 40 C7 31.5 12.5 28 20 28 C27.5 28 33 31.5 33 40 Z" />
+        <circle class="av-piel" cx="20" cy="18" r="7" />
+        <!-- Cabello corto -->
+        <path class="av-pelo" d="M12.9 17.2 C12.4 12.2 15.6 9.6 20 9.6 C24.6 9.6 27.8 12.2 27.1 17.2 C25.6 14.6 22.8 13.8 20 13.8 C17.2 13.8 14.4 14.6 12.9 17.2 Z" />
+      </>
+    )}
+  </svg>
+</span>
+
+<style>
+  .av-verde { background: var(--color-green-800); --piel: var(--color-neutral-0); --pelo: var(--color-accent-primary); }
+  .av-amarillo { background: var(--color-accent-primary); --piel: var(--color-neutral-0); --pelo: var(--color-neutral-950); }
+  .av-negro { background: var(--color-neutral-950); --piel: var(--color-neutral-0); --pelo: var(--color-accent-primary); }
+  .av-piel { fill: var(--piel); }
+  .av-pelo { fill: var(--pelo); }
+</style>

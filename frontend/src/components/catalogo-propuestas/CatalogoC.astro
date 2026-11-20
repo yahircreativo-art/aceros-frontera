@@ -4,8 +4,9 @@
  * En escritorio la sección se queda fija y, al bajar con el scroll, las
  * tarjetas de familia viajan de derecha a izquierda. La tarjeta más cercana
  * al centro crece, se ilumina y gira su pictograma; las demás se encogen.
- * Contador "03 / 07" y barra de avance. En celular: carrusel deslizable con
- * imán (scroll-snap).
+ * Contador "03 / 07" y barra de avance. En celular y tablet: carrusel que se
+ * desliza con el dedo, con imán (scroll-snap); se asoma la tarjeta siguiente y
+ * la del centro crece, se ilumina y gira su pictograma, igual que en escritorio.
  */
 import type { Producto } from '../../lib/types';
 import Pictogram from '../ui/Pictogram.astro';
@@ -112,6 +113,36 @@ const check = `${assetUrl('/icons.svg')}#check`;
     window.addEventListener('scroll', () => {
       if (!pendiente) { pendiente = true; requestAnimationFrame(pintar); }
     }, { passive: true });
+
+    /* Celular y tablet: carrusel vivo. Al deslizar, la tarjeta más cercana al centro
+       de la ventana crece y se ilumina; las demás se encogen un poco. */
+    let pendienteMovil = false;
+    const pintarMovil = () => {
+      pendienteMovil = false;
+      if (escritorio.matches || quieto) return;
+      const v = ventana.getBoundingClientRect();
+      const centro = v.left + v.width / 2;
+      let cerca = 0, min = Infinity;
+      cards.forEach((c, i) => {
+        const b = c.getBoundingClientRect();
+        const d = Math.abs(b.left + b.width / 2 - centro) / b.width;
+        c.style.setProperty('--cerca', Math.max(0, 1 - d).toFixed(3));
+        if (d < min) { min = d; cerca = i; }
+      });
+      cards.forEach((c, i) => c.classList.toggle('is-centro', i === cerca));
+    };
+    const modoMovil = () => {
+      const on = !escritorio.matches && !quieto;
+      sec.classList.toggle('is-carrusel', on);
+      if (on) pintarMovil();
+      else cards.forEach((c) => c.style.removeProperty('--cerca'));
+    };
+    ventana.addEventListener('scroll', () => {
+      if (!pendienteMovil) { pendienteMovil = true; requestAnimationFrame(pintarMovil); }
+    }, { passive: true });
+    window.addEventListener('resize', pintarMovil);
+    escritorio.addEventListener('change', modoMovil);
+    modoMovil();
     window.addEventListener('resize', medir);
     escritorio.addEventListener('change', medir);
     medir();
@@ -127,7 +158,7 @@ const check = `${assetUrl('/icons.svg')}#check`;
   .cac-card {
     --cerca: 1;
     width: min(82vw, 23rem); height: min(62svh, 32rem); min-height: 26rem; flex-shrink: 0; scroll-snap-align: center;
-    overflow: hidden; border-radius: 1.75rem; transform-origin: center bottom;
+    overflow: hidden; border-radius: 0; transform-origin: center bottom;
   }
   .cac.is-recorrido .cac-card {
     --cerca: 0;
@@ -136,18 +167,33 @@ const check = `${assetUrl('/icons.svg')}#check`;
     filter: saturate(calc(0.5 + var(--cerca) * 0.5));
     transition: scale 200ms linear, rotate 200ms linear;
   }
+  /* Carrusel vivo (celular y tablet): tarjetas más angostas para que se asome la
+     siguiente; la del centro a tamaño completo y las demás encogidas y apagadas. */
+  @media (max-width: 63.99rem) {
+    .cac-card { width: min(74vw, 22rem); }
+  }
+  .cac.is-carrusel .cac-card {
+    --cerca: 0;
+    transform-origin: center center;
+    scale: calc(0.88 + var(--cerca) * 0.12);
+    filter: saturate(calc(0.5 + var(--cerca) * 0.5)) brightness(calc(0.75 + var(--cerca) * 0.25));
+    transition: scale 150ms linear, filter 150ms linear;
+  }
   .cac-t1 { background: var(--color-green-800); }
   .cac-t2 { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
   .cac-t3 { background: var(--color-neutral-0); color: var(--color-neutral-1000); }
   .cac-t4 { background: var(--color-neutral-800); }
   .cac-final { background: transparent; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 20%); }
 
-  .cac-ico { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; border-radius: 1.25rem; background: rgb(0 0 0 / 15%); transition: rotate 600ms cubic-bezier(0.34, 1.5, 0.5, 1), scale 600ms cubic-bezier(0.34, 1.5, 0.5, 1); }
+  .cac-ico { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; border-radius: 0; background: rgb(0 0 0 / 15%); transition: rotate 600ms cubic-bezier(0.34, 1.5, 0.5, 1), scale 600ms cubic-bezier(0.34, 1.5, 0.5, 1); }
   .cac-card.is-centro .cac-ico, .cac-card:hover .cac-ico { rotate: -12deg; scale: 1.12; }
   .cac-ver { display: inline-flex; width: fit-content; padding-bottom: 0.2rem; border-bottom: 2px solid currentColor; transition: gap 200ms, padding 200ms; }
   .cac-card a:hover .cac-ver { padding-left: 0.4rem; }
-  .cac-btn { display: block; padding: 0.9rem 1.2rem; border-radius: 999px; text-align: center; font-weight: 600; transition: transform 200ms; }
+  /* Botón de marca: esquina cortada (chaflán), como los demás botones del sitio. */
+  .cac-btn { display: block; padding: 0.9rem 1.2rem; border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); text-align: center; font-weight: 600; transition: transform 200ms; }
   .cac-btn:hover { transform: scale(1.03); }
+  /* El chaflán (clip-path) corta el contorno de foco: se dibuja por dentro. */
+  .cac-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent-primary); }
 
   .cac-barra { transform: scaleX(var(--avance, 0)); transform-origin: left; }
 </style>

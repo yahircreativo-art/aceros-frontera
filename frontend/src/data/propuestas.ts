@@ -18,17 +18,17 @@ export interface Propuesta {
 }
 
 export const propuestas: Propuesta[] = [
-  { id: 'navbar', titulo: 'Navbar', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'C' },
-  { id: 'hero', titulo: 'Hero', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'], actual: 'G' },
-  { id: 'nosotros', titulo: 'Nosotros', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'A' },
-  { id: 'catalogo', titulo: 'Catálogo', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'B' },
+  { id: 'navbar', titulo: 'Navbar', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'E' },
+  { id: 'hero', titulo: 'Hero', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'], actual: 'M' },
+  { id: 'nosotros', titulo: 'Nosotros', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'C' },
+  { id: 'catalogo', titulo: 'Catálogo', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'C' },
   /* '' = la sección de siempre (components/home/Servicios.astro). */
-  { id: 'servicios', titulo: 'Servicios', letras: ['A', 'B', 'C', 'D', 'E'], actual: '', sinVariante: 'la actual' },
-  /* Sin publicar: las reseñas de src/data/resenas.ts todavía son de ejemplo. */
-  { id: 'resenas', titulo: 'Reseñas', letras: ['A', 'B', 'C', 'D', 'E'], actual: '' },
+  { id: 'servicios', titulo: 'Servicios', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'], actual: 'F', sinVariante: 'la actual' },
+  /* Publicada la G, pero las reseñas de src/data/resenas.ts todavía son de ejemplo (sale el aviso). */
+  { id: 'resenas', titulo: 'Reseñas', letras: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], actual: 'G' },
   { id: 'contacto', titulo: 'Contacto', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'D' },
-  /* '' = el footer de siempre (components/Footer.astro), que usan todas las páginas. */
-  { id: 'footer', titulo: 'Footer', letras: ['A', 'B', 'C', 'D', 'E'], actual: '', sinVariante: 'el actual' },
+  /* '' = el footer de siempre (components/Footer.astro), que siguen usando las demás páginas. */
+  { id: 'footer', titulo: 'Footer', letras: ['A', 'B', 'C', 'D', 'E'], actual: 'D', sinVariante: 'el actual' },
 ];
 
 export type Seleccion = Record<SeccionPropuesta, string>;

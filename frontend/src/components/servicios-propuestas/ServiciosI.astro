@@ -1,0 +1,177 @@
+---
+/**
+ * SERVICIOS I · "Flujo de taller"
+ * Fondo de plano (retícula fina). Los servicios como un diagrama de proceso,
+ * del acero a tu obra: Fabricamos (lámina, armex, estribos) → Cortamos
+ * (placa) → Entregamos (distribución) → Respaldamos (centro de servicio).
+ * Las líneas que unen las etapas se trazan al entrar la sección. Al elegir
+ * un servicio (clic, foco o cursor) se muestra abajo su ficha con foto,
+ * descripción y botón.
+ * En celular las etapas van en columna con una línea vertical, y cada
+ * servicio trae su ficha debajo.
+ *
+ * Sin JavaScript las líneas se ven completas y la ficha es la del primer
+ * servicio; con "reducir movimiento" no se animan.
+ *
+ * Uso: <ServiciosI />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { servicios, infoUrl, cotaServicios, encabezado, type Servicio } from './servicios-data';
+
+/* Etapas del flujo (por id de servicio). Un servicio que no esté aquí se agrega al final. */
+const mapa: { verbo: string; ids: string[] }[] = [
+  { verbo: 'Fabricamos', ids: ['fabricacion-de-lamina', 'fabricacion-de-armex', 'estribos'] },
+  { verbo: 'Cortamos', ids: ['corte-de-placa'] },
+  { verbo: 'Entregamos', ids: ['venta-y-distribucion'] },
+  { verbo: 'Respaldamos', ids: ['venta-y-servicio-de-herramienta'] },
+];
+const usados = new Set(mapa.flatMap((e) => e.ids));
+const etapas = mapa
+  .map((e) => ({ verbo: e.verbo, items: e.ids.map((id) => servicios.find((s) => s.id === id)).filter(Boolean) as Servicio[] }))
+  .filter((e) => e.items.length);
+const resto = servicios.filter((s) => !usados.has(s.id));
+if (resto.length) etapas.push({ verbo: 'Además', items: resto });
+const indice = (s: Servicio) => servicios.indexOf(s);
+const primero = etapas[0].items[0];
+---
+
+<section id="servicios" data-svi class="svi relative scroll-mt-24 py-20 text-text-primary lg:py-28">
+  <div class="container-page">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+      <div>
+        <h2 class="font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.92] font-extrabold uppercase">{encabezado.titulo}</h2>
+        <Cota texto={cotaServicios} class="mt-4 text-text-brand" />
+      </div>
+      <p class="max-w-md type-body-m text-text-secondary lg:justify-self-end">{encabezado.descripcion}</p>
+    </div>
+
+    <!-- Diagrama -->
+    <ol class="svi-flujo mt-12 grid grid-cols-[minmax(0,1fr)] gap-8 lg:mt-16 lg:grid-cols-4 lg:gap-12" role="list">
+      {etapas.map((e, k) => (
+        <li class="svi-etapa flex min-w-0 flex-col" style={`--k:${k}`}>
+          <p class="svi-verbo font-display text-xl font-bold text-text-brand">{e.verbo}</p>
+          <ul class:list={['svi-nodos relative mt-3 flex flex-1 flex-col justify-center gap-3', { 'svi-varios': e.items.length > 1, 'svi-ultima': k === etapas.length - 1 }]} role="list">
+            {e.items.map((s) => (
+              <li id={s.id} class="relative min-w-0 scroll-mt-28">
+                <button type="button" data-svi-nodo={indice(s)} aria-pressed={s === primero ? 'true' : 'false'} aria-controls="svi-ficha" class="svi-nodo chamfer flex w-full items-center gap-4 p-4 text-left [--chamfer:14px]">
+                  <Pictogram name={s.pictograma} class="size-9 shrink-0" />
+                  <span class="font-display text-[1.35rem] leading-[0.95] font-extrabold uppercase">{s.titulo}</span>
+                </button>
+                <!-- Ficha en celular -->
+                <div class="svi-ficha-movil mt-3 lg:hidden">
+                  <img src={s.imagen} alt="" loading="lazy" decoding="async" class="chamfer aspect-[16/9] w-full object-cover [--chamfer:14px]" />
+                  <p class="mt-3 type-body-s text-text-secondary">{s.descripcion}</p>
+                  <Button href={infoUrl(s)} target="_blank" variant="primary" size="sm" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-4" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ol>
+
+    <!-- Ficha del servicio elegido (escritorio) -->
+    <div id="svi-ficha" class="svi-ficha relative mt-12 hidden lg:block" aria-live="polite">
+      {servicios.map((s, i) => (
+        <article data-svi-ficha={i} hidden={s !== primero} class="svi-art chamfer grid grid-cols-[minmax(0,5fr)_minmax(0,6fr)] overflow-hidden bg-neutral-950 text-text-inverse [--chamfer:28px]">
+          <div class="flex flex-col justify-center p-10">
+            <h3 class="font-display text-4xl leading-none font-extrabold uppercase">{s.titulo}</h3>
+            <p class="mt-4 max-w-md type-body-m text-text-inverse-muted">{s.descripcion}</p>
+            <Button href={infoUrl(s)} target="_blank" variant="secondary" size="md" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-6 w-fit" />
+          </div>
+          <img src={s.imagen} alt="" loading="lazy" decoding="async" class="h-[clamp(16rem,32svh,22rem)] w-full object-cover" />
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { progresoScroll } from '../../lib/scroll-progreso';
+  const root = document.querySelector<HTMLElement>('[data-svi]');
+  if (root) {
+    const nodos = [...root.querySelectorAll<HTMLButtonElement>('[data-svi-nodo]')];
+    const fichas = [...root.querySelectorAll<HTMLElement>('[data-svi-ficha]')];
+    const elegir = (i: number) => {
+      nodos.forEach((n) => n.setAttribute('aria-pressed', String(Number(n.dataset.sviNodo) === i)));
+      fichas.forEach((f) => {
+        const on = Number(f.dataset.sviFicha) === i;
+        if (on && f.hidden) { f.hidden = false; f.classList.remove('is-entra'); void f.offsetWidth; f.classList.add('is-entra'); }
+        else if (!on) f.hidden = true;
+      });
+    };
+    nodos.forEach((n) => {
+      const i = Number(n.dataset.sviNodo);
+      n.addEventListener('click', () => elegir(i));
+      n.addEventListener('focus', () => elegir(i));
+      n.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') elegir(i); });
+    });
+
+    /* Las líneas del flujo se trazan mientras la sección entra a la pantalla. */
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.classList.add('is-traza');
+      progresoScroll(root, 'entrada');
+    }
+  }
+</script>
+
+<style>
+  /* Fondo de plano: retícula fina con el verde de marca. */
+  .svi {
+    background-color: var(--color-neutral-100);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--color-green-800) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--color-green-800) 7%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .svi-nodo {
+    cursor: pointer; background: var(--color-neutral-0); color: var(--color-text-primary);
+    box-shadow: inset 0 0 0 1px var(--color-border-default);
+    transition: background 250ms, color 250ms, translate 250ms;
+  }
+  .svi-nodo:hover { translate: 0 -2px; }
+  .svi-nodo[aria-pressed='true'] { background: var(--color-accent-primary); color: var(--color-neutral-1000); box-shadow: none; }
+  .svi-nodo:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--color-green-800); }
+
+  /* --- Líneas del flujo (escritorio) --- */
+  .svi-flujo { --linea: var(--color-green-800); }
+  /* Avance de cada tramo: se dibuja uno tras otro con el progreso de entrada (--p). */
+  .svi-etapa { --trazo: 1; }
+  .svi.is-traza .svi-etapa { --trazo: min(1, max(0, calc((var(--p, 1) - 0.25 - var(--k) * 0.15) / 0.15))); }
+
+  @media (min-width: 64rem) {
+    /* Tramo horizontal hacia la siguiente etapa (ocupa el hueco de 3rem). */
+    .svi-nodos:not(.svi-ultima)::after {
+      content: ""; position: absolute; top: 50%; left: 100%; width: 3rem; height: 2px; background: var(--linea);
+      transform-origin: left; scale: var(--trazo) 1;
+    }
+    /* Varias piezas en la etapa: cada una con su tramo corto y una barra vertical que las junta. */
+    .svi-varios::after { left: calc(100% + 1.5rem) !important; width: 1.5rem !important; }
+    .svi-varios > li::after {
+      content: ""; position: absolute; top: 50%; left: 100%; width: 1.5rem; height: 2px; background: var(--linea);
+      transform-origin: left; scale: var(--trazo) 1;
+    }
+    .svi-varios::before {
+      content: ""; position: absolute; left: calc(100% + 1.5rem - 1px); width: 2px; top: calc(100% / 6); bottom: calc(100% / 6); background: var(--linea);
+      transform-origin: center; scale: 1 var(--trazo);
+    }
+    .svi-art.is-entra { animation: svi-entra 500ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  }
+  @keyframes svi-entra {
+    from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+    to { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%); }
+  }
+
+  /* Celular: línea vertical a la izquierda de cada etapa. */
+  @media (max-width: 63.99rem) {
+    .svi-etapa { padding-left: 1.25rem; border-left: 2px solid var(--color-green-800); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svi-nodo { transition: none; }
+    .svi-art.is-entra { animation: none; }
+  }
+</style>

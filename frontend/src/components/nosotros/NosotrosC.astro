@@ -127,7 +127,7 @@ const formato = new Intl.NumberFormat('es-MX');
   .noc-escenario { --e: min(1, calc(var(--p, 1) / 0.75)); --t: max(0, calc((var(--p, 1) - 0.6) / 0.3)); }
 
   .noc-foto {
-    position: absolute; margin: 0; overflow: hidden; border-radius: 0.75rem;
+    position: absolute; margin: 0; overflow: hidden; border-radius: 0;
     box-shadow: 0 20px 40px -18px rgb(8 18 13 / 45%);
     translate: calc((1 - var(--e)) * var(--dx)) calc((1 - var(--e)) * var(--dy));
     rotate: calc((1 - var(--e)) * var(--r));
@@ -173,9 +173,6 @@ const formato = new Intl.NumberFormat('es-MX');
 
   .noc-tarde { opacity: min(1, var(--t)); translate: 0 calc((1 - min(1, var(--t))) * 16px); }
 
-  @media (max-width: 47.99rem) {
-    .noc-foto { border-radius: 0.5rem; }
-  }
   /* Celular y iPad: degradado blanco de abajo hacia arriba sobre las fotos inferiores,
      para que no se vean detrás de las cifras y el texto se lea bien. El contenido arranca
      bajo las fotos de arriba (37 % del alto) y el blanco sólido llega justo hasta ahí. */

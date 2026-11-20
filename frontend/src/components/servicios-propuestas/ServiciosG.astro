@@ -1,0 +1,118 @@
+---
+/**
+ * SERVICIOS G · "Placas que giran"
+ * Fondo claro. Retícula de 3 × 2 placas de color de marca (verde, amarillo,
+ * blanco, gris), cada una con el pictograma del servicio dibujado en grande
+ * y su nombre. Al pasar el cursor (o tocar "Ver servicio") la placa gira
+ * sobre su eje y por detrás aparece la foto, la descripción y el botón.
+ * Placas con esquina cortada, como piezas recién salidas del corte.
+ *
+ * Teclado: "Ver servicio" la gira y al llegar al botón de atrás también.
+ * Sin JavaScript se gira con el cursor; con "reducir movimiento" cambia con
+ * un fundido en lugar del giro.
+ *
+ * Uso: <ServiciosG />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Pictogram from '../ui/Pictogram.astro';
+import { servicios, infoUrl, cotaServicios, encabezado } from './servicios-data';
+
+const tonos = ['svg-verde', 'svg-amarillo', 'svg-blanco', 'svg-gris'];
+---
+
+<section id="servicios" data-svg class="svg relative scroll-mt-24 bg-neutral-100 py-20 text-text-primary lg:py-28">
+  <div class="container-page">
+    <div class="max-w-3xl">
+      <h2 class="font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.92] font-extrabold uppercase">{encabezado.titulo}</h2>
+      <Cota texto={cotaServicios} class="mt-4 text-text-brand" />
+      <p class="mt-5 max-w-xl type-body-m text-text-secondary">{encabezado.descripcion}</p>
+    </div>
+
+    <ul class="mt-12 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      {servicios.map((s, i) => (
+        <li id={s.id} data-svg-placa class="svg-placa min-w-0 scroll-mt-28">
+          <div class="svg-giro">
+            <!-- Frente -->
+            <div class:list={['svg-cara svg-frente chamfer [--chamfer:22px]', tonos[i % tonos.length]]}>
+              <Pictogram name={s.pictograma} class="svg-picto" />
+              <h3 class="font-display text-[clamp(1.75rem,2.4vw,2.25rem)] leading-[0.95] font-extrabold uppercase">{s.titulo}</h3>
+              <button type="button" data-svg-girar aria-expanded="false" aria-controls={`svg-atras-${i}`} class="svg-girar">
+                Ver servicio
+              </button>
+            </div>
+            <!-- Atrás -->
+            <div id={`svg-atras-${i}`} class="svg-cara svg-atras chamfer [--chamfer:22px]">
+              <img src={s.imagen} alt="" loading="lazy" decoding="async" class="absolute inset-0 -z-10 size-full object-cover" />
+              <span aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-t from-black/95 via-black/70 to-black/30"></span>
+              <p class="font-display text-2xl leading-none font-extrabold uppercase">{s.titulo}</p>
+              <p class="mt-3 type-body-s text-text-inverse-muted">{s.descripcion}</p>
+              <Button href={infoUrl(s)} target="_blank" variant="secondary" size="sm" icon="whatsapp" iconPosition="right" label="Solicitar información" class="mt-5 w-fit" />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-svg]');
+  if (root) {
+    root.querySelectorAll<HTMLElement>('[data-svg-placa]').forEach((placa) => {
+      const boton = placa.querySelector<HTMLButtonElement>('[data-svg-girar]')!;
+      const girar = (on: boolean) => {
+        placa.classList.toggle('is-vuelta', on);
+        boton.setAttribute('aria-expanded', String(on));
+      };
+      boton.addEventListener('click', () => girar(!placa.classList.contains('is-vuelta')));
+      /* En pantallas táctiles, tocar la parte de atrás (fuera del botón) la regresa. */
+      placa.querySelector('.svg-atras')!.addEventListener('click', (e) => {
+        if (!(e.target as HTMLElement).closest('a')) girar(false);
+      });
+      /* Al salir el foco de la placa, regresa al frente. */
+      placa.addEventListener('focusout', (e) => {
+        if (!placa.contains(e.relatedTarget as Node)) girar(false);
+      });
+    });
+  }
+</script>
+
+<style>
+  .svg-placa { perspective: 1400px; height: clamp(19rem, 30vw, 23rem); }
+  .svg-giro { position: relative; height: 100%; transform-style: preserve-3d; transition: transform 800ms cubic-bezier(0.3, 0.7, 0.2, 1); }
+  .svg-cara { position: absolute; inset: 0; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; padding: clamp(1.25rem, 2vw, 1.75rem); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .svg-frente { justify-content: flex-end; gap: 1rem; }
+  .svg-atras { justify-content: flex-end; transform: rotateY(180deg); background: var(--color-neutral-950); color: var(--color-text-inverse); }
+
+  .svg-verde { background: var(--color-green-800); color: var(--color-text-inverse); }
+  .svg-amarillo { background: var(--color-accent-primary); color: var(--color-neutral-1000); }
+  .svg-blanco { background: var(--color-neutral-0); color: var(--color-text-primary); box-shadow: inset 0 0 0 1px var(--color-border-default); }
+  .svg-gris { background: var(--color-neutral-800); color: var(--color-text-inverse); }
+
+  .svg-frente :global(.svg-picto) { position: absolute; right: 1.25rem; top: 1.25rem; width: clamp(6rem, 11vw, 8.5rem); height: auto; aspect-ratio: 1; stroke-width: 1.25; opacity: 0.85; transition: rotate 600ms cubic-bezier(0.34, 1.5, 0.5, 1); }
+  .svg-girar {
+    width: fit-content; cursor: pointer; padding-bottom: 0.2rem; border-bottom: 2px solid currentColor;
+    font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .svg-girar:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+  /* Girada: por el botón (clase), por foco en la parte de atrás o, con mouse, por el cursor. */
+  .svg-placa.is-vuelta .svg-giro,
+  .svg-placa:has(.svg-atras:focus-within) .svg-giro { transform: rotateY(180deg); }
+  @media (hover: hover) and (pointer: fine) {
+    .svg-placa:hover .svg-giro { transform: rotateY(180deg); }
+    .svg-placa:hover :global(.svg-picto) { rotate: -10deg; }
+  }
+
+  /* Reducir movimiento: sin giro, la parte de atrás aparece con un fundido. */
+  @media (prefers-reduced-motion: reduce) {
+    .svg-giro { transition: none; transform: none !important; }
+    .svg-atras { transform: none; opacity: 0; transition: opacity 200ms; }
+    .svg-placa.is-vuelta .svg-atras,
+    .svg-placa:has(.svg-atras:focus-within) .svg-atras { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+    .svg-placa:hover .svg-atras { opacity: 1; }
+  }
+</style>

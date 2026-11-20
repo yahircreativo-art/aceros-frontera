@@ -67,11 +67,12 @@ const cobertura = `Acero y ferretería en ${ciudades.slice(0, -1).join(', ')} y 
   <!-- Degradado verde sutil, de abajo hacia arriba (sobre blanco va más bajo que en el Hero G) -->
   <div aria-hidden="true" class="hn-verde pointer-events-none absolute inset-0 -z-10"></div>
 
-  <div class="container-page relative flex min-h-[calc(100svh-10rem)] items-center py-16 lg:py-24">
+  <!-- Alto de pantalla completa menos la barra fija del navbar (78 px) -->
+  <div class="container-page relative flex min-h-[calc(100svh-4.875rem)] items-center py-16 lg:py-[min(3rem,5vh)]">
     <div data-hn-texto class="relative z-10 w-full min-w-0 max-w-3xl">
       <div class="w-fit max-w-full">
       <h1
-        class="font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.86] font-extrabold uppercase"
+        class="font-display text-[clamp(3.5rem,min(9vw,14vh),8.5rem)] leading-[0.86] font-extrabold uppercase"
         style="text-shadow: 0 4px 30px rgb(255 255 255 / 70%)"
       >
         <span class="block">Hacemos</span>{' '}
@@ -82,12 +83,12 @@ const cobertura = `Acero y ferretería en ${ciudades.slice(0, -1).join(', ')} y 
       <Cota texto={cobertura} ancho="completo" class="hn-cota mt-5 text-text-brand" />
       </div>
 
-      <p data-escribe="parrafo" class="mt-8 max-w-xl border-l-2 border-accent-primary pl-5 type-body-l text-text-primary">
+      <p data-escribe="parrafo" class="mt-8 max-w-xl lg:mt-[min(2rem,3vh)] border-l-2 border-accent-primary pl-5 type-body-l text-text-primary">
         Acero, ferretería y herramienta para edificios, naves industriales y casas. Mayoreo y
         menudeo, fabricación de armex, corte de placa y servicio a domicilio.
       </p>
 
-      <div class="mt-10 flex flex-wrap gap-4">
+      <div class="mt-10 flex flex-wrap gap-4 lg:mt-[min(2.5rem,4vh)]">
         <Button data-escribe="boton" href={whatsappUrl()} target="_blank" variant="secondary" size="lg" icon="whatsapp" iconPosition="right" label="Cotizar por WhatsApp" />
         <Button data-escribe="boton" href={rutaInterna('/catalogo')} variant="primary" size="lg" icon="arrow-right" iconPosition="right" label="Ver catálogo" />
       </div>

@@ -1,0 +1,75 @@
+---
+/**
+ * SERVICIOS F · "Persianas"
+ * La sección "Infraestructura que respalda" girada: en lugar de columnas,
+ * franjas horizontales a todo lo ancho, como láminas apiladas en el rack.
+ * Cada franja es la foto del servicio en gris con su nombre en grande. En
+ * escritorio, la franja bajo el cursor (o con foco) se abre hacia arriba y
+ * abajo, se ve a color y muestra la descripción y el botón. Sin cursor
+ * encima queda abierta la primera.
+ * En celular todas van abiertas, una debajo de otra.
+ *
+ * Solo CSS: funciona igual sin JavaScript. Con "reducir movimiento" se abre
+ * sin transición.
+ *
+ * Uso: <ServiciosF />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import { servicios, infoUrl, cotaServicios, encabezado } from './servicios-data';
+---
+
+<section id="servicios" data-svf class="svf relative scroll-mt-24 bg-neutral-950 py-20 text-text-inverse lg:py-24">
+  <div class="container-page">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+      <div>
+        <h2 class="font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.92] font-extrabold uppercase">{encabezado.titulo}</h2>
+        <Cota texto={cotaServicios} class="mt-4 text-text-accent" />
+      </div>
+      <p class="max-w-md type-body-m text-text-inverse-muted lg:justify-self-end">{encabezado.descripcion}</p>
+    </div>
+
+    <ul class="svf-lista mt-10 flex flex-col gap-2 lg:mt-12" role="list">
+      {servicios.map((s, i) => (
+        <li id={s.id} class:list={['svf-tira chamfer relative min-w-0 scroll-mt-28 overflow-hidden [--chamfer:18px]', { 'is-on': i === 0 }]}>
+          <img src={s.imagen} alt="" loading="lazy" decoding="async" class="svf-foto absolute inset-0 size-full object-cover" />
+          <span aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20"></span>
+          <div class="svf-contenido relative flex h-full flex-col justify-center gap-4 p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:px-10 lg:py-0">
+            <h3 class="font-display text-[clamp(1.75rem,3vw,2.75rem)] leading-none font-extrabold uppercase">{s.titulo}</h3>
+            <div class="svf-detalle flex min-w-0 flex-col gap-4 lg:max-w-md lg:items-start">
+              <p class="type-body-s text-text-inverse-muted">{s.descripcion}</p>
+              <Button href={infoUrl(s)} target="_blank" variant="secondary" size="sm" icon="whatsapp" iconPosition="right" label="Solicitar información" />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .svf-foto { filter: grayscale(1); opacity: 0.55; transition: filter 700ms ease, opacity 700ms ease, scale 1200ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .svf-tira { min-height: 15rem; background: var(--color-neutral-900); }
+
+  @media (min-width: 64rem) {
+    /* Alto fijo de la lista: las franjas se reparten el espacio y la abierta se queda con más. */
+    .svf-lista { height: clamp(30rem, calc(100svh - 16rem), 42rem); }
+    .svf-tira { min-height: 0; flex: 1 1 0%; transition: flex-grow 700ms cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .svf-detalle { opacity: 0; translate: 0 8px; transition: opacity 400ms ease, translate 500ms ease; pointer-events: none; }
+
+    /* Abierta: la del cursor, la del foco o, si no hay ninguna, la primera. */
+    .svf-tira:hover,
+    .svf-tira:focus-within,
+    .svf-lista:not(:hover):not(:focus-within) > .svf-tira.is-on { flex-grow: 4.5; }
+    .svf-tira:hover .svf-detalle,
+    .svf-tira:focus-within .svf-detalle,
+    .svf-lista:not(:hover):not(:focus-within) > .svf-tira.is-on .svf-detalle { opacity: 1; translate: 0 0; pointer-events: auto; transition-delay: 200ms; }
+    .svf-tira:hover .svf-foto,
+    .svf-tira:focus-within .svf-foto,
+    .svf-lista:not(:hover):not(:focus-within) > .svf-tira.is-on .svf-foto { filter: none; opacity: 0.85; scale: 1.04; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svf-tira, .svf-detalle, .svf-foto { transition: none !important; }
+  }
+</style>

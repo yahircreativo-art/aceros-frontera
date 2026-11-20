@@ -1,0 +1,207 @@
+---
+/**
+ * RESEÑAS G · "Salen del celular"
+ * Fondo blanco. Un celular visto en 3/4 (girado en 3D) a la derecha
+ * y, de su pantalla, salen las reseñas una tras otra: cada tarjeta nace
+ * pequeña sobre la pantalla, se despega hacia el frente y viaja hacia la
+ * izquierda girando como en un carrusel, hasta perderse al fondo. Siempre
+ * hay tres o cuatro en el aire. Cada reseña lleva icono de usuario (hombre
+ * o mujer), nombre, estrellas, fecha y texto.
+ *
+ * Todo con CSS 3D (perspective + translate3d); el JS solo pausa fuera de
+ * pantalla, con la pestaña oculta y con el cursor encima. Con "reducir
+ * movimiento": tres tarjetas quietas en abanico a la izquierda del celular.
+ *
+ * ⚠ Las reseñas de src/data/resenas.ts hoy son de ejemplo: se muestra el
+ * aviso y no debe publicarse hasta cambiarlas por las reales.
+ *
+ * Uso: <ResenasG />
+ */
+import Button from '../ui/Button.astro';
+import Cota from '../ui/Cota.astro';
+import Estrellas from './Estrellas.astro';
+import AvisoEjemplo from './AvisoEjemplo.astro';
+import AvatarUsuario from './AvatarUsuario.astro';
+import { resenas5, fichaGoogle, cotaGoogle, calificacionTexto, sucursalDe } from './resenas-data';
+import { sucursales } from '../../data/sucursales';
+
+const tonos = ['verde', 'amarillo', 'negro'] as const;
+const sucursalFicha = sucursales.find((s) => s.id === fichaGoogle.sucursal)?.nombre ?? '';
+/* Segundos entre una tarjeta y la siguiente. */
+const PASO = 2.6;
+const ciclo = (PASO * resenas5.length).toFixed(1);
+---
+
+<section id="resenas" data-rsg class="rsg relative scroll-mt-24 overflow-hidden bg-neutral-0 py-20 text-text-primary lg:py-24">
+  <div class="container-page relative">
+    <div class="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div class="min-w-0">
+        <Cota texto={cotaGoogle} class="text-text-brand" />
+        <h2 class="mt-5 max-w-[16ch] font-display text-[clamp(2.75rem,5.5vw,4.75rem)] leading-[0.9] font-extrabold uppercase">
+          Lo que dicen quienes ya compraron
+        </h2>
+        <AvisoEjemplo class="mt-5" />
+      </div>
+      <Button href={fichaGoogle.url} target="_blank" variant="primary" size="lg" icon="star" iconPosition="left" label="Ver reseñas en Google" />
+    </div>
+
+    <!-- Escena 3D -->
+    <div class="rsg-escena" style={`--ciclo:${ciclo}s; --n:${resenas5.length}`}>
+      <!-- Celular en 3/4 (ilustración) -->
+      <div class="rsg-cel" aria-hidden="true">
+        <div class="rsg-pantalla">
+          <span class="rsg-isla"></span>
+          <div class="rsg-cabeza">
+            <p class="font-display text-lg leading-none font-extrabold uppercase">Aceros Frontera</p>
+            <p class="mt-1 text-[0.7rem] text-text-secondary">{sucursalFicha}</p>
+            <div class="mt-3 flex items-center gap-2">
+              <span class="font-display text-3xl leading-none font-extrabold">{calificacionTexto}</span>
+              <Estrellas n={fichaGoogle.calificacion} tam="size-3.5" class="text-accent-primary" />
+            </div>
+            <p class="rsg-pestana mt-3">Reseñas</p>
+          </div>
+          <ul class="rsg-filas">
+            {resenas5.slice(0, 4).map((r, i) => (
+              <li class="rsg-fila">
+                <AvatarUsuario genero={r.genero} tono={tonos[i % 3]} class="size-7" />
+                <span class="min-w-0 flex-1">
+                  <span class="block h-2 w-3/5 bg-neutral-200"></span>
+                  <span class="mt-1.5 block h-2 w-full bg-neutral-100"></span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <!-- Brillo de donde salen las tarjetas -->
+          <span class="rsg-brillo"></span>
+        </div>
+      </div>
+
+      <!-- Tarjetas que salen de la pantalla -->
+      <ul class="rsg-vuelo" role="list" aria-label="Reseñas de clientes">
+        {resenas5.map((r, i) => (
+          <li class="rsg-tarjeta-wrap" style={`--i:${i}`}>
+            <article class="rsg-tarjeta chamfer [--chamfer:16px]">
+              <header class="flex items-center gap-3">
+                <AvatarUsuario genero={r.genero} tono={tonos[i % 3]} class="size-11" />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold">{r.nombre}</p>
+                  <p class="text-xs text-text-secondary">{sucursalDe(r)}</p>
+                </div>
+              </header>
+              <div class="mt-3 flex items-center gap-2">
+                <Estrellas n={r.estrellas} class="text-accent-primary" />
+                <span class="text-xs text-text-secondary">{r.fecha}</span>
+              </div>
+              <blockquote class="rsg-txt mt-2 type-body-s"><p>{r.texto}</p></blockquote>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rsg]');
+  if (root) {
+    /* Pausa: fuera de pantalla, pestaña oculta o cursor sobre las tarjetas (para leer). */
+    let fuera = true;
+    const escena = root.querySelector<HTMLElement>('.rsg-escena')!;
+    const pausar = () => root.classList.toggle('is-pausa', fuera || document.hidden || escena.matches(':hover'));
+    new IntersectionObserver(([e]) => { fuera = !e.isIntersecting; pausar(); }, { threshold: 0.15 }).observe(root);
+    escena.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pausar(); });
+    escena.addEventListener('pointerleave', pausar);
+    document.addEventListener('visibilitychange', pausar);
+    pausar();
+  }
+</script>
+
+<style>
+  /* --- Escena con perspectiva: el punto de fuga cerca del celular --- */
+  .rsg-escena {
+    position: relative; height: 36rem; margin-top: 2.5rem;
+    perspective: 1500px; perspective-origin: 72% 45%;
+  }
+
+  /* --- Celular en 3/4 --- */
+  .rsg-cel {
+    --ancho: 17rem;
+    position: absolute; top: 50%; left: 74%; width: var(--ancho); height: calc(var(--ancho) * 2);
+    margin: calc(var(--ancho) * -1) 0 0 calc(var(--ancho) / -2);
+    padding: 0.55rem; border-radius: 2.6rem; background: var(--color-neutral-950);
+    transform: rotateY(-32deg) rotateX(8deg) rotateZ(2deg);
+    /* Grosor del canto: sombras escalonadas hacia la derecha. */
+    box-shadow:
+      inset 0 0 0 2px rgb(255 255 255 / 14%),
+      3px 0 0 #1c201e, 6px 0 0 #1c201e, 9px 1px 0 #141715,
+      40px 50px 70px -20px rgb(8 18 13 / 35%);
+  }
+  .rsg-pantalla { position: relative; height: 100%; overflow: hidden; border-radius: 2.1rem; background: var(--color-neutral-0); color: var(--color-text-primary); }
+  .rsg-isla { position: absolute; left: 50%; top: 0.6rem; width: 5rem; height: 1.3rem; translate: -50% 0; border-radius: 1rem; background: var(--color-neutral-950); }
+  .rsg-cabeza { padding: 2.6rem 1rem 0; }
+  .rsg-pestana { width: fit-content; padding-bottom: 0.35rem; border-bottom: 2px solid var(--color-green-800); font-size: 0.7rem; font-weight: 700; color: var(--color-text-brand); }
+  .rsg-filas { margin-top: 0.5rem; border-top: 1px solid var(--color-border-default); }
+  .rsg-fila { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-default); }
+  /* Resplandor amarillo en la pantalla: late cada vez que sale una tarjeta. */
+  .rsg-brillo {
+    position: absolute; inset: 35% 10% 25%; background: radial-gradient(closest-side, color-mix(in srgb, var(--color-accent-primary) 45%, transparent), transparent);
+    opacity: 0; animation: rsg-late calc(var(--ciclo) / var(--n)) ease-out infinite;
+  }
+  @keyframes rsg-late { 0% { opacity: 0.9; scale: 0.6; } 60%, 100% { opacity: 0; scale: 1.3; } }
+
+  /* --- Tarjetas en vuelo --- */
+  .rsg-vuelo { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+  .rsg-tarjeta-wrap {
+    --w: min(19rem, 72vw);
+    position: absolute; top: 50%; left: 74%; width: var(--w); margin: -6rem 0 0 calc(var(--w) / -2);
+    transform-style: preserve-3d; opacity: 0;
+    /* Cada tarjeta arranca un "paso" después de la anterior (retraso negativo = ya en camino). */
+    animation: rsg-vuela var(--ciclo) linear infinite;
+    animation-delay: calc(var(--ciclo) / var(--n) * var(--i) - var(--ciclo));
+    pointer-events: auto;
+  }
+  /* Sobre fondo blanco: borde fino para que la tarjeta no se pierda. */
+  .rsg-tarjeta { background: var(--color-neutral-0); color: var(--color-text-primary); padding: 1.1rem 1.2rem 1.25rem; box-shadow: inset 0 0 0 1px var(--color-border-default); }
+  .rsg-tarjeta-wrap { filter: drop-shadow(0 26px 30px rgb(8 18 13 / 18%)); }
+  .rsg-txt { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Recorrido (las tarjetas solo están en el aire el primer 45 % del ciclo, así hay 3 o 4 a la vez):
+     nace en la pantalla (girada como el celular, chica) → se despega al frente →
+     viaja a la izquierda girando como carrusel → se aleja al fondo y desaparece. */
+  @keyframes rsg-vuela {
+    0% { opacity: 0; transform: translate3d(0, 1rem, -20px) rotateY(-32deg) rotateX(8deg) scale(0.35); }
+    3% { opacity: 1; }
+    9% { transform: translate3d(-4rem, -1rem, 140px) rotateY(-24deg) rotateX(4deg) scale(0.8); }
+    18% { transform: translate3d(-17rem, -3.5rem, 230px) rotateY(-8deg) rotateX(0deg) scale(1); }
+    28% { transform: translate3d(-31rem, -1rem, 150px) rotateY(10deg) scale(0.98); opacity: 1; }
+    38% { transform: translate3d(-44rem, 1.5rem, -60px) rotateY(24deg) scale(0.92); opacity: 0.7; }
+    45% { transform: translate3d(-54rem, 3rem, -260px) rotateY(34deg) scale(0.85); opacity: 0; }
+    100% { opacity: 0; transform: translate3d(-54rem, 3rem, -260px) rotateY(34deg) scale(0.85); }
+  }
+  .rsg.is-pausa .rsg-tarjeta-wrap, .rsg.is-pausa .rsg-brillo { animation-play-state: paused; }
+
+  /* Celular y tablet: escena más chica, el teléfono a la derecha y recorridos más cortos. */
+  @media (max-width: 63.99rem) {
+    .rsg-escena { height: 30rem; perspective-origin: 68% 45%; }
+    .rsg-cel { --ancho: 12rem; left: 68%; }
+    .rsg-tarjeta-wrap { --w: min(16rem, 70vw); left: 68%; animation-name: rsg-vuela-movil; }
+    @keyframes rsg-vuela-movil {
+      0% { opacity: 0; transform: translate3d(0, 1rem, -20px) rotateY(-32deg) scale(0.35); }
+      3% { opacity: 1; }
+      12% { transform: translate3d(-6rem, -1rem, 160px) rotateY(-14deg) scale(0.9); }
+      24% { transform: translate3d(-12rem, -2rem, 200px) rotateY(0deg) scale(1); opacity: 1; }
+      36% { transform: translate3d(-20rem, 0rem, 0px) rotateY(22deg) scale(0.92); opacity: 0.6; }
+      45% { transform: translate3d(-26rem, 2rem, -200px) rotateY(34deg) scale(0.85); opacity: 0; }
+      100% { opacity: 0; transform: translate3d(-26rem, 2rem, -200px) rotateY(34deg) scale(0.85); }
+    }
+  }
+
+  /* Reducir movimiento: tres tarjetas quietas en abanico a la izquierda del celular. */
+  @media (prefers-reduced-motion: reduce) {
+    .rsg-tarjeta-wrap, .rsg-brillo { animation: none; }
+    .rsg-tarjeta-wrap:nth-child(-n + 3) { opacity: 1; }
+    .rsg-tarjeta-wrap:nth-child(1) { transform: translate3d(-12rem, -5rem, 120px) rotateY(-10deg); }
+    .rsg-tarjeta-wrap:nth-child(2) { transform: translate3d(-24rem, 1rem, 60px) rotateY(6deg); }
+    .rsg-tarjeta-wrap:nth-child(3) { transform: translate3d(-12rem, 8rem, 140px) rotateY(-6deg); }
+  }
+</style>

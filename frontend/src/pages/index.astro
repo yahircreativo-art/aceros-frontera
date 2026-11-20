@@ -3,10 +3,13 @@
    (src/data/propuestas.ts). Si cambias una aquí, cambia también su `actual`. */
 import Portada from "../components/Portada.astro";
 import Header from "../components/navbars/NavbarE.astro";
-import Hero from "../components/heros/HeroG.astro";
-import Nosotros from "../components/nosotros/NosotrosA.astro";
-import Categorias from "../components/catalogo-propuestas/CatalogoB.astro";
+import Hero from "../components/heros/HeroM.astro";
+import Nosotros from "../components/nosotros/NosotrosC.astro";
+import Categorias from "../components/catalogo-propuestas/CatalogoC.astro";
 import Contacto from "../components/contacto-propuestas/ContactoD.astro";
+import ServiciosSec from "../components/servicios-propuestas/ServiciosF.astro";
+import Resenas from "../components/resenas/ResenasG.astro";
+import Pie from "../components/footers/FooterD.astro";
 import { obtenerProductos } from "../lib/productos";
 
 // Catálogo desde Supabase (sin credenciales, la portada se genera sin productos).
@@ -20,4 +23,7 @@ const productos = await obtenerProductos();
   Nosotros={Nosotros}
   Categorias={Categorias}
   Contacto={Contacto}
+  ServiciosSec={ServiciosSec}
+  Resenas={Resenas}
+  Pie={Pie}
 />
